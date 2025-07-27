@@ -1,7 +1,40 @@
 import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import Experience from '../models/Experience.js';
 
 const router = express.Router();
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = 'uploads/';
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PDF and Word documents are allowed.'), false);
+    }
+  }
+});
 
 // Get all approved experiences
 router.get('/', async (req, res) => {
@@ -30,13 +63,42 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Upload document
+router.post('/upload', upload.single('document'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const documentUrl = `/uploads/${req.file.filename}`;
+    res.json({ 
+      documentUrl,
+      documentName: req.file.originalname,
+      message: 'Document uploaded successfully' 
+    });
+  } catch (error) {
+    console.error('Error uploading document:', error);
+    res.status(500).json({ error: 'Failed to upload document' });
+  }
+});
+
 // Create new experience
 router.post('/', async (req, res) => {
   try {
-    const { studentName, email, company, year, experienceText, type } = req.body;
+    const { 
+      studentName, 
+      email, 
+      company, 
+      graduationYear, 
+      experienceText, 
+      documentUrl, 
+      documentName,
+      type,
+      postedBy 
+    } = req.body;
 
     // Validation
-    if (!studentName || !email || !company || !year || !experienceText || !type) {
+    if (!studentName || !email || !company || !graduationYear || !experienceText || !documentUrl || !documentName || !type) {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
@@ -53,9 +115,12 @@ router.post('/', async (req, res) => {
       studentName: studentName.trim(),
       email: email.trim().toLowerCase(),
       company: company.trim(),
-      year: parseInt(year),
+      graduationYear: parseInt(graduationYear),
       experienceText: experienceText.trim(),
+      documentUrl: documentUrl.trim(),
+      documentName: documentName.trim(),
       type,
+      postedBy,
       isApproved: false // Requires admin approval
     });
 
@@ -91,6 +156,18 @@ router.get('/search/:query', async (req, res) => {
   } catch (error) {
     console.error('Error searching experiences:', error);
     res.status(500).json({ error: 'Search failed' });
+  }
+});
+
+// Serve uploaded files
+router.get('/uploads/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filepath = path.join(process.cwd(), 'uploads', filename);
+  
+  if (fs.existsSync(filepath)) {
+    res.sendFile(filepath);
+  } else {
+    res.status(404).json({ error: 'File not found' });
   }
 });
 

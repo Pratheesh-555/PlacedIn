@@ -1,36 +1,89 @@
 import React, { useState } from 'react';
-import { Send, AlertCircle, CheckCircle } from 'lucide-react';
+import { Send, AlertCircle, CheckCircle, Upload, FileText } from 'lucide-react';
 import { API_ENDPOINTS } from '../config/api';
+import CompanySelector from './CompanySelector';
+import { GoogleUser } from '../types';
 
 interface PostExperienceProps {
   onSuccess: () => void;
+  user: GoogleUser | null;
 }
 
-const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess }) => {
+const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
   const [formData, setFormData] = useState({
-    studentName: '',
-    email: '',
+    studentName: user?.name || '',
+    email: user?.email || '',
     company: '',
-    year: new Date().getFullYear(),
+    graduationYear: new Date().getFullYear(),
     experienceText: '',
     type: 'placement' as 'placement' | 'internship'
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
+    setErrors({});
+
+    // Validation
+    const newErrors: Record<string, string> = {};
+    if (!formData.studentName.trim()) newErrors.studentName = 'Full name is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    if (!formData.company.trim()) newErrors.company = 'Company is required';
+    if (!formData.experienceText.trim()) newErrors.experienceText = 'Experience text is required';
+    if (formData.experienceText.length < 100) {
+      newErrors.experienceText = 'Experience text must be at least 100 characters';
+    }
+    if (!selectedFile) newErrors.document = 'Please upload a document';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
+      // First upload the document
+      const formDataFile = new FormData();
+      if (selectedFile) {
+        formDataFile.append('document', selectedFile);
+      }
+
+      const uploadResponse = await fetch(`${API_ENDPOINTS.EXPERIENCES}/upload`, {
+        method: 'POST',
+        body: formDataFile,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload document');
+      }
+
+      const uploadResult = await uploadResponse.json();
+
+      // Then submit the experience
+             const experienceData = {
+         ...formData,
+         documentUrl: uploadResult.documentUrl,
+         documentName: selectedFile?.name || '',
+         postedBy: {
+           googleId: user?.googleId,
+           name: user?.name,
+           email: user?.email,
+           picture: user?.picture
+         }
+       };
+
       const response = await fetch(API_ENDPOINTS.EXPERIENCES, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(experienceData),
       });
 
       if (response.ok) {
@@ -39,19 +92,21 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess }) => {
         setTimeout(() => {
           setSubmitted(false);
           setFormData({
-            studentName: '',
-            email: '',
+            studentName: user?.name || '',
+            email: user?.email || '',
             company: '',
-            year: new Date().getFullYear(),
+            graduationYear: new Date().getFullYear(),
             experienceText: '',
             type: 'placement'
           });
+          setSelectedFile(null);
         }, 3000);
       } else {
-        throw new Error('Failed to submit experience');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit experience');
       }
     } catch (err) {
-      setError('Failed to submit experience. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to submit experience. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -61,8 +116,34 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess }) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'year' ? parseInt(value) : value
+      [name]: name === 'graduationYear' ? parseInt(value) : value
     }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!allowedTypes.includes(file.type)) {
+        setErrors(prev => ({ ...prev, document: 'Please upload a PDF or Word document' }));
+        return;
+      }
+      
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors(prev => ({ ...prev, document: 'File size must be less than 5MB' }));
+        return;
+      }
+      
+      setSelectedFile(file);
+      setErrors(prev => ({ ...prev, document: '' }));
+    }
   };
 
   if (submitted) {
@@ -104,15 +185,19 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess }) => {
                   name="studentName"
                   value={formData.studentName}
                   onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                    errors.studentName ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="Enter your full name"
                 />
+                {errors.studentName && (
+                  <p className="text-red-500 text-sm mt-1">{errors.studentName}</p>
+                )}
               </div>
 
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
+                  Email *
                 </label>
                 <input
                   type="email"
@@ -120,45 +205,49 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess }) => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  placeholder="your.email@example.com"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                    errors.email ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Enter your email"
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                )}
               </div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              <div>
-                <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
-                  Company Name *
-                </label>
-                <input
-                  type="text"
-                  id="company"
-                  name="company"
-                  value={formData.company}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  placeholder="Company name"
-                />
-              </div>
+            <div>
+              <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
+                Company *
+              </label>
+              <CompanySelector
+                value={formData.company}
+                onChange={(company) => {
+                  setFormData(prev => ({ ...prev, company }));
+                  if (errors.company) {
+                    setErrors(prev => ({ ...prev, company: '' }));
+                  }
+                }}
+                error={errors.company}
+              />
+            </div>
 
+            <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-2">
-                  Year *
+                <label htmlFor="graduationYear" className="block text-sm font-medium text-gray-700 mb-2">
+                  Graduation Year *
                 </label>
-                <input
-                  type="number"
-                  id="year"
-                  name="year"
-                  value={formData.year}
+                <select
+                  id="graduationYear"
+                  name="graduationYear"
+                  value={formData.graduationYear}
                   onChange={handleChange}
-                  required
-                  min="2020"
-                  max="2030"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                />
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                >
+                  {Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -170,8 +259,7 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess }) => {
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 >
                   <option value="placement">Placement</option>
                   <option value="internship">Internship</option>
@@ -180,35 +268,68 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess }) => {
             </div>
 
             <div>
+              <label htmlFor="document" className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Experience Document *
+              </label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                <input
+                  type="file"
+                  id="document"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <label htmlFor="document" className="cursor-pointer">
+                  <Upload size={48} className="mx-auto text-gray-400 mb-4" />
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    {selectedFile ? selectedFile.name : 'Click to upload document'}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    PDF or Word document (max 5MB)
+                  </p>
+                </label>
+              </div>
+              {errors.document && (
+                <p className="text-red-500 text-sm mt-1">{errors.document}</p>
+              )}
+            </div>
+
+            <div>
               <label htmlFor="experienceText" className="block text-sm font-medium text-gray-700 mb-2">
-                Your Experience *
+                Experience Summary *
               </label>
               <textarea
                 id="experienceText"
                 name="experienceText"
                 value={formData.experienceText}
                 onChange={handleChange}
-                required
-                rows={8}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none"
-                placeholder="Share your detailed experience including interview process, company culture, tips for other students, etc."
+                rows={6}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                  errors.experienceText ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Provide a brief summary of your experience (minimum 100 characters)..."
               />
-              <p className="text-sm text-gray-500 mt-2">
-                Minimum 100 characters. Be descriptive and helpful to other students.
-              </p>
+              <div className="flex justify-between items-center mt-2">
+                <span className="text-sm text-gray-500">
+                  {formData.experienceText.length}/5000 characters
+                </span>
+                {errors.experienceText && (
+                  <span className="text-red-500 text-sm">{errors.experienceText}</span>
+                )}
+              </div>
             </div>
 
             {error && (
-              <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-3 rounded-lg">
-                <AlertCircle size={20} />
-                <span>{error}</span>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center space-x-2">
+                <AlertCircle size={20} className="text-red-500" />
+                <span className="text-red-700">{error}</span>
               </div>
             )}
 
             <button
               type="submit"
-              disabled={isSubmitting || formData.experienceText.length < 100}
-              className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
+              disabled={isSubmitting}
+              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
             >
               {isSubmitting ? (
                 <>

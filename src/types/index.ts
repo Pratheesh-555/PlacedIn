@@ -3,10 +3,26 @@ export interface Experience {
   studentName: string;
   email: string;
   company: string;
-  year: number;
+  graduationYear: number;
   experienceText: string;
+  documentUrl: string;
+  documentName: string;
   type: 'placement' | 'internship';
   isApproved?: boolean;
+  postedBy?: {
+    googleId: string;
+    name: string;
+    email: string;
+    picture: string;
+  };
+  approvedBy?: {
+    googleId: string;
+    name: string;
+    email: string;
+    picture: string;
+  };
+  approvedAt?: string;
+  rejectionReason?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -14,12 +30,22 @@ export interface Experience {
 export interface User {
   email: string;
   isAdmin?: boolean;
+  googleId?: string;
+  name?: string;
+  picture?: string;
+}
+
+export interface GoogleUser {
+  googleId: string;
+  name: string;
+  email: string;
+  picture: string;
 }
 
 export interface FilterOptions {
   company: string;
   student: string;
-  year: string;
+  graduationYear: string;
   type: string;
   search: string;
 }

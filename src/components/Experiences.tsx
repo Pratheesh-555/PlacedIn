@@ -11,7 +11,7 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences, onExperienceClic
   const [filters, setFilters] = useState<FilterOptions>({
     company: '',
     student: '',
-    year: '',
+    graduationYear: '',
     type: '',
     search: ''
   });
@@ -23,7 +23,7 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences, onExperienceClic
       
       const matchesCompany = !filters.company || exp.company.toLowerCase().includes(filters.company.toLowerCase());
       const matchesStudent = !filters.student || exp.studentName.toLowerCase().includes(filters.student.toLowerCase());
-      const matchesYear = !filters.year || exp.year.toString() === filters.year;
+      const matchesYear = !filters.graduationYear || exp.graduationYear.toString() === filters.graduationYear;
       const matchesType = !filters.type || exp.type === filters.type;
       const matchesSearch = !filters.search || 
         exp.company.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -42,14 +42,14 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences, onExperienceClic
     setFilters({
       company: '',
       student: '',
-      year: '',
+      graduationYear: '',
       type: '',
       search: ''
     });
   };
 
   const uniqueCompanies = [...new Set(experiences.map(exp => exp.company))].sort();
-  const uniqueYears = [...new Set(experiences.map(exp => exp.year))].sort((a, b) => b - a);
+  const uniqueYears = [...new Set(experiences.map(exp => exp.graduationYear))].sort((a, b) => b - a);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -106,10 +106,10 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences, onExperienceClic
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Graduation Year</label>
                   <select
-                    value={filters.year}
-                    onChange={(e) => handleFilterChange('year', e.target.value)}
+                    value={filters.graduationYear}
+                    onChange={(e) => handleFilterChange('graduationYear', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">All Years</option>
@@ -164,7 +164,7 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences, onExperienceClic
                       </div>
                       <div className="flex items-center space-x-1">
                         <Calendar size={14} />
-                        <span>{experience.year}</span>
+                        <span>{experience.graduationYear}</span>
                       </div>
                     </div>
                   </div>

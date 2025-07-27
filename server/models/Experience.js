@@ -20,7 +20,7 @@ const ExperienceSchema = new mongoose.Schema({
     trim: true,
     maxlength: 100
   },
-  year: {
+  graduationYear: {
     type: Number,
     required: true,
     min: 2020,
@@ -32,6 +32,16 @@ const ExperienceSchema = new mongoose.Schema({
     minlength: 100,
     maxlength: 5000
   },
+  documentUrl: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  documentName: {
+    type: String,
+    required: true,
+    trim: true
+  },
   type: {
     type: String,
     required: true,
@@ -40,6 +50,26 @@ const ExperienceSchema = new mongoose.Schema({
   isApproved: {
     type: Boolean,
     default: false
+  },
+  postedBy: {
+    googleId: String,
+    name: String,
+    email: String,
+    picture: String
+  },
+  approvedBy: {
+    googleId: String,
+    name: String,
+    email: String,
+    picture: String
+  },
+  approvedAt: {
+    type: Date
+  },
+  rejectionReason: {
+    type: String,
+    trim: true,
+    maxlength: 500
   }
 }, {
   timestamps: true
@@ -47,9 +77,11 @@ const ExperienceSchema = new mongoose.Schema({
 
 // Indexes for better query performance
 ExperienceSchema.index({ company: 1 });
-ExperienceSchema.index({ year: -1 });
+ExperienceSchema.index({ graduationYear: -1 });
 ExperienceSchema.index({ type: 1 });
 ExperienceSchema.index({ isApproved: 1 });
 ExperienceSchema.index({ createdAt: -1 });
+ExperienceSchema.index({ 'postedBy.googleId': 1 });
+ExperienceSchema.index({ 'approvedBy.googleId': 1 });
 
 export default mongoose.model('Experience', ExperienceSchema);

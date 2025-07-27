@@ -4,18 +4,30 @@ import Navigation from './components/Navigation';
 import Home from './components/Home';
 import PostExperience from './components/PostExperience';
 import Experiences from './components/Experiences';
-import AdminPanel from './components/AdminPanel';
+import AdminVerification from './components/AdminVerification';
 import ExperienceModal from './components/ExperienceModal';
-import { Experience } from './types';
+import ProtectedRoute from './components/ProtectedRoute';
+import { Experience, GoogleUser } from './types';
 import { API_ENDPOINTS } from './config/api';
 
 function App() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<GoogleUser | null>(null);
 
   useEffect(() => {
+    // Check for existing user in localStorage
+    const savedUser = localStorage.getItem('googleUser');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Error parsing saved user:', error);
+        localStorage.removeItem('googleUser');
+      }
+    }
+    
     fetchExperiences();
   }, []);
 
@@ -27,6 +39,14 @@ function App() {
     } catch (error) {
       console.error('Error fetching experiences:', error);
     }
+  };
+
+  const handleLogin = (user: GoogleUser) => {
+    setUser(user);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
   };
 
   const openExperienceModal = (experience: Experience) => {
@@ -42,14 +62,18 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
-        <Navigation user={user} setUser={setUser} />
+        <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} />
         
         <main className="pt-16">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route 
               path="/post" 
-              element={<PostExperience onSuccess={fetchExperiences} />} 
+              element={
+                <ProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
+                  <PostExperience onSuccess={fetchExperiences} user={user} />
+                </ProtectedRoute>
+              } 
             />
             <Route 
               path="/experiences" 
@@ -62,7 +86,11 @@ function App() {
             />
             <Route 
               path="/admin" 
-              element={<AdminPanel onUpdate={fetchExperiences} />} 
+              element={
+                <ProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
+                  <AdminVerification user={user} onUpdate={fetchExperiences} />
+                </ProtectedRoute>
+              } 
             />
           </Routes>
         </main>

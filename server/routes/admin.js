@@ -3,13 +3,22 @@ import Experience from '../models/Experience.js';
 
 const router = express.Router();
 
-// Simple admin authentication middleware (in production, use proper JWT auth)
+// Google OAuth admin authentication middleware
 const authenticateAdmin = (req, res, next) => {
-  // This is a simplified version - implement proper authentication
-  const adminKey = req.headers['admin-key'];
-  if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'admin123') {
-    return res.status(401).json({ error: 'Unauthorized' });
+  // Check if user is authenticated via Google OAuth
+  const user = req.body.postedBy || req.query.user;
+  
+  // Admin emails that have access
+  const adminEmails = [
+    'admin@sastra.ac.in',
+    'admin@example.com',
+    'admin@placedin.com'
+  ];
+  
+  if (!user || !user.email || !adminEmails.includes(user.email)) {
+    return res.status(401).json({ error: 'Unauthorized. Admin access required.' });
   }
+  
   next();
 };
 
@@ -42,7 +51,11 @@ router.put('/experiences/:id/approve', async (req, res) => {
   try {
     const experience = await Experience.findByIdAndUpdate(
       req.params.id,
-      { isApproved: true },
+      { 
+        isApproved: true,
+        approvedBy: req.body.postedBy,
+        approvedAt: new Date()
+      },
       { new: true }
     );
     
@@ -73,6 +86,22 @@ router.delete('/experiences/:id', async (req, res) => {
   }
 });
 
+// Get experience by ID for detailed review
+router.get('/experiences/:id', async (req, res) => {
+  try {
+    const experience = await Experience.findById(req.params.id);
+    
+    if (!experience) {
+      return res.status(404).json({ error: 'Experience not found' });
+    }
+    
+    res.json(experience);
+  } catch (error) {
+    console.error('Error fetching experience:', error);
+    res.status(500).json({ error: 'Failed to fetch experience' });
+  }
+});
+
 // Get dashboard statistics
 router.get('/stats', async (req, res) => {
   try {
@@ -91,12 +120,20 @@ router.get('/stats', async (req, res) => {
       { $limit: 10 }
     ]);
     
-    // Get yearly distribution
+    // Get yearly distribution (using graduationYear)
     const yearlyStats = await Experience.aggregate([
       { $match: { isApproved: true } },
-      { $group: { _id: '$year', count: { $sum: 1 } } },
+      { $group: { _id: '$graduationYear', count: { $sum: 1 } } },
       { $sort: { _id: -1 } }
     ]);
+    
+    // Get recent submissions (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const recentSubmissions = await Experience.countDocuments({
+      createdAt: { $gte: sevenDaysAgo }
+    });
     
     res.json({
       totalExperiences,
@@ -104,12 +141,27 @@ router.get('/stats', async (req, res) => {
       pendingExperiences,
       placementCount,
       internshipCount,
+      recentSubmissions,
       topCompanies: companies,
       yearlyDistribution: yearlyStats
     });
   } catch (error) {
     console.error('Error fetching stats:', error);
     res.status(500).json({ error: 'Failed to fetch statistics' });
+  }
+});
+
+// Get experiences by user (for admin to see user's submissions)
+router.get('/user-experiences/:googleId', async (req, res) => {
+  try {
+    const experiences = await Experience.find({
+      'postedBy.googleId': req.params.googleId
+    }).sort({ createdAt: -1 });
+    
+    res.json(experiences);
+  } catch (error) {
+    console.error('Error fetching user experiences:', error);
+    res.status(500).json({ error: 'Failed to fetch user experiences' });
   }
 });
 

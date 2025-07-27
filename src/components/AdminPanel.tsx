@@ -94,7 +94,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onUpdate }) => {
                     </h3>
                     <div className="flex items-center space-x-4 text-sm text-gray-600">
                       <span>{experience.studentName}</span>
-                      <span>{experience.year}</span>
+                      <span>{experience.graduationYear}</span>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         experience.type === 'placement' 
                           ? 'bg-green-100 text-green-800' 
@@ -161,7 +161,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onUpdate }) => {
                     <h2 className="text-2xl font-bold mb-2">{selectedExperience.company}</h2>
                     <div className="flex items-center space-x-4 text-blue-100">
                       <span>{selectedExperience.studentName}</span>
-                      <span>{selectedExperience.year}</span>
+                      <span>{selectedExperience.graduationYear}</span>
                       <span className="capitalize">{selectedExperience.type}</span>
                     </div>
                   </div>

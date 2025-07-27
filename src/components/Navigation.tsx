@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, PlusCircle, BookOpen, Settings, User, LogOut } from 'lucide-react';
+import GoogleAuth from './GoogleAuth';
+import { GoogleUser } from '../types';
 
 interface NavigationProps {
-  user: any;
-  setUser: (user: any) => void;
+  user: GoogleUser | null;
+  onLogin: (user: GoogleUser) => void;
+  onLogout: () => void;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ user, setUser }) => {
+const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -17,7 +20,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, setUser }) => {
     { path: '/experiences', label: 'Experiences', icon: BookOpen },
   ];
 
-  if (user?.isAdmin) {
+  if (user?.email === 'admin@sastra.ac.in' || user?.email === 'admin@example.com') {
     navItems.push({ path: '/admin', label: 'Admin', icon: Settings });
   }
 
@@ -60,21 +63,26 @@ const Navigation: React.FC<NavigationProps> = ({ user, setUser }) => {
           <div className="hidden md:flex items-center space-x-3">
             {user ? (
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <User size={16} className="text-blue-600" />
-                </div>
-                <span className="text-sm text-gray-700">{user.email}</span>
+                <img 
+                  src={user.picture} 
+                  alt={user.name}
+                  className="w-8 h-8 rounded-full"
+                />
+                <span className="text-sm text-gray-700">{user.name}</span>
                 <button
-                  onClick={() => setUser(null)}
+                  onClick={onLogout}
                   className="text-gray-500 hover:text-red-600 transition-colors"
+                  title="Sign Out"
                 >
                   <LogOut size={18} />
                 </button>
               </div>
             ) : (
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                Sign In
-              </button>
+              <GoogleAuth 
+                user={user}
+                onLogin={onLogin}
+                onLogout={onLogout}
+              />
             )}
           </div>
 
@@ -108,6 +116,39 @@ const Navigation: React.FC<NavigationProps> = ({ user, setUser }) => {
                   <span>{label}</span>
                 </Link>
               ))}
+              
+              {/* Mobile User Section */}
+              <div className="px-4 py-3 border-t border-gray-200">
+                {user ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <img 
+                        src={user.picture} 
+                        alt={user.name}
+                        className="w-8 h-8 rounded-full"
+                      />
+                      <span className="text-sm text-gray-700">{user.name}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        onLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="text-gray-500 hover:text-red-600 transition-colors"
+                    >
+                      <LogOut size={18} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex justify-center">
+                    <GoogleAuth 
+                      user={user}
+                      onLogin={onLogin}
+                      onLogout={onLogout}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
