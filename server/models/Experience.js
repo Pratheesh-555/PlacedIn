@@ -1,0 +1,55 @@
+import mongoose from 'mongoose';
+
+const ExperienceSchema = new mongoose.Schema({
+  studentName: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 100
+  },
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+  },
+  company: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 100
+  },
+  year: {
+    type: Number,
+    required: true,
+    min: 2020,
+    max: 2030
+  },
+  experienceText: {
+    type: String,
+    required: true,
+    minlength: 100,
+    maxlength: 5000
+  },
+  type: {
+    type: String,
+    required: true,
+    enum: ['placement', 'internship']
+  },
+  isApproved: {
+    type: Boolean,
+    default: false
+  }
+}, {
+  timestamps: true
+});
+
+// Indexes for better query performance
+ExperienceSchema.index({ company: 1 });
+ExperienceSchema.index({ year: -1 });
+ExperienceSchema.index({ type: 1 });
+ExperienceSchema.index({ isApproved: 1 });
+ExperienceSchema.index({ createdAt: -1 });
+
+export default mongoose.model('Experience', ExperienceSchema);

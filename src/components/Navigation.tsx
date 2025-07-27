@@ -1,0 +1,119 @@
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, PlusCircle, BookOpen, Settings, User, LogOut } from 'lucide-react';
+
+interface NavigationProps {
+  user: any;
+  setUser: (user: any) => void;
+}
+
+const Navigation: React.FC<NavigationProps> = ({ user, setUser }) => {
+  const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navItems = [
+    { path: '/', label: 'Home', icon: Home },
+    { path: '/post', label: 'Post Experience', icon: PlusCircle },
+    { path: '/experiences', label: 'Experiences', icon: BookOpen },
+  ];
+
+  if (user?.isAdmin) {
+    navItems.push({ path: '/admin', label: 'Admin', icon: Settings });
+  }
+
+  const isActive = (path: string) => location.pathname === path;
+
+  return (
+    <nav className="fixed top-0 left-0 right-0 bg-white shadow-lg z-50 border-b-2 border-blue-600">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-lg">S</span>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-blue-900">SASTRA</h1>
+              <p className="text-xs text-gray-600">Student Portal</p>
+            </div>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navItems.map(({ path, label, icon: Icon }) => (
+              <Link
+                key={path}
+                to={path}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  isActive(path)
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
+                }`}
+              >
+                <Icon size={18} />
+                <span>{label}</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* User Menu */}
+          <div className="hidden md:flex items-center space-x-3">
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <User size={16} className="text-blue-600" />
+                </div>
+                <span className="text-sm text-gray-700">{user.email}</span>
+                <button
+                  onClick={() => setUser(null)}
+                  className="text-gray-500 hover:text-red-600 transition-colors"
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                Sign In
+              </button>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden py-4 border-t border-gray-200">
+            <div className="space-y-2">
+              {navItems.map(({ path, label, icon: Icon }) => (
+                <Link
+                  key={path}
+                  to={path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                    isActive(path)
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-blue-50'
+                  }`}
+                >
+                  <Icon size={20} />
+                  <span>{label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+export default Navigation;
