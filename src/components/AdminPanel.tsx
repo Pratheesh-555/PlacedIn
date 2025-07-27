@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Check, X, Eye, Trash2, AlertCircle } from 'lucide-react';
 import { Experience } from '../types';
+import { API_ENDPOINTS } from '../config/api';
 
 interface AdminPanelProps {
   onUpdate: () => void;
@@ -17,7 +18,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onUpdate }) => {
 
   const fetchPendingExperiences = async () => {
     try {
-      const response = await fetch('/api/admin/pending-experiences');
+      const response = await fetch(`${API_ENDPOINTS.ADMIN}/pending-experiences`);
       const data = await response.json();
       setPendingExperiences(data);
     } catch (error) {
@@ -29,7 +30,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onUpdate }) => {
 
   const handleApprove = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/experiences/${id}/approve`, {
+      const response = await fetch(`${API_ENDPOINTS.ADMIN}/experiences/${id}/approve`, {
         method: 'PUT',
       });
       
@@ -44,7 +45,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onUpdate }) => {
 
   const handleReject = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/experiences/${id}`, {
+      const response = await fetch(`${API_ENDPOINTS.ADMIN}/experiences/${id}`, {
         method: 'DELETE',
       });
       

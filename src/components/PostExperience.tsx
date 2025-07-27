@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Send, AlertCircle, CheckCircle } from 'lucide-react';
+import { API_ENDPOINTS } from '../config/api';
 
 interface PostExperienceProps {
   onSuccess: () => void;
@@ -24,7 +25,7 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess }) => {
     setError('');
 
     try {
-      const response = await fetch('/api/experiences', {
+      const response = await fetch(API_ENDPOINTS.EXPERIENCES, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

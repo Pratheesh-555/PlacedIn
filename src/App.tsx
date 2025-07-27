@@ -7,6 +7,7 @@ import Experiences from './components/Experiences';
 import AdminPanel from './components/AdminPanel';
 import ExperienceModal from './components/ExperienceModal';
 import { Experience } from './types';
+import { API_ENDPOINTS } from './config/api';
 
 function App() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -20,7 +21,7 @@ function App() {
 
   const fetchExperiences = async () => {
     try {
-      const response = await fetch('/api/experiences');
+      const response = await fetch(API_ENDPOINTS.EXPERIENCES);
       const data = await response.json();
       setExperiences(data);
     } catch (error) {
