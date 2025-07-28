@@ -32,11 +32,11 @@ const ExperienceSchema = new mongoose.Schema({
     minlength: 100,
     maxlength: 5000
   },
-  documentUrl: {
-    type: String,
-    required: true,
-    trim: true
-  },
+  document: {
+  data: Buffer,
+  contentType: String
+},
+
   documentName: {
     type: String,
     required: true,

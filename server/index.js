@@ -20,7 +20,7 @@ async function startServer() {
   app.use('/api/admin', adminRouter.default);
 
   // MongoDB connection
-  mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/sastra_portal', {
+  mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })

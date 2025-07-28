@@ -7,19 +7,22 @@ import Experience from '../models/Experience.js';
 const router = express.Router();
 
 // Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = 'uploads/';
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     const uploadDir = 'uploads/';
+//     if (!fs.existsSync(uploadDir)) {
+//       fs.mkdirSync(uploadDir, { recursive: true });
+//     }
+//     cb(null, uploadDir);
+//   },
+//   filename: (req, file, cb) => {
+//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+//     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+//   }
+// });
+
+const storage = multer.memoryStorage();
+
 
 const upload = multer({
   storage: storage,
@@ -63,6 +66,21 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/document', async (req, res) => {
+  try {
+    const experience = await Experience.findById(req.params.id);
+    if (!experience || !experience.document || !experience.document.data) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    res.contentType(experience.document.contentType);
+    res.send(experience.document.data);
+  } catch (error) {
+    console.error('Error serving document:', error);
+    res.status(500).json({ error: 'Failed to fetch document' });
+  }
+});
+
+
 // Upload document
 router.post('/upload', upload.single('document'), async (req, res) => {
   try {
@@ -90,8 +108,7 @@ router.post('/', async (req, res) => {
       email, 
       company, 
       graduationYear, 
-      experienceText, 
-      documentUrl, 
+      experienceText,  
       documentName,
       type,
       postedBy 
@@ -112,17 +129,21 @@ router.post('/', async (req, res) => {
 
     // Create new experience
     const experience = new Experience({
-      studentName: studentName.trim(),
-      email: email.trim().toLowerCase(),
-      company: company.trim(),
-      graduationYear: parseInt(graduationYear),
-      experienceText: experienceText.trim(),
-      documentUrl: documentUrl.trim(),
-      documentName: documentName.trim(),
-      type,
-      postedBy,
-      isApproved: false // Requires admin approval
-    });
+  studentName: studentName.trim(),
+  email: email.trim().toLowerCase(),
+  company: company.trim(),
+  graduationYear: parseInt(graduationYear),
+  experienceText: experienceText.trim(),
+  document: {
+    data: req.file.buffer,
+    contentType: req.file.mimetype
+  },
+  documentName: req.file.originalname.trim(),
+  type,
+  postedBy,
+  isApproved: false
+});
+
 
     await experience.save();
     
