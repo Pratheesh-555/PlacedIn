@@ -12,7 +12,8 @@ const authenticateAdmin = (req, res, next) => {
   const adminEmails = [
     'admin@sastra.ac.in',
     'admin@example.com',
-    'admin@placedin.com'
+    'admin@placedin.com',
+    'pratheeshkrishnan595@gmail.com'  // Replace with your actual email
   ];
   
   if (!user || !user.email || !adminEmails.includes(user.email)) {

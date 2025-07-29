@@ -20,7 +20,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
     { path: '/experiences', label: 'Experiences', icon: BookOpen },
   ];
 
-  if (user?.email === 'admin@sastra.ac.in' || user?.email === 'admin@example.com') {
+  if (user?.email === 'admin@sastra.ac.in' || user?.email === 'admin@example.com' || user?.email === 'pratheeshkrishnan595@gmail.com') {
     navItems.push({ path: '/admin', label: 'Admin', icon: Settings });
   }
 
