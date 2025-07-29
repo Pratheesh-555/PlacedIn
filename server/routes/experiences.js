@@ -88,9 +88,10 @@ router.post('/upload', upload.single('document'), async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const documentUrl = `/uploads/${req.file.filename}`;
+    // Since we're using memory storage, we'll just confirm the upload
+    // The actual file will be saved when the experience is created
     res.json({ 
-      documentUrl,
+      documentUrl: 'temp', // Placeholder since we're using memory storage
       documentName: req.file.originalname,
       message: 'Document uploaded successfully' 
     });
@@ -101,26 +102,24 @@ router.post('/upload', upload.single('document'), async (req, res) => {
 });
 
 // Create new experience
-router.post('/', async (req, res) => {
+router.post('/', upload.single('document'), async (req, res) => {
   try {
     const { 
       studentName, 
       email, 
       company, 
       graduationYear, 
-      experienceText,  
-      documentName,
       type,
       postedBy 
     } = req.body;
 
     // Validation
-    if (!studentName || !email || !company || !graduationYear || !experienceText || !documentUrl || !documentName || !type) {
-      return res.status(400).json({ error: 'All fields are required' });
+    if (!studentName || !email || !company || !graduationYear || !type) {
+      return res.status(400).json({ error: 'All required fields must be provided' });
     }
 
-    if (experienceText.length < 100) {
-      return res.status(400).json({ error: 'Experience text must be at least 100 characters' });
+    if (!req.file) {
+      return res.status(400).json({ error: 'Document upload is required' });
     }
 
     if (!['placement', 'internship'].includes(type)) {
@@ -129,20 +128,20 @@ router.post('/', async (req, res) => {
 
     // Create new experience
     const experience = new Experience({
-  studentName: studentName.trim(),
-  email: email.trim().toLowerCase(),
-  company: company.trim(),
-  graduationYear: parseInt(graduationYear),
-  experienceText: experienceText.trim(),
-  document: {
-    data: req.file.buffer,
-    contentType: req.file.mimetype
-  },
-  documentName: req.file.originalname.trim(),
-  type,
-  postedBy,
-  isApproved: false
-});
+      studentName: studentName.trim(),
+      email: email.trim().toLowerCase(),
+      company: company.trim(),
+      graduationYear: parseInt(graduationYear),
+      experienceText: '', // Optional field, can be empty
+      document: {
+        data: req.file.buffer,
+        contentType: req.file.mimetype
+      },
+      documentName: req.file.originalname.trim(),
+      type,
+      postedBy,
+      isApproved: false
+    });
 
 
     await experience.save();

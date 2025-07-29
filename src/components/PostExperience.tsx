@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, AlertCircle, CheckCircle, Upload, FileText } from 'lucide-react';
+import { Send, AlertCircle, CheckCircle, Upload } from 'lucide-react';
 import { API_ENDPOINTS } from '../config/api';
 import CompanySelector from './CompanySelector';
 import { GoogleUser } from '../types';
@@ -15,7 +15,6 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
     email: user?.email || '',
     company: '',
     graduationYear: new Date().getFullYear(),
-    experienceText: '',
     type: 'placement' as 'placement' | 'internship'
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -35,10 +34,6 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
     if (!formData.studentName.trim()) newErrors.studentName = 'Full name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!formData.company.trim()) newErrors.company = 'Company is required';
-    if (!formData.experienceText.trim()) newErrors.experienceText = 'Experience text is required';
-    if (formData.experienceText.length < 100) {
-      newErrors.experienceText = 'Experience text must be at least 100 characters';
-    }
     if (!selectedFile) newErrors.document = 'Please upload a document';
 
     if (Object.keys(newErrors).length > 0) {
@@ -48,42 +43,30 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
     }
 
     try {
-      // First upload the document
+      // Submit the experience with the file directly
       const formDataFile = new FormData();
       if (selectedFile) {
         formDataFile.append('document', selectedFile);
       }
-
-      const uploadResponse = await fetch(`${API_ENDPOINTS.EXPERIENCES}/upload`, {
-        method: 'POST',
-        body: formDataFile,
+      
+      // Add other form data
+      Object.entries(formData).forEach(([key, value]) => {
+        formDataFile.append(key, value.toString());
       });
-
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload document');
+      
+      // Add user data
+      if (user) {
+        formDataFile.append('postedBy', JSON.stringify({
+          googleId: user.googleId,
+          name: user.name,
+          email: user.email,
+          picture: user.picture
+        }));
       }
-
-      const uploadResult = await uploadResponse.json();
-
-      // Then submit the experience
-             const experienceData = {
-         ...formData,
-         documentUrl: uploadResult.documentUrl,
-         documentName: selectedFile?.name || '',
-         postedBy: {
-           googleId: user?.googleId,
-           name: user?.name,
-           email: user?.email,
-           picture: user?.picture
-         }
-       };
 
       const response = await fetch(API_ENDPOINTS.EXPERIENCES, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(experienceData),
+        body: formDataFile,
       });
 
       if (response.ok) {
@@ -96,7 +79,6 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
             email: user?.email || '',
             company: '',
             graduationYear: new Date().getFullYear(),
-            experienceText: '',
             type: 'placement'
           });
           setSelectedFile(null);
@@ -292,31 +274,6 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
               {errors.document && (
                 <p className="text-red-500 text-sm mt-1">{errors.document}</p>
               )}
-            </div>
-
-            <div>
-              <label htmlFor="experienceText" className="block text-sm font-medium text-gray-700 mb-2">
-                Experience Summary *
-              </label>
-              <textarea
-                id="experienceText"
-                name="experienceText"
-                value={formData.experienceText}
-                onChange={handleChange}
-                rows={6}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                  errors.experienceText ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Provide a brief summary of your experience (minimum 100 characters)..."
-              />
-              <div className="flex justify-between items-center mt-2">
-                <span className="text-sm text-gray-500">
-                  {formData.experienceText.length}/5000 characters
-                </span>
-                {errors.experienceText && (
-                  <span className="text-red-500 text-sm">{errors.experienceText}</span>
-                )}
-              </div>
             </div>
 
             {error && (

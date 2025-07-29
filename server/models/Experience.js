@@ -28,8 +28,8 @@ const ExperienceSchema = new mongoose.Schema({
   },
   experienceText: {
     type: String,
-    required: true,
-    minlength: 100,
+    required: false,
+    minlength: 0,
     maxlength: 5000
   },
   document: {
