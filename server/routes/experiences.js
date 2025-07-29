@@ -104,6 +104,14 @@ router.post('/upload', upload.single('document'), async (req, res) => {
 // Create new experience
 router.post('/', upload.single('document'), async (req, res) => {
   try {
+    console.log('Received POST request to create experience');
+    console.log('Request body:', req.body);
+    console.log('Request file:', req.file ? { 
+      originalname: req.file.originalname, 
+      mimetype: req.file.mimetype, 
+      size: req.file.size 
+    } : 'No file');
+    
     const { 
       studentName, 
       email, 
@@ -115,19 +123,34 @@ router.post('/', upload.single('document'), async (req, res) => {
 
     // Validation
     if (!studentName || !email || !company || !graduationYear || !type) {
+      console.log('Missing required fields:', { studentName: !!studentName, email: !!email, company: !!company, graduationYear: !!graduationYear, type: !!type });
       return res.status(400).json({ error: 'All required fields must be provided' });
     }
 
     if (!req.file) {
+      console.log('No file uploaded');
       return res.status(400).json({ error: 'Document upload is required' });
     }
 
     if (!['placement', 'internship'].includes(type)) {
+      console.log('Invalid type:', type);
       return res.status(400).json({ error: 'Type must be either placement or internship' });
     }
 
+    // Parse postedBy if it's a string
+    let parsedPostedBy = postedBy;
+    if (typeof postedBy === 'string') {
+      try {
+        parsedPostedBy = JSON.parse(postedBy);
+        console.log('Parsed postedBy:', parsedPostedBy);
+      } catch (parseError) {
+        console.error('Error parsing postedBy:', parseError);
+        parsedPostedBy = null;
+      }
+    }
+
     // Create new experience
-    const experience = new Experience({
+    const experienceData = {
       studentName: studentName.trim(),
       email: email.trim().toLowerCase(),
       company: company.trim(),
@@ -139,12 +162,17 @@ router.post('/', upload.single('document'), async (req, res) => {
       },
       documentName: req.file.originalname.trim(),
       type,
-      postedBy,
+      postedBy: parsedPostedBy,
       isApproved: false
-    });
+    };
+    
+    console.log('Creating experience with data:', { ...experienceData, document: { ...experienceData.document, data: '[Buffer]' } });
+    
+    const experience = new Experience(experienceData);
 
 
     await experience.save();
+    console.log('Experience saved successfully with ID:', experience._id);
     
     res.status(201).json({ 
       message: 'Experience submitted successfully. It will be reviewed and published soon.',
@@ -152,6 +180,13 @@ router.post('/', upload.single('document'), async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating experience:', error);
+    console.error('Request body:', req.body);
+    console.error('Request file:', req.file ? { 
+      originalname: req.file.originalname, 
+      mimetype: req.file.mimetype, 
+      size: req.file.size 
+    } : 'No file');
+    
     if (error.name === 'ValidationError') {
       return res.status(400).json({ error: error.message });
     }
