@@ -22,6 +22,7 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +44,7 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
     }
 
     try {
-      // Submit the experience with the file directly
+      // Submit the experience with the file directly using XMLHttpRequest for progress
       const formDataFile = new FormData();
       if (selectedFile) {
         formDataFile.append('document', selectedFile);
@@ -64,29 +65,47 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
         }));
       }
 
-      const response = await fetch(API_ENDPOINTS.EXPERIENCES, {
-        method: 'POST',
-        body: formDataFile,
-      });
+      // Use XMLHttpRequest for upload progress
+      const xhr = new XMLHttpRequest();
+      
+      return new Promise((resolve, reject) => {
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = (event.loaded / event.total) * 100;
+            setUploadProgress(Math.round(percentComplete));
+          }
+        });
 
-      if (response.ok) {
-        setSubmitted(true);
-        onSuccess();
-        setTimeout(() => {
-          setSubmitted(false);
-          setFormData({
-            studentName: user?.name || '',
-            email: user?.email || '',
-            company: '',
-            graduationYear: new Date().getFullYear(),
-            type: 'placement'
-          });
-          setSelectedFile(null);
-        }, 3000);
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit experience');
-      }
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            setSubmitted(true);
+            onSuccess();
+            setTimeout(() => {
+              setSubmitted(false);
+              setFormData({
+                studentName: user?.name || '',
+                email: user?.email || '',
+                company: '',
+                graduationYear: new Date().getFullYear(),
+                type: 'placement'
+              });
+              setSelectedFile(null);
+              setUploadProgress(0);
+            }, 3000);
+            resolve(xhr.response);
+          } else {
+            const errorData = JSON.parse(xhr.responseText);
+            throw new Error(errorData.error || 'Failed to submit experience');
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('Network error occurred'));
+        });
+
+        xhr.open('POST', API_ENDPOINTS.EXPERIENCES);
+        xhr.send(formDataFile);
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit experience. Please try again.');
     } finally {
@@ -253,7 +272,11 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
               <label htmlFor="document" className="block text-sm font-medium text-gray-700 mb-2">
                 Upload Experience Document *
               </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+              <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-300 ${
+                selectedFile 
+                  ? 'border-green-400 bg-green-50' 
+                  : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+              }`}>
                 <input
                   type="file"
                   id="document"
@@ -262,13 +285,32 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
                   className="hidden"
                 />
                 <label htmlFor="document" className="cursor-pointer">
-                  <Upload size={48} className="mx-auto text-gray-400 mb-4" />
-                  <p className="text-lg font-medium text-gray-700 mb-2">
-                    {selectedFile ? selectedFile.name : 'Click to upload document'}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    PDF or Word document (max 5MB)
-                  </p>
+                  {selectedFile ? (
+                    <div className="animate-pulse">
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Upload size={24} className="text-green-600" />
+                      </div>
+                      <p className="text-lg font-medium text-green-700 mb-2">
+                        ✓ {selectedFile.name}
+                      </p>
+                      <p className="text-sm text-green-600">
+                        File ready for upload ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Click to change file
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <Upload size={48} className="mx-auto text-gray-400 mb-4" />
+                      <p className="text-lg font-medium text-gray-700 mb-2">
+                        Click to upload document
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        PDF or Word document (max 5MB)
+                      </p>
+                    </div>
+                  )}
                 </label>
               </div>
               {errors.document && (
@@ -283,6 +325,23 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
               </div>
             )}
 
+            {/* Upload Progress Bar */}
+            {isSubmitting && uploadProgress > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-blue-700">Uploading...</span>
+                  <span className="text-sm font-medium text-blue-700">{uploadProgress}%</span>
+                </div>
+                <div className="w-full bg-blue-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${uploadProgress}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-blue-600 mt-2">Please wait while we upload your document...</p>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={isSubmitting}
@@ -291,7 +350,7 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Submitting...</span>
+                  <span>{uploadProgress > 0 ? `Uploading... ${uploadProgress}%` : 'Submitting...'}</span>
                 </>
               ) : (
                 <>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { GoogleUser } from '../types';
 
 interface GoogleAuthProps {
@@ -9,47 +9,23 @@ interface GoogleAuthProps {
 
 declare global {
   interface Window {
-    google: any;
+    google: {
+      accounts: {
+        id: {
+          initialize: (config: unknown) => void;
+          renderButton: (element: HTMLElement | null, options: unknown) => void;
+          disableAutoSelect: () => void;
+          revoke: (email: string, callback: () => void) => void;
+        };
+      };
+    };
   }
 }
 
 const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    // Load Google OAuth script
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
-
-    script.onload = () => {
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        callback: handleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-      });
-      console.log(import.meta.env.VITE_GOOGLE_CLIENT_ID);
-
-      window.google.accounts.id.renderButton(
-        document.getElementById('google-signin-button'),
-        { 
-          theme: 'outline', 
-          size: 'large',
-          text: 'signin_with',
-          shape: 'rectangular'
-        }
-      );
-    };
-
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
-
-  const handleCredentialResponse = async (response: any) => {
+  const handleCredentialResponse = useCallback(async (response: { credential: string }) => {
     setIsLoading(true);
     try {
       // Decode the JWT token to get user info
@@ -70,14 +46,57 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onLogin]);
+
+  useEffect(() => {
+    // Load Google OAuth script
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+
+    script.onload = () => {
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+      console.log(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+
+      // Disable auto-select to prevent automatic login
+      window.google.accounts.id.disableAutoSelect();
+
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-signin-button'),
+        { 
+          theme: 'outline', 
+          size: 'large',
+          text: 'signin_with',
+          shape: 'rectangular'
+        }
+      );
+    };
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, [handleCredentialResponse]);
 
   const handleLogout = () => {
+    // Clear localStorage
     localStorage.removeItem('googleUser');
-    onLogout();
+    
+    // Disable auto-select and revoke Google session
     if (window.google) {
       window.google.accounts.id.disableAutoSelect();
+      window.google.accounts.id.revoke(user?.email || '', () => {
+        console.log('Google session revoked');
+      });
     }
+    
+    onLogout();
   };
 
   if (user) {

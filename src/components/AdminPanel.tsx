@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, X, Eye, Trash2, AlertCircle } from 'lucide-react';
+import { Check, X, Eye } from 'lucide-react';
 import { Experience } from '../types';
 import { API_ENDPOINTS } from '../config/api';
 

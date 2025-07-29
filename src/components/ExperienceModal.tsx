@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Calendar, User, Building2, Tag } from 'lucide-react';
+import { X, Calendar, User, Tag } from 'lucide-react';
 import { Experience } from '../types';
 
 interface ExperienceModalProps {
@@ -23,7 +23,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, onClose }
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar size={16} />
-                  <span>{experience.year}</span>
+                  <span>{experience.graduationYear}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Tag size={16} />

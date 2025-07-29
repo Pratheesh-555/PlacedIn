@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Search, X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import { companies, Company } from '../data/companies';
 
 interface CompanySelectorProps {
@@ -54,8 +54,6 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({ value, onChange, erro
     setSearchQuery('');
     setIsOpen(false);
   };
-
-  const selectedCompany = companies.find(company => company.name === value);
 
   return (
     <div className="relative" ref={dropdownRef}>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, PlusCircle, BookOpen, Settings, User, LogOut } from 'lucide-react';
+import { Home, PlusCircle, BookOpen, Settings, LogOut } from 'lucide-react';
 import GoogleAuth from './GoogleAuth';
 import { GoogleUser } from '../types';
 
@@ -14,13 +14,15 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const isAdmin = user?.email === 'admin@sastra.ac.in' || user?.email === 'admin@example.com' || user?.email === 'pratheeshkrishnan595@gmail.com';
+
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
-    { path: '/post', label: 'Post Experience', icon: PlusCircle },
+    ...(isAdmin ? [] : [{ path: '/post', label: 'Post Experience', icon: PlusCircle }]),
     { path: '/experiences', label: 'Experiences', icon: BookOpen },
   ];
 
-  if (user?.email === 'admin@sastra.ac.in' || user?.email === 'admin@example.com' || user?.email === 'pratheeshkrishnan595@gmail.com') {
+  if (isAdmin) {
     navItems.push({ path: '/admin', label: 'Admin', icon: Settings });
   }
 

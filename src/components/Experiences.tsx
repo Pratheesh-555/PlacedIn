@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Building2, Calendar, User, Tag, Eye } from 'lucide-react';
+import { Search, Filter, Calendar, User, Eye } from 'lucide-react';
 import { Experience, FilterOptions } from '../types';
 
 interface ExperiencesProps {

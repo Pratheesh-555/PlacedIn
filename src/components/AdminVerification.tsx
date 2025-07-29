@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, X, Eye, Download, Calendar, User, Building2, FileText, AlertCircle } from 'lucide-react';
+import { Check, X, Eye, Download, Calendar, User, AlertCircle } from 'lucide-react';
 import { Experience, GoogleUser } from '../types';
 import { API_ENDPOINTS } from '../config/api';
 
@@ -107,10 +107,17 @@ const AdminVerification: React.FC<AdminVerificationProps> = ({ user, onUpdate })
   };
 
   const downloadDocument = (experience: Experience) => {
+    const documentUrl = `${API_ENDPOINTS.EXPERIENCES}/${experience._id}/document`;
+    window.open(documentUrl, '_blank', 'width=800,height=600,scrollbars=yes,toolbar=no,menubar=no');
+  };
+
+  const downloadDocumentFile = (experience: Experience) => {
     const link = document.createElement('a');
-    link.href = `${API_ENDPOINTS.EXPERIENCES.replace('/api/experiences', '')}${experience.documentUrl}`;
+    link.href = `${API_ENDPOINTS.EXPERIENCES}/${experience._id}/document`;
     link.download = experience.documentName;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   if (loading) {
@@ -190,6 +197,15 @@ const AdminVerification: React.FC<AdminVerificationProps> = ({ user, onUpdate })
                 <div className="flex items-center space-x-3 mb-4">
                   <button
                     onClick={() => downloadDocument(experience)}
+                    className="flex items-center space-x-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                    title="View Document"
+                  >
+                    <Eye size={16} />
+                    <span className="text-xs">View PDF</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => downloadDocumentFile(experience)}
                     className="flex items-center space-x-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                     title="Download Document"
                   >
@@ -199,7 +215,7 @@ const AdminVerification: React.FC<AdminVerificationProps> = ({ user, onUpdate })
                   
                   <button
                     onClick={() => setSelectedExperience(experience)}
-                    className="flex items-center space-x-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                    className="flex items-center space-x-2 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
                   >
                     <Eye size={16} />
                     <span>View Full</span>
@@ -283,13 +299,23 @@ const AdminVerification: React.FC<AdminVerificationProps> = ({ user, onUpdate })
                     </div>
                     <div>
                       <span className="font-medium text-gray-600">Document:</span>
-                      <button
-                        onClick={() => downloadDocument(selectedExperience)}
-                        className="ml-2 text-blue-600 hover:underline flex items-center space-x-1"
-                      >
-                        <FileText size={14} />
-                        <span>{selectedExperience.documentName}</span>
-                      </button>
+                      <div className="ml-2 flex items-center space-x-2">
+                        <button
+                          onClick={() => downloadDocument(selectedExperience)}
+                          className="text-blue-600 hover:underline flex items-center space-x-1"
+                        >
+                          <Eye size={14} />
+                          <span>View PDF</span>
+                        </button>
+                        <button
+                          onClick={() => downloadDocumentFile(selectedExperience)}
+                          className="text-green-600 hover:underline flex items-center space-x-1"
+                        >
+                          <Download size={14} />
+                          <span>Download</span>
+                        </button>
+                        <span className="text-gray-500">({selectedExperience.documentName})</span>
+                      </div>
                     </div>
                   </div>
                 </div>

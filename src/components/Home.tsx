@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { PlusCircle, BookOpen, TrendingUp, Users, Building2, Calendar } from 'lucide-react';
+import { PlusCircle, BookOpen, TrendingUp, Users, Building2 } from 'lucide-react';
 import { companies } from '../data/companies';
 
 const Home: React.FC = () => {
