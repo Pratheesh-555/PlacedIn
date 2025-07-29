@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Filter, Calendar, User, Eye } from 'lucide-react';
 import { Experience, FilterOptions } from '../types';
+import { API_ENDPOINTS } from '../config/api';
 
 interface ExperiencesProps {
   experiences: Experience[];
@@ -16,6 +17,17 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences, onExperienceClic
     search: ''
   });
   const [showFilters, setShowFilters] = useState(false);
+
+  // Function to open PDF document directly
+  const openPDF = (experience: Experience) => {
+    const documentUrl = `${API_ENDPOINTS.EXPERIENCES}/${experience._id}/document`;
+    try {
+      window.open(documentUrl, '_blank', 'width=800,height=600,scrollbars=yes,toolbar=no,menubar=no');
+    } catch (error) {
+      console.error('Error opening PDF:', error);
+      alert('Unable to open document. Please try again.');
+    }
+  };
 
   const filteredExperiences = useMemo(() => {
     return experiences.filter(exp => {
@@ -151,7 +163,7 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences, onExperienceClic
             <div
               key={experience._id}
               className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:scale-105"
-              onClick={() => onExperienceClick(experience)}
+              onClick={() => openPDF(experience)}
             >
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -185,10 +197,16 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences, onExperienceClic
                   <div className="text-xs text-gray-500">
                     {new Date(experience.createdAt || '').toLocaleDateString()}
                   </div>
-                  <div className="flex items-center space-x-1 text-blue-600 text-sm font-medium">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openPDF(experience);
+                    }}
+                    className="flex items-center space-x-1 text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors"
+                  >
                     <Eye size={14} />
-                    <span>Read More</span>
-                  </div>
+                    <span>View Document</span>
+                  </button>
                 </div>
               </div>
             </div>

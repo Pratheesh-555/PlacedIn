@@ -107,13 +107,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
   };
 
   const viewDocument = (experience: Experience) => {
-    const documentUrl = `${API_ENDPOINTS.EXPERIENCES}/${experience._id}/document`;
+    const documentUrl = `${API_ENDPOINTS.ADMIN}/document/${experience._id}`;
     window.open(documentUrl, '_blank', 'width=800,height=600,scrollbars=yes,toolbar=no,menubar=no');
   };
 
   const downloadDocument = (experience: Experience) => {
     const link = document.createElement('a');
-    link.href = `${API_ENDPOINTS.EXPERIENCES}/${experience._id}/document`;
+    link.href = `${API_ENDPOINTS.ADMIN}/document/${experience._id}`;
     link.download = experience.documentName;
     document.body.appendChild(link);
     link.click();

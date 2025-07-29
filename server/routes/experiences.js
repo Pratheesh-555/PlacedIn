@@ -72,6 +72,12 @@ router.get('/:id/document', async (req, res) => {
     if (!experience || !experience.document || !experience.document.data) {
       return res.status(404).json({ error: 'Document not found' });
     }
+
+    // Only allow access to approved experiences
+    if (!experience.isApproved) {
+      return res.status(403).json({ error: 'Document access denied. Experience not yet approved.' });
+    }
+
     res.contentType(experience.document.contentType);
     res.send(experience.document.data);
   } catch (error) {
@@ -163,7 +169,7 @@ router.post('/', upload.single('document'), async (req, res) => {
       documentName: req.file.originalname.trim(),
       type,
       postedBy: parsedPostedBy,
-      isApproved: false
+      isApproved: false // Normal workflow: requires admin approval
     };
     
     console.log('Creating experience with data:', { ...experienceData, document: { ...experienceData.document, data: '[Buffer]' } });

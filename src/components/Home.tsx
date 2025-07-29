@@ -153,13 +153,6 @@ const Home: React.FC = () => {
           <p className="text-xl text-blue-100 mb-8">
             Your experience could be the key to someone else's success. Join our community today.
           </p>
-          <Link
-            to="/post"
-            className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 shadow-lg inline-flex items-center space-x-2"
-          >
-            <PlusCircle size={24} />
-            <span>Get Started</span>
-          </Link>
         </div>
       </section>
     </div>

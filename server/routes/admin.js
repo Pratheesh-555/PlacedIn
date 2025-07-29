@@ -166,4 +166,20 @@ router.get('/user-experiences/:googleId', async (req, res) => {
   }
 });
 
+// Admin route to access any document (approved or pending)
+router.get('/document/:id', async (req, res) => {
+  try {
+    const experience = await Experience.findById(req.params.id);
+    if (!experience || !experience.document || !experience.document.data) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    res.contentType(experience.document.contentType);
+    res.send(experience.document.data);
+  } catch (error) {
+    console.error('Error serving admin document:', error);
+    res.status(500).json({ error: 'Failed to fetch document' });
+  }
+});
+
 export default router;
