@@ -200,8 +200,34 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences, onExperienceClic
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search size={32} className="text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No experiences found</h3>
-            <p className="text-gray-500">Try adjusting your search criteria or filters</p>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+              {experiences.length === 0 ? 'No experiences shared yet' : 'No experiences match your filters'}
+            </h3>
+            <p className="text-gray-500 mb-6">
+              {experiences.length === 0 
+                ? 'Be the first to share your placement or internship journey with fellow students!'
+                : 'Try adjusting your search criteria or filters'
+              }
+            </p>
+            {experiences.length === 0 && (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200 max-w-md mx-auto">
+                <div className="flex items-center justify-center mb-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <User size={16} className="text-blue-600" />
+                  </div>
+                </div>
+                <h4 className="font-semibold text-blue-900 mb-2">Share Your Experience</h4>
+                <p className="text-sm text-blue-700 mb-4">
+                  Help other students by sharing your placement or internship experience. Your story could inspire someone!
+                </p>
+                <a 
+                  href="/post-experience" 
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Share Your Story
+                </a>
+              </div>
+            )}
           </div>
         )}
       </div>
