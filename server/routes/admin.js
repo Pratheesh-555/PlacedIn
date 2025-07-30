@@ -13,7 +13,8 @@ const authenticateAdmin = (req, res, next) => {
     'admin@sastra.ac.in',
     'admin@example.com',
     'poreddysaivaishnavi@gmail.com',
-    'pratheeshkrishnan595@gmail.com'  // Replace with your actual email
+    'pratheeshkrishnan595@gmail.com',
+    'saivaishnaviharinathp12@gmail.com'  // Replace with your actual email
   ];
   
   if (!user || !user.email || !adminEmails.includes(user.email)) {
