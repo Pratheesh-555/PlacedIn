@@ -84,19 +84,32 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
                 user={user}
                 onLogin={onLogin}
                 onLogout={onLogout}
+                isMobile={false}
               />
             )}
           </div>
 
           {/* Mobile menu button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          <div className="md:hidden flex items-center space-x-2">
+            {!user && (
+              <div className="mr-2">
+                <GoogleAuth 
+                  user={user}
+                  onLogin={onLogin}
+                  onLogout={onLogout}
+                  isMobile={true}
+                />
+              </div>
+            )}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -142,12 +155,8 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
                     </button>
                   </div>
                 ) : (
-                  <div className="flex justify-center">
-                    <GoogleAuth 
-                      user={user}
-                      onLogin={onLogin}
-                      onLogout={onLogout}
-                    />
+                  <div className="text-center text-gray-500 text-sm">
+                    Please sign in using the button above to access more features
                   </div>
                 )}
               </div>

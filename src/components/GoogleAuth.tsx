@@ -5,6 +5,7 @@ interface GoogleAuthProps {
   onLogin: (user: GoogleUser) => void;
   onLogout: () => void;
   user: GoogleUser | null;
+  isMobile?: boolean;
 }
 
 declare global {
@@ -22,7 +23,7 @@ declare global {
   }
 }
 
-const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
+const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user, isMobile = false }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCredentialResponse = useCallback(async (response: { credential: string }) => {
@@ -72,9 +73,11 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
         document.getElementById('google-signin-button'),
         { 
           theme: 'outline', 
-          size: 'large',
+          size: isMobile ? 'medium' : 'large',
           text: 'signin_with',
-          shape: 'rectangular'
+          shape: 'rectangular',
+          width: isMobile ? 200 : 250,
+          locale: 'en'
         }
       );
     };
@@ -121,10 +124,14 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
   }
 
   return (
-    <div className="flex items-center space-x-4">
-      <div id="google-signin-button"></div>
+    <div className={`flex items-center ${isMobile ? 'justify-end' : 'justify-center'} ${isMobile ? 'w-auto' : 'w-full'}`}>
+      <div 
+        id="google-signin-button" 
+        className={`${isMobile ? 'w-auto' : 'w-full max-w-xs'}`}
+        style={{ minHeight: '40px' }}
+      ></div>
       {isLoading && (
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 ml-2"></div>
       )}
     </div>
   );
