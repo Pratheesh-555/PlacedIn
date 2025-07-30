@@ -12,7 +12,7 @@ const authenticateAdmin = (req, res, next) => {
   const adminEmails = [
     'admin@sastra.ac.in',
     'admin@example.com',
-    'admin@placedin.com',
+    'poreddysaivaishnavi@gmail.com',
     'pratheeshkrishnan595@gmail.com'  // Replace with your actual email
   ];
   
