@@ -5,10 +5,9 @@ import { API_ENDPOINTS } from '../config/api';
 
 interface ExperiencesProps {
   experiences: Experience[];
-  onExperienceClick: (experience: Experience) => void;
 }
 
-const Experiences: React.FC<ExperiencesProps> = ({ experiences, onExperienceClick }) => {
+const Experiences: React.FC<ExperiencesProps> = ({ experiences }) => {
   const [filters, setFilters] = useState<FilterOptions>({
     company: '',
     student: '',

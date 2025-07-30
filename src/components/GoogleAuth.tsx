@@ -5,7 +5,6 @@ interface GoogleAuthProps {
   onLogin: (user: GoogleUser) => void;
   onLogout: () => void;
   user: GoogleUser | null;
-  isMobile?: boolean;
 }
 
 declare global {
@@ -23,7 +22,7 @@ declare global {
   }
 }
 
-const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user, isMobile = false }) => {
+const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCredentialResponse = useCallback(async (response: { credential: string }) => {
@@ -73,10 +72,10 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user, isMobi
         document.getElementById('google-signin-button'),
         { 
           theme: 'outline', 
-          size: isMobile ? 'medium' : 'large',
+          size: 'large',
           text: 'signin_with',
           shape: 'rectangular',
-          width: isMobile ? 200 : 250,
+          width: 250,
           locale: 'en'
         }
       );
@@ -124,10 +123,10 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user, isMobi
   }
 
   return (
-    <div className={`flex items-center ${isMobile ? 'justify-end' : 'justify-center'} ${isMobile ? 'w-auto' : 'w-full'}`}>
+    <div className="flex items-center justify-center w-full">
       <div 
         id="google-signin-button" 
-        className={`${isMobile ? 'w-auto' : 'w-full max-w-xs'}`}
+        className="w-full max-w-xs"
         style={{ minHeight: '40px' }}
       ></div>
       {isLoading && (
