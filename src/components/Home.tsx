@@ -144,15 +144,43 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Footer Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-blue-600">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-6">
-            Ready to Share Your Journey?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Your experience could be the key to someone else's success. Join our community today.
-          </p>
+          {/* Made with love section */}
+          <div className="flex items-center justify-center space-x-2 mb-6">
+            <span className="text-blue-100 text-lg">Made with</span>
+            <div className="w-6 h-6 text-sky-300 animate-pulse">
+              ❤️
+            </div>
+            <span className="text-blue-100 text-lg">by the PlacedIn Team</span>
+          </div>
+
+          {/* Copyright section */}
+          <div className="text-blue-200 text-base mb-4">
+            © 2025 PlacedIn. All rights reserved.
+          </div>
+
+          {/* Additional info */}
+          <div className="text-blue-300 text-sm max-w-md mx-auto mb-6">
+            Empowering students to share their placement and internship experiences 
+            to help others succeed in their career journey.
+          </div>
+
+          {/* Optional links section */}
+          <div className="flex items-center justify-center space-x-6 text-sm text-blue-200">
+            <button className="hover:text-white transition-colors">
+              Privacy Policy
+            </button>
+            <span className="text-blue-400">•</span>
+            <button className="hover:text-white transition-colors">
+              Terms of Service
+            </button>
+            <span className="text-blue-400">•</span>
+            <button className="hover:text-white transition-colors">
+              Contact Us
+            </button>
+          </div>
         </div>
       </section>
     </div>
