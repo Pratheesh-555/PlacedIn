@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, PlusCircle, BookOpen, Settings, LogOut } from 'lucide-react';
 import GoogleAuth from '../GoogleAuth';
+import NotificationBell from './NotificationBell';
 import { GoogleUser } from '../../types';
 
 interface NavigationProps {
@@ -30,7 +31,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white shadow-lg z-50 border-b-2 border-blue-600">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
@@ -62,7 +63,8 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
           </div>
 
           {/* User Menu */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden md:flex items-center space-x-4">
+            {user && <NotificationBell />}
             {user ? (
               <div className="flex items-center space-x-2">
                 <img 
@@ -70,7 +72,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
                   alt={user.name}
                   className="w-8 h-8 rounded-full"
                 />
-                <span className="text-sm text-gray-700">{user.name}</span>
+                <span className="text-sm text-gray-700 max-w-32 truncate">{user.name}</span>
                 <button
                   onClick={onLogout}
                   className="text-gray-500 hover:text-red-600 transition-colors"
@@ -89,24 +91,48 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-2">
-            {!user && (
-              <div className="mr-2">
-                <GoogleAuth 
-                  user={user}
-                  onLogin={onLogin}
-                  onLogout={onLogout}
-                />
-              </div>
-            )}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+          <div className="md:hidden">
+            <div className="flex items-center space-x-2">
+              {/* Always show Google Auth for mobile when not logged in */}
+              {!user && (
+                <div className="flex-shrink-0">
+                  <GoogleAuth 
+                    user={user}
+                    onLogin={onLogin}
+                    onLogout={onLogout}
+                  />
+                </div>
+              )}
+              
+              {/* Show user info and notification bell when logged in */}
+              {user && (
+                <div className="flex items-center space-x-2 flex-shrink-0">
+                  <NotificationBell />
+                  <img 
+                    src={user.picture} 
+                    alt={user.name}
+                    className="w-7 h-7 rounded-full"
+                  />
+                  <button
+                    onClick={onLogout}
+                    className="text-gray-500 hover:text-red-600 transition-colors p-1"
+                    title="Sign Out"
+                  >
+                    <LogOut size={14} />
+                  </button>
+                </div>
+              )}
+              
+              {/* Mobile menu toggle button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 flex-shrink-0 ml-2"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 

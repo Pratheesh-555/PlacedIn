@@ -57,6 +57,9 @@ const RatingPopup: React.FC = () => {
   const [rating, setRating] = useState<number | null>(2);
 
   useEffect(() => {
+    // Temporarily disable rating popup - admin will handle feedback requests manually
+    return;
+    
     // Check if user has visited before
     const hasVisited = localStorage.getItem('hasVisitedPlacedIn');
     const hasRated = localStorage.getItem('hasRatedPlacedIn');
