@@ -10,17 +10,26 @@ async function startServer() {
 
   // Middleware
   app.use(cors({
-  origin: "https://placedin.netlify.app", // Your frontend URL
-  credentials: true
-}));
+    origin: [
+      "https://placedin.netlify.app", // Production URL
+      "http://localhost:5173",        // Local development
+      "http://localhost:5174",        // Alternate local port
+      "http://localhost:5175"         // Another alternate local port
+    ],
+    credentials: true
+  }));
   app.use(express.json());
 
   // Routes - using dynamic imports for ES modules
   const experiencesRouter = await import('./routes/experiences.js');
   const adminRouter = await import('./routes/admin.js');
+  const ratingsRouter = await import('./routes/ratings.js');
+  const analyticsRouter = await import('./routes/analytics.js');
 
   app.use('/api/experiences', experiencesRouter.default);
   app.use('/api/admin', adminRouter.default);
+  app.use('/api/ratings', ratingsRouter.default);
+  app.use('/api/analytics', analyticsRouter.default);
 
   // MongoDB connection
   mongoose.connect(process.env.MONGODB_URI, {

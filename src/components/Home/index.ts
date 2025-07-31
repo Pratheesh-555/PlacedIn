@@ -1,0 +1,5 @@
+// Home components - clean exports
+export { default as Home } from './Home';
+export { default as Navigation } from './Navigation';
+export { default as RatingPopup } from './RatingPopup';
+export { default as Footer } from './Footer';

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { PlusCircle, BookOpen, TrendingUp, Users, Building2 } from 'lucide-react';
-import { companies } from '../data/companies';
 
 const Home: React.FC = () => {
   const stats = [
@@ -54,51 +53,6 @@ const Home: React.FC = () => {
                 <div className="text-gray-600 font-medium">{label}</div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Companies Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-blue-900 mb-4">
-            Some Proud Employers of SASTRA Graduates
-          </h2>
-          <p className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-            Our alumni have successfully secured positions at leading companies worldwide
-          </p>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            {companies.slice(0, 24).map((company) => (
-              <div 
-                key={company.id} 
-                className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center"
-              >
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center mb-2 mx-auto shadow-sm">
-                    <img 
-                      src={company.logo} 
-                      alt={company.name}
-                      className="w-12 h-12 object-contain"
-                      onError={(e) => {
-                        // Fallback to company name if image fails to load
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.nextElementSibling!.textContent = company.name.substring(0, 2).toUpperCase();
-                      }}
-                    />
-                    <span className="text-xs font-semibold text-gray-600 hidden"></span>
-                  </div>
-                  <p className="text-xs text-gray-700 font-medium truncate">{company.name}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="text-center mt-8">
-            <p className="text-gray-500 text-sm">
-              And many more companies...
-            </p>
           </div>
         </div>
       </section>

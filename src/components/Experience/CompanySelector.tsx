@@ -1,6 +1,44 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, X } from 'lucide-react';
-import { companies, Company } from '../data/companies';
+
+interface Company {
+  id: string;
+  name: string;
+}
+
+// Simple inline companies list for immediate functionality
+const companies: Company[] = [
+  { id: 'tcs', name: 'TCS' },
+  { id: 'infosys', name: 'Infosys' },
+  { id: 'wipro', name: 'Wipro' },
+  { id: 'accenture', name: 'Accenture' },
+  { id: 'cognizant', name: 'Cognizant' },
+  { id: 'microsoft', name: 'Microsoft' },
+  { id: 'google', name: 'Google' },
+  { id: 'amazon', name: 'Amazon' },
+  { id: 'oracle', name: 'Oracle' },
+  { id: 'ibm', name: 'IBM' },
+  { id: 'deloitte', name: 'Deloitte' },
+  { id: 'pwc', name: 'PWC' },
+  { id: 'ey', name: 'E&Y' },
+  { id: 'tech-mahindra', name: 'Tech Mahindra' },
+  { id: 'lt-infotech', name: 'L&T Infotech' },
+  { id: 'mindtree', name: 'Mindtree' },
+  { id: 'mphasis', name: 'Mphasis' },
+  { id: 'capgemini', name: 'Capgemini' },
+  { id: 'hcl', name: 'HCL Technologies' },
+  { id: 'cts', name: 'Cognizant Technology Solutions' },
+  { id: 'freshworks', name: 'Freshworks' },
+  { id: 'zoho', name: 'ZOHO' },
+  { id: 'paypal', name: 'PayPal' },
+  { id: 'cisco', name: 'Cisco' },
+  { id: 'salesforce', name: 'Salesforce' },
+  { id: 'vmware', name: 'VMware' },
+  { id: 'adobe', name: 'Adobe' },
+  { id: 'dell', name: 'Dell' },
+  { id: 'hp', name: 'HP' },
+  { id: 'other', name: 'Other' }
+];
 
 interface CompanySelectorProps {
   value: string;
@@ -104,18 +142,10 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({ value, onChange, erro
                   onClick={() => handleCompanySelect(company)}
                   className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
-                    <img 
-                      src={company.logo} 
-                      alt={company.name}
-                      className="w-6 h-6 object-contain"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.nextElementSibling!.textContent = company.name.substring(0, 2).toUpperCase();
-                      }}
-                    />
-                    <span className="text-xs font-semibold text-gray-600 hidden"></span>
+                  <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-semibold text-blue-600">
+                      {company.name.substring(0, 2).toUpperCase()}
+                    </span>
                   </div>
                   <span className="text-gray-900">{company.name}</span>
                 </button>

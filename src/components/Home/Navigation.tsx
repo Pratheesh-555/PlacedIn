@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, PlusCircle, BookOpen, Settings, LogOut } from 'lucide-react';
-import GoogleAuth from './GoogleAuth';
-import { GoogleUser } from '../types';
+import GoogleAuth from '../GoogleAuth';
+import { GoogleUser } from '../../types';
 
 interface NavigationProps {
   user: GoogleUser | null;
@@ -14,7 +14,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const isAdmin = user?.email === 'admin@sastra.ac.in' || user?.email === 'admin@example.com' || user?.email === 'pratheeshkrishnan595@gmail.com';
+  const isAdmin = user?.email === 'poreddysaivaishnavi@gmail.com' || user?.email === 'pratheeshkrishnan595@gmail.com';
 
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
@@ -39,7 +39,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-blue-900">SASTRA</h1>
-              <p className="text-xs text-gray-600">Student Portal</p>
+              <p className="text-xs text-gray-600">PlacedIn</p>
             </div>
           </div>
 
@@ -84,7 +84,6 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
                 user={user}
                 onLogin={onLogin}
                 onLogout={onLogout}
-                isMobile={false}
               />
             )}
           </div>
@@ -97,7 +96,6 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
                   user={user}
                   onLogin={onLogin}
                   onLogout={onLogout}
-                  isMobile={true}
                 />
               </div>
             )}

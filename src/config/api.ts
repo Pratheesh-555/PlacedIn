@@ -5,6 +5,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ||
 export const API_ENDPOINTS = {
   EXPERIENCES: `${API_BASE_URL}/api/experiences`,
   ADMIN: `${API_BASE_URL}/api/admin`,
+  RATINGS: `${API_BASE_URL}/api/ratings`,
+  ANALYTICS: `${API_BASE_URL}/api/analytics`,
 };
 
 export default API_BASE_URL; 

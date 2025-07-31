@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Check, X, Eye, Download, Calendar, User, AlertCircle } from 'lucide-react';
-import { Experience, GoogleUser } from '../types';
-import { API_ENDPOINTS } from '../config/api';
+import { Experience, GoogleUser } from '../../types';
+import { API_ENDPOINTS } from '../../config/api';
 
 interface AdminVerificationProps {
   user: GoogleUser | null;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Calendar, User, Tag } from 'lucide-react';
-import { Experience } from '../types';
+import { Experience } from '../../types';
 
 interface ExperienceModalProps {
   experience: Experience;

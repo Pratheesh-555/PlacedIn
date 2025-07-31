@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Check, X, Eye } from 'lucide-react';
-import { Experience } from '../types';
-import { API_ENDPOINTS } from '../config/api';
+import { Experience } from '../../types';
+import { API_ENDPOINTS } from '../../config/api';
 
 interface AdminPanelProps {
   onUpdate: () => void;

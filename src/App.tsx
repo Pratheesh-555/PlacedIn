@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ScaleLoader } from 'react-spinners';
-import Navigation from './components/Navigation';
-import Home from './components/Home';
-import PostExperience from './components/PostExperience';
-import Experiences from './components/Experiences';
-import AdminDashboard from './components/AdminDashboard';
-import ExperienceModal from './components/ExperienceModal';
+import Navigation from './components/Home/Navigation';
+import Home from './components/Home/Home';
+import PostExperience from './components/Experience/PostExperience';
+import Experiences from './components/Experience/Experiences';
+import AdminDashboard from './components/Admin/AdminDashboard';
+import ExperienceModal from './components/Experience/ExperienceModal';
 import ProtectedRoute from './components/ProtectedRoute';
+import RatingPopup from './components/Home/RatingPopup';
+import PageTracker from './components/PageTracker';
 import { Experience, GoogleUser } from './types';
 import { API_ENDPOINTS } from './config/api';
 
@@ -19,24 +21,24 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Don't auto-login from localStorage - require fresh login each time
-    // const savedUser = localStorage.getItem('googleUser');
-    // if (savedUser) {
-    //   try {
-    //     setUser(JSON.parse(savedUser));
-    //   } catch (error) {
-    //     console.error('Error parsing saved user:', error);
-    //     localStorage.removeItem('googleUser');
-    //   }
-    // }
+    // Restore user from localStorage to persist login across refreshes
+    const savedUser = localStorage.getItem('googleUser');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Error parsing saved user:', error);
+        localStorage.removeItem('googleUser');
+      }
+    }
     
     // Add loading delay for better UX
     const initializeApp = async () => {
       await fetchExperiences();
-      // Minimum loading time of 1.5 seconds for smooth experience
+      // Reduced loading time for faster app startup
       setTimeout(() => {
         setIsLoading(false);
-      }, 1500);
+      }, 500);
     };
 
     initializeApp();
@@ -58,11 +60,6 @@ function App() {
 
   const handleLogout = () => {
     setUser(null);
-  };
-
-  const openExperienceModal = (experience: Experience) => {
-    setSelectedExperience(experience);
-    setIsModalOpen(true);
   };
 
   const closeModal = () => {
@@ -91,6 +88,7 @@ function App() {
 
   return (
     <Router>
+      <PageTracker user={user} />
       <div className="min-h-screen bg-gray-50">
         <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} />
         
@@ -109,8 +107,7 @@ function App() {
               path="/experiences" 
               element={
                 <Experiences 
-                  experiences={experiences} 
-                  onExperienceClick={openExperienceModal}
+                  experiences={experiences}
                 />
               } 
             />
@@ -131,6 +128,9 @@ function App() {
             onClose={closeModal} 
           />
         )}
+
+        {/* Rating popup for first-time visitors */}
+        <RatingPopup />
       </div>
     </Router>
   );

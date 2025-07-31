@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Filter, Calendar, User, Eye } from 'lucide-react';
-import { Experience, FilterOptions } from '../types';
-import { API_ENDPOINTS } from '../config/api';
+import { Experience, FilterOptions } from '../../types';
+import { API_ENDPOINTS } from '../../config/api';
 
 interface ExperiencesProps {
   experiences: Experience[];
@@ -161,8 +161,7 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences }) => {
           {filteredExperiences.map((experience) => (
             <div
               key={experience._id}
-              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:scale-105"
-              onClick={() => openPDF(experience)}
+              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
             >
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -197,10 +196,7 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences }) => {
                     {new Date(experience.createdAt || '').toLocaleDateString()}
                   </div>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openPDF(experience);
-                    }}
+                    onClick={() => openPDF(experience)}
                     className="flex items-center space-x-1 text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors"
                   >
                     <Eye size={14} />
@@ -226,25 +222,7 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences }) => {
                 : 'Try adjusting your search criteria or filters'
               }
             </p>
-            {experiences.length === 0 && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200 max-w-md mx-auto">
-                <div className="flex items-center justify-center mb-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <User size={16} className="text-blue-600" />
-                  </div>
-                </div>
-                <h4 className="font-semibold text-blue-900 mb-2">Share Your Experience</h4>
-                <p className="text-sm text-blue-700 mb-4">
-                  Help other students by sharing your placement or internship experience. Your story could inspire someone!
-                </p>
-                <a 
-                  href="/post-experience" 
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Share Your Story
-                </a>
-              </div>
-            )}
+            
           </div>
         )}
       </div>

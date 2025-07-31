@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Send, AlertCircle, CheckCircle, Upload } from 'lucide-react';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS } from '../../config/api';
 import CompanySelector from './CompanySelector';
-import { GoogleUser } from '../types';
+import { GoogleUser } from '../../types';
 
 interface PostExperienceProps {
   onSuccess: () => void;
