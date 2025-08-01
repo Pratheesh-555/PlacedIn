@@ -35,6 +35,23 @@ const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showTeam, setShowTeam] = useState(false);
+
+  // Team members with their LinkedIn profiles
+  const teamMembers = [
+    {
+      name: "Pratheesh Krishnan",
+      role: "Developer",
+      linkedin: "https://www.linkedin.com/in/pratheesh-krishnan-30b08a282?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app", // Replace with your actual LinkedIn
+      avatar: "https://lh3.googleusercontent.com/a/ACg8ocJ1aZYRhI07Y5JnGDmA84HODd4qKyoFweQ_sfntMk7q-0fvA=s96-c"
+    },
+    {
+      name: "Sai Vaishnavi Poreddy", // Replace with actual name
+      role: "Developer",
+      linkedin: "https://www.linkedin.com/in/sai-vaishnavi-poreddy-498680284?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app", // Replace with actual LinkedIn
+      avatar: "https://via.placeholder.com/96/4F46E5/ffffff?text=F1"
+    }
+  ];
 
   return (
     <footer className="bg-blue-100 border-t border-blue-200 py-4 mt-8">
@@ -50,7 +67,12 @@ const Footer: React.FC = () => {
 
           {/* Copyright section */}
           <div className="text-gray-500 text-sm mb-3">
-            © {currentYear} PlacedIn. All rights reserved.
+            © {currentYear} <button 
+              className="text-blue-600 hover:text-blue-800 font-semibold transition-colors cursor-pointer underline"
+              onClick={() => setShowTeam(true)}
+            >
+              PlacedIn
+            </button>. All rights reserved.
           </div>
 
           {/* Additional info */}
@@ -112,6 +134,50 @@ const Footer: React.FC = () => {
                     <li><strong>Content Policy:</strong> Any offensive, plagiarized, or inappropriate content will result in removal.</li>
                     <li><strong>Policy Updates:</strong> Terms may change in the future; continued use implies acceptance of any changes.</li>
                   </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal for Team Members */}
+          {showTeam && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+              <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
+                <button className="absolute top-2 right-2 text-gray-400 hover:text-blue-600 text-xl" onClick={() => setShowTeam(false)}>&times;</button>
+                <div className="text-center">
+                  <h2 className="text-xl font-bold mb-4 text-blue-700">Meet Our Team</h2>
+                  <p className="text-gray-600 text-sm mb-6">Connect with the developers behind PlacedIn</p>
+                  
+                  <div className="space-y-4">
+                    {teamMembers.map((member, index) => (
+                      <div key={index} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-blue-50 transition-colors">
+                        <img 
+                          src={member.avatar} 
+                          alt={member.name}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-blue-200"
+                        />
+                        <div className="flex-1 text-left">
+                          <h3 className="font-semibold text-gray-800">{member.name}</h3>
+                          <p className="text-sm text-gray-500">{member.role}</p>
+                        </div>
+                        <button
+                          onClick={() => window.open(member.linkedin, '_blank')}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
+                        >
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                          </svg>
+                          <span>Connect</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="mt-6 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-xs text-gray-600">
+                      💡 Have questions or feedback? Feel free to connect with any of our team members!
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
