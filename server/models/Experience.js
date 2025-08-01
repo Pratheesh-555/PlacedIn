@@ -33,9 +33,18 @@ const ExperienceSchema = new mongoose.Schema({
     maxlength: 5000
   },
   document: {
-  data: Buffer,
-  contentType: String
-},
+    data: Buffer,
+    contentType: String
+  },
+  // New Cloudinary fields
+  documentUrl: {
+    type: String,
+    required: false // Optional for backward compatibility
+  },
+  documentPublicId: {
+    type: String,
+    required: false // Optional for backward compatibility
+  },
 
   documentName: {
     type: String,

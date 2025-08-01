@@ -170,12 +170,21 @@ router.get('/user-experiences/:googleId', async (req, res) => {
 router.get('/document/:id', async (req, res) => {
   try {
     const experience = await Experience.findById(req.params.id);
-    if (!experience || !experience.document || !experience.document.data) {
-      return res.status(404).json({ error: 'Document not found' });
+    if (!experience) {
+      return res.status(404).json({ error: 'Experience not found' });
     }
 
-    res.contentType(experience.document.contentType);
-    res.send(experience.document.data);
+    // Check if we have a Cloudinary URL (new system) or old document data
+    if (experience.documentUrl) {
+      // Redirect to Cloudinary URL
+      res.redirect(experience.documentUrl);
+    } else if (experience.document && experience.document.data) {
+      // Legacy support for old documents stored in MongoDB
+      res.contentType(experience.document.contentType);
+      res.send(experience.document.data);
+    } else {
+      return res.status(404).json({ error: 'Document not found' });
+    }
   } catch (error) {
     console.error('Error serving admin document:', error);
     res.status(500).json({ error: 'Failed to fetch document' });

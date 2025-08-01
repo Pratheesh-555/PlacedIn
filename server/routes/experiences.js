@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import Experience from '../models/Experience.js';
+import cloudinary from '../config/cloudinary.js';
 
 const router = express.Router();
 
@@ -69,8 +70,8 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/document', async (req, res) => {
   try {
     const experience = await Experience.findById(req.params.id);
-    if (!experience || !experience.document || !experience.document.data) {
-      return res.status(404).json({ error: 'Document not found' });
+    if (!experience) {
+      return res.status(404).json({ error: 'Experience not found' });
     }
 
     // Only allow access to approved experiences
@@ -78,8 +79,17 @@ router.get('/:id/document', async (req, res) => {
       return res.status(403).json({ error: 'Document access denied. Experience not yet approved.' });
     }
 
-    res.contentType(experience.document.contentType);
-    res.send(experience.document.data);
+    // Check if we have a Cloudinary URL (new system) or old document data
+    if (experience.documentUrl) {
+      // Redirect to Cloudinary URL
+      res.redirect(experience.documentUrl);
+    } else if (experience.document && experience.document.data) {
+      // Legacy support for old documents stored in MongoDB
+      res.contentType(experience.document.contentType);
+      res.send(experience.document.data);
+    } else {
+      return res.status(404).json({ error: 'Document not found' });
+    }
   } catch (error) {
     console.error('Error serving document:', error);
     res.status(500).json({ error: 'Failed to fetch document' });
@@ -155,24 +165,44 @@ router.post('/', upload.single('document'), async (req, res) => {
       }
     }
 
-    // Create new experience
+    // Upload file to Cloudinary
+    console.log('Uploading file to Cloudinary...');
+    const uploadResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          resource_type: "raw", // For PDFs and other documents
+          folder: "placedin_documents",
+          public_id: `${studentName.replace(/\s+/g, '_')}_${company.replace(/\s+/g, '_')}_${Date.now()}`,
+          format: path.extname(req.file.originalname).substring(1), // Remove the dot
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            reject(error);
+          } else {
+            console.log('Cloudinary upload success:', result?.secure_url);
+            resolve(result);
+          }
+        }
+      ).end(req.file.buffer);
+    });
+
+    // Create new experience with Cloudinary URL
     const experienceData = {
       studentName: studentName.trim(),
       email: email.trim().toLowerCase(),
       company: company.trim(),
       graduationYear: parseInt(graduationYear),
       experienceText: '', // Optional field, can be empty
-      document: {
-        data: req.file.buffer,
-        contentType: req.file.mimetype
-      },
+      documentUrl: uploadResult.secure_url, // Store Cloudinary URL instead of buffer
+      documentPublicId: uploadResult.public_id, // Store for deletion if needed
       documentName: req.file.originalname.trim(),
       type,
       postedBy: parsedPostedBy,
       isApproved: false // Normal workflow: requires admin approval
     };
     
-    console.log('Creating experience with data:', { ...experienceData, document: { ...experienceData.document, data: '[Buffer]' } });
+    console.log('Creating experience with data:', experienceData);
     
     const experience = new Experience(experienceData);
 

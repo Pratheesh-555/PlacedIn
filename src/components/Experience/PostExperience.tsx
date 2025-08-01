@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Send, AlertCircle, CheckCircle, Upload } from 'lucide-react';
+import { Send, AlertCircle, CheckCircle } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
 import CompanySelector from './CompanySelector';
+import CloudinaryUpload from '../CloudinaryUpload';
 import { GoogleUser } from '../../types';
 
 interface PostExperienceProps {
@@ -126,25 +127,13 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      if (!allowedTypes.includes(file.type)) {
-        setErrors(prev => ({ ...prev, document: 'Please upload a PDF or Word document' }));
-        return;
-      }
-      
-      // Validate file size (5MB limit)
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors(prev => ({ ...prev, document: 'File size must be less than 5MB' }));
-        return;
-      }
-      
-      setSelectedFile(file);
-      setErrors(prev => ({ ...prev, document: '' }));
-    }
+  const handleFileUploadSuccess = (file: File) => {
+    setSelectedFile(file);
+    setErrors(prev => ({ ...prev, document: '' }));
+  };
+
+  const handleFileUploadError = (error: string) => {
+    setErrors(prev => ({ ...prev, document: error }));
   };
 
   if (submitted) {
@@ -269,50 +258,15 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
             </div>
 
             <div>
-              <label htmlFor="document" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Upload Experience Document *
               </label>
-              <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-300 ${
-                selectedFile 
-                  ? 'border-green-400 bg-green-50' 
-                  : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
-              }`}>
-                <input
-                  type="file"
-                  id="document"
-                  accept=".pdf,.doc,.docx"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <label htmlFor="document" className="cursor-pointer">
-                  {selectedFile ? (
-                    <div className="animate-pulse">
-                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Upload size={24} className="text-green-600" />
-                      </div>
-                      <p className="text-lg font-medium text-green-700 mb-2">
-                        ✓ {selectedFile.name}
-                      </p>
-                      <p className="text-sm text-green-600">
-                        File ready for upload ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                      </p>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Click to change file
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      <Upload size={48} className="mx-auto text-gray-400 mb-4" />
-                      <p className="text-lg font-medium text-gray-700 mb-2">
-                        Click to upload document
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        PDF or Word document (max 5MB)
-                      </p>
-                    </div>
-                  )}
-                </label>
-              </div>
+              <CloudinaryUpload
+                onUploadSuccess={handleFileUploadSuccess}
+                onUploadError={handleFileUploadError}
+                uploadLabel="Upload Experience Document"
+                maxSize={5}
+              />
               {errors.document && (
                 <p className="text-red-500 text-sm mt-1">{errors.document}</p>
               )}

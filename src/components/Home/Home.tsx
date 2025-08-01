@@ -1,14 +1,45 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusCircle, BookOpen, TrendingUp, Users, Building2 } from 'lucide-react';
+import Footer from './Footer';
 
 const Home: React.FC = () => {
+
+  // Helper to parse numbers from string (e.g., '2,500+' -> 2500)
+  const parseNumber = (str: string) => {
+    const match = str.replace(/[^\d.]/g, '');
+    return Number(match);
+  };
+
   const stats = [
-    { icon: Users, label: 'Students', value: '2,500+' },
-    { icon: Building2, label: 'Companies', value: '150+' },
-    { icon: BookOpen, label: 'Experiences', value: '800+' },
-    { icon: TrendingUp, label: 'Success Rate', value: '95%' },
+    { icon: Users, label: 'Students', value: 2500, suffix: '+' },
+    { icon: Building2, label: 'Companies', value: 150, suffix: '+' },
+    { icon: BookOpen, label: 'Experiences', value: 800, suffix: '+' },
+    { icon: TrendingUp, label: 'Success Rate', value: 95, suffix: '%' },
   ];
+
+  // Animated values state
+  const [animatedStats, setAnimatedStats] = useState(stats.map(() => 0));
+  useEffect(() => {
+    let raf: number;
+    const duration = 1200;
+    const startTime = performance.now();
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      setAnimatedStats(stats.map((s, i) => {
+        const progress = Math.min(elapsed / duration, 1);
+        return Math.floor(progress * s.value);
+      }));
+      if (elapsed < duration) {
+        raf = requestAnimationFrame(animate);
+      } else {
+        setAnimatedStats(stats.map(s => s.value));
+      }
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
@@ -44,12 +75,14 @@ const Home: React.FC = () => {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-            {stats.map(({ icon: Icon, label, value }) => (
+            {stats.map(({ icon: Icon, label, value, suffix }, i) => (
               <div key={label} className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-200">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Icon size={24} className="text-blue-600" />
                 </div>
-                <div className="text-2xl font-bold text-blue-900 mb-1">{value}</div>
+                <div className="text-2xl font-bold text-blue-900 mb-1">
+                  <span>{animatedStats[i].toLocaleString()}{suffix}</span>
+                </div>
                 <div className="text-gray-600 font-medium">{label}</div>
               </div>
             ))}
@@ -98,45 +131,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Footer Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-blue-600">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Made with love section */}
-          <div className="flex items-center justify-center space-x-2 mb-6">
-            <span className="text-blue-100 text-lg">Made with</span>
-            <div className="w-6 h-6 text-sky-300 animate-pulse">
-              ❤️
-            </div>
-            <span className="text-blue-100 text-lg">by the PlacedIn Team</span>
-          </div>
-
-          {/* Copyright section */}
-          <div className="text-blue-200 text-base mb-4">
-            © 2025 PlacedIn. All rights reserved.
-          </div>
-
-          {/* Additional info */}
-          <div className="text-blue-300 text-sm max-w-md mx-auto mb-6">
-            Empowering students to share their placement and internship experiences 
-            to help others succeed in their career journey.
-          </div>
-
-          {/* Optional links section */}
-          <div className="flex items-center justify-center space-x-6 text-sm text-blue-200">
-            <button className="hover:text-white transition-colors">
-              Privacy Policy
-            </button>
-            <span className="text-blue-400">•</span>
-            <button className="hover:text-white transition-colors">
-              Terms of Service
-            </button>
-            <span className="text-blue-400">•</span>
-            <button className="hover:text-white transition-colors">
-              Contact Us
-            </button>
-          </div>
-        </div>
-      </section>
+      <Footer />
     </div>
   );
 };
