@@ -169,20 +169,32 @@ router.get('/user-experiences/:googleId', async (req, res) => {
 // Admin route to access any document (approved or pending)
 router.get('/document/:id', async (req, res) => {
   try {
+    console.log('Admin document request for experience ID:', req.params.id);
     const experience = await Experience.findById(req.params.id);
     if (!experience) {
+      console.log('Experience not found:', req.params.id);
       return res.status(404).json({ error: 'Experience not found' });
     }
 
+    console.log('Experience found:', {
+      id: experience._id,
+      hasCloudinaryUrl: !!experience.documentUrl,
+      hasMongoDocument: !!(experience.document && experience.document.data),
+      documentName: experience.documentName
+    });
+
     // Check if we have a Cloudinary URL (new system) or old document data
     if (experience.documentUrl) {
+      console.log('Redirecting admin to Cloudinary URL:', experience.documentUrl);
       // Redirect to Cloudinary URL
       res.redirect(experience.documentUrl);
     } else if (experience.document && experience.document.data) {
+      console.log('Serving admin document from MongoDB');
       // Legacy support for old documents stored in MongoDB
-      res.contentType(experience.document.contentType);
+      res.contentType(experience.document.contentType || 'application/pdf');
       res.send(experience.document.data);
     } else {
+      console.log('No document found for admin request:', req.params.id);
       return res.status(404).json({ error: 'Document not found' });
     }
   } catch (error) {

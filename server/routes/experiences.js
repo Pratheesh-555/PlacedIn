@@ -84,47 +84,73 @@ router.post('/', upload.single('document'), async (req, res) => {
       }
     }
 
-    // Upload file to Cloudinary
-    console.log('Uploading file to Cloudinary...');
-    console.log('Cloudinary config check:', {
-      cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'not set',
-      apiKeyExists: !!process.env.CLOUDINARY_API_KEY,
-      apiSecretExists: !!process.env.CLOUDINARY_API_SECRET
-    });
+    // Temporary fallback: Store in MongoDB if Cloudinary fails
+    let documentUrl = null;
+    let documentPublicId = null;
     
-    const uploadResult = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        {
-          resource_type: "raw", // For PDFs and other documents
-          folder: "placedin_documents",
-          public_id: `${studentName.replace(/\s+/g, '_')}_${company.replace(/\s+/g, '_')}_${Date.now()}`,
-        },
-        (error, result) => {
-          if (error) {
-            console.error('Cloudinary upload error:', error);
-            reject(new Error(`Cloudinary upload failed: ${error.message}`));
-          } else {
-            console.log('Cloudinary upload success:', result?.secure_url);
-            resolve(result);
+    try {
+      // Try Cloudinary upload first
+      console.log('Uploading file to Cloudinary...');
+      console.log('Cloudinary config check:', {
+        cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'not set',
+        apiKeyExists: !!process.env.CLOUDINARY_API_KEY,
+        apiSecretExists: !!process.env.CLOUDINARY_API_SECRET
+      });
+      
+      const uploadResult = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          {
+            resource_type: "raw", // For PDFs and other documents
+            folder: "placedin_documents",
+            public_id: `${studentName.replace(/\s+/g, '_')}_${company.replace(/\s+/g, '_')}_${Date.now()}`,
+          },
+          (error, result) => {
+            if (error) {
+              console.error('Cloudinary upload error:', error);
+              reject(new Error(`Cloudinary upload failed: ${error.message}`));
+            } else {
+              console.log('Cloudinary upload success:', result?.secure_url);
+              resolve(result);
+            }
           }
-        }
-      ).end(req.file.buffer);
-    });
+        ).end(req.file.buffer);
+      });
+      
+      documentUrl = uploadResult.secure_url;
+      documentPublicId = uploadResult.public_id;
+      console.log('Using Cloudinary storage');
+      
+    } catch (cloudinaryError) {
+      console.warn('Cloudinary upload failed, falling back to MongoDB storage:', cloudinaryError.message);
+      // Don't throw error, continue with MongoDB storage
+    }
 
-    // Create new experience with Cloudinary URL
+    // Create new experience with flexible storage
     const experienceData = {
       studentName: studentName.trim(),
       email: email.trim().toLowerCase(),
       company: company.trim(),
       graduationYear: parseInt(graduationYear),
       experienceText: '', // Optional field, can be empty
-      documentUrl: uploadResult.secure_url, // Store Cloudinary URL instead of buffer
-      documentPublicId: uploadResult.public_id, // Store for deletion if needed
       documentName: req.file.originalname.trim(),
       type,
       postedBy: parsedPostedBy,
       isApproved: false // Normal workflow: requires admin approval
     };
+    
+    // Add Cloudinary fields if upload was successful
+    if (documentUrl && documentPublicId) {
+      experienceData.documentUrl = documentUrl;
+      experienceData.documentPublicId = documentPublicId;
+      console.log('Experience will use Cloudinary storage');
+    } else {
+      // Fallback to MongoDB storage
+      experienceData.document = {
+        data: req.file.buffer,
+        contentType: req.file.mimetype
+      };
+      console.log('Experience will use MongoDB storage (fallback)');
+    }
     
     console.log('Creating experience with data:', experienceData);
     
@@ -166,6 +192,53 @@ router.post('/', upload.single('document'), async (req, res) => {
       error: 'Failed to submit experience',
       details: error.message
     });
+  }
+});
+
+// Get experience by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const experience = await Experience.findById(req.params.id);
+    if (!experience) {
+      return res.status(404).json({ error: 'Experience not found' });
+    }
+    res.json(experience);
+  } catch (error) {
+    console.error('Error fetching experience:', error);
+    res.status(500).json({ error: 'Failed to fetch experience' });
+  }
+});
+
+// Serve document by experience ID
+router.get('/:id/document', async (req, res) => {
+  try {
+    const experience = await Experience.findById(req.params.id);
+    if (!experience) {
+      return res.status(404).json({ error: 'Experience not found' });
+    }
+
+    // Only allow access to approved experiences or admin users
+    if (!experience.isApproved) {
+      return res.status(403).json({ error: 'Document access denied. Experience not yet approved.' });
+    }
+
+    // Check if we have a Cloudinary URL (new system) or old document data
+    if (experience.documentUrl) {
+      console.log('Redirecting to Cloudinary URL:', experience.documentUrl);
+      // Redirect to Cloudinary URL
+      res.redirect(experience.documentUrl);
+    } else if (experience.document && experience.document.data) {
+      console.log('Serving document from MongoDB for experience:', req.params.id);
+      // Legacy support for old documents stored in MongoDB
+      res.contentType(experience.document.contentType || 'application/pdf');
+      res.send(experience.document.data);
+    } else {
+      console.log('No document found for experience:', req.params.id);
+      return res.status(404).json({ error: 'Document not found' });
+    }
+  } catch (error) {
+    console.error('Error serving document:', error);
+    res.status(500).json({ error: 'Failed to fetch document' });
   }
 });
 
