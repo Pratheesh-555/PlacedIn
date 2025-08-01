@@ -112,7 +112,7 @@ const Footer: React.FC = () => {
                     <li><strong>Storage:</strong> All information is securely stored in our cloud database and is not shared with third parties.</li>
                     <li><strong>Security:</strong> Passwords are encrypted, and sensitive files are handled securely.</li>
                     <li><strong>Third-party Services:</strong> We use services like Render, Netlify, and MongoDB for hosting and storage.</li>
-                    <li><strong>User Rights:</strong> You can request removal of your data by contacting us at <a href="mailto:admin@placedin.in" className="text-blue-600 underline">admin@placedin.in</a>.</li>
+                    <li><strong>User Rights:</strong> You can request removal of your data by contacting us at <a href="mailto:pratheeshkrishnan595@gmail.com" className="text-blue-600 underline">our support team</a>.</li>
                   </ul>
                 </div>
               </div>
