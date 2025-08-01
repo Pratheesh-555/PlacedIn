@@ -12,13 +12,21 @@ async function startServer() {
   app.use(cors({
     origin: [
       "https://placedin.netlify.app", // Production URL
+      "https://krishh.me",            // Your custom domain
       "http://localhost:5173",        // Local development
       "http://localhost:5174",        // Alternate local port
       "http://localhost:5175"         // Another alternate local port
     ],
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
   }));
-  app.use(express.json());
+  
+  // Handle preflight requests
+  app.options('*', cors());
+  
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // Routes - using dynamic imports for ES modules
   const experiencesRouter = await import('./routes/experiences.js');
