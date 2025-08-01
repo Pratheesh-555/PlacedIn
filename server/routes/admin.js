@@ -1,5 +1,6 @@
 import express from 'express';
 import Experience from '../models/Experience.js';
+import axios from 'axios';
 
 const router = express.Router();
 
@@ -185,13 +186,36 @@ router.get('/document/:id', async (req, res) => {
 
     // Check if we have a Cloudinary URL (new system) or old document data
     if (experience.documentUrl) {
-      console.log('Redirecting admin to Cloudinary URL:', experience.documentUrl);
-      // Redirect to Cloudinary URL
-      res.redirect(experience.documentUrl);
+      console.log('Serving Cloudinary document for admin viewing:', experience.documentUrl);
+      // Instead of redirect, fetch and serve with proper headers for inline viewing
+      try {
+        const response = await axios.get(experience.documentUrl, {
+          responseType: 'arraybuffer'
+        });
+        
+        const contentType = response.headers['content-type'] || 'application/pdf';
+        const buffer = Buffer.from(response.data);
+        
+        // Set headers for inline viewing instead of download
+        res.set({
+          'Content-Type': contentType,
+          'Content-Disposition': 'inline; filename="' + (experience.documentName || 'document.pdf') + '"',
+          'Content-Length': buffer.length
+        });
+        
+        res.send(buffer);
+      } catch (fetchError) {
+        console.error('Error fetching Cloudinary document for admin:', fetchError);
+        return res.status(404).json({ error: 'Document could not be loaded' });
+      }
     } else if (experience.document && experience.document.data) {
-      console.log('Serving admin document from MongoDB');
-      // Legacy support for old documents stored in MongoDB
-      res.contentType(experience.document.contentType || 'application/pdf');
+      console.log('Serving admin document from MongoDB for viewing');
+      // Set headers for inline viewing instead of download
+      res.set({
+        'Content-Type': experience.document.contentType || 'application/pdf',
+        'Content-Disposition': 'inline; filename="' + (experience.documentName || 'document.pdf') + '"',
+        'Content-Length': experience.document.data.length
+      });
       res.send(experience.document.data);
     } else {
       console.log('No document found for admin request:', req.params.id);
