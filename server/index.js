@@ -23,14 +23,10 @@ async function startServer() {
   // Routes - using dynamic imports for ES modules
   const experiencesRouter = await import('./routes/experiences.js');
   const adminRouter = await import('./routes/admin.js');
-  const ratingsRouter = await import('./routes/ratings.js');
-  const analyticsRouter = await import('./routes/analytics.js');
   const notificationsRouter = await import('./routes/notifications.js');
 
   app.use('/api/experiences', experiencesRouter.default);
   app.use('/api/admin', adminRouter.default);
-  app.use('/api/ratings', ratingsRouter.default);
-  app.use('/api/analytics', analyticsRouter.default);
   app.use('/api/notifications', notificationsRouter.default);
 
   // MongoDB connection

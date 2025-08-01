@@ -8,8 +8,6 @@ import Experiences from './components/Experience/Experiences';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import ExperienceModal from './components/Experience/ExperienceModal';
 import ProtectedRoute from './components/ProtectedRoute';
-import RatingPopup from './components/Home/RatingPopup';
-import PageTracker from './components/PageTracker';
 import { Experience, GoogleUser } from './types';
 import { API_ENDPOINTS } from './config/api';
 
@@ -88,7 +86,6 @@ function App() {
 
   return (
     <Router>
-      <PageTracker user={user} />
       <div className="min-h-screen bg-gray-50">
         <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} />
         
@@ -128,9 +125,6 @@ function App() {
             onClose={closeModal} 
           />
         )}
-
-        {/* Rating popup for first-time visitors */}
-        <RatingPopup />
       </div>
     </Router>
   );

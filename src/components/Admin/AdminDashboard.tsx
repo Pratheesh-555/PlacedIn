@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ScaleLoader } from 'react-spinners';
-import { Check, Eye, Download, Calendar, User, Building2, AlertCircle, Trash2, Users, BarChart3, Bell } from 'lucide-react';
+import { Check, Eye, Download, Calendar, User, Building2, AlertCircle, Trash2, Users, Bell } from 'lucide-react';
 import { Experience, GoogleUser } from '../../types';
 import { API_ENDPOINTS } from '../../config/api';
-import RatingsDashboard from './RatingsDashboard';
-import AnalyticsDashboard from './AnalyticsDashboard';
 import NotificationManager from './NotificationManager';
 
 interface AdminDashboardProps {
@@ -16,7 +14,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
   const [pendingExperiences, setPendingExperiences] = useState<Experience[]>([]);
   const [approvedExperiences, setApprovedExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'ratings' | 'analytics' | 'notifications'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'notifications'>('pending');
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -195,28 +193,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
                 Approved Experiences ({approvedExperiences.length})
               </button>
               <button
-                onClick={() => setActiveTab('ratings')}
-                className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
-                  activeTab === 'ratings'
-                    ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-              >
-                <BarChart3 size={16} className="inline-block mr-2" />
-                User Ratings
-              </button>
-              <button
-                onClick={() => setActiveTab('analytics')}
-                className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
-                  activeTab === 'analytics'
-                    ? 'bg-purple-50 text-purple-600 border-b-2 border-purple-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-              >
-                <Eye size={16} className="inline-block mr-2" />
-                Site Analytics
-              </button>
-              <button
                 onClick={() => setActiveTab('notifications')}
                 className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
                   activeTab === 'notifications'
@@ -277,10 +253,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
                   ))}
                 </div>
               )
-            ) : activeTab === 'ratings' ? (
-              <RatingsDashboard />
-            ) : activeTab === 'analytics' ? (
-              <AnalyticsDashboard />
             ) : (
               <NotificationManager />
             )}
