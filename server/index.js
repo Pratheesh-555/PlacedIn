@@ -29,13 +29,40 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // Use simplified routes
-  const experiencesRouter = await import('./routes/experiences-simple.js');
+  const experiencesRouter = await import('./routes/experiences.js');
   const adminRouter = await import('./routes/admin.js');
   const notificationsRouter = await import('./routes/notifications.js');
 
   app.use('/api/experiences', experiencesRouter.default);
   app.use('/api/admin', adminRouter.default);
   app.use('/api/notifications', notificationsRouter.default);
+
+  // Test route for debugging
+  app.get('/api/test', async (req, res) => {
+    try {
+      const testCloudinary = await import('./utils/testCloudinary.js');
+      const cloudinaryWorking = await testCloudinary.default();
+      
+      res.json({
+        message: 'Server is working!',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+        cloudinary: {
+          configured: cloudinaryWorking,
+          cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'not set',
+          apiKeyExists: !!process.env.CLOUDINARY_API_KEY,
+          apiSecretExists: !!process.env.CLOUDINARY_API_SECRET
+        }
+      });
+    } catch (error) {
+      console.error('Test route error:', error);
+      res.status(500).json({ 
+        error: 'Test failed', 
+        message: error.message,
+        stack: error.stack 
+      });
+    }
+  });
 
   // MongoDB connection
   mongoose.connect(process.env.MONGODB_URI, {

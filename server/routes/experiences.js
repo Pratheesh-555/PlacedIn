@@ -86,6 +86,12 @@ router.post('/', upload.single('document'), async (req, res) => {
 
     // Upload file to Cloudinary
     console.log('Uploading file to Cloudinary...');
+    console.log('Cloudinary config check:', {
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'not set',
+      apiKeyExists: !!process.env.CLOUDINARY_API_KEY,
+      apiSecretExists: !!process.env.CLOUDINARY_API_SECRET
+    });
+    
     const uploadResult = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {
@@ -96,7 +102,7 @@ router.post('/', upload.single('document'), async (req, res) => {
         (error, result) => {
           if (error) {
             console.error('Cloudinary upload error:', error);
-            reject(error);
+            reject(new Error(`Cloudinary upload failed: ${error.message}`));
           } else {
             console.log('Cloudinary upload success:', result?.secure_url);
             resolve(result);
@@ -132,6 +138,11 @@ router.post('/', upload.single('document'), async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating experience:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
     console.error('Request body:', req.body);
     console.error('Request file:', req.file ? { 
       originalname: req.file.originalname, 
@@ -142,7 +153,19 @@ router.post('/', upload.single('document'), async (req, res) => {
     if (error.name === 'ValidationError') {
       return res.status(400).json({ error: error.message });
     }
-    res.status(500).json({ error: 'Failed to submit experience' });
+    
+    // Provide more specific error messages
+    if (error.message.includes('Cloudinary')) {
+      return res.status(500).json({ 
+        error: 'File upload service is currently unavailable. Please try again later.',
+        details: error.message 
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Failed to submit experience',
+      details: error.message
+    });
   }
 });
 
