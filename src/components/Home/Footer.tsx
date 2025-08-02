@@ -42,14 +42,14 @@ const Footer: React.FC = () => {
     {
       name: "Pratheesh Krishnan",
       role: "Developer",
-      linkedin: "https://www.linkedin.com/in/pratheesh-krishnan-30b08a282?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app", // Replace with your actual LinkedIn
-      avatar: "https://lh3.googleusercontent.com/a/ACg8ocJ1aZYRhI07Y5JnGDmA84HODd4qKyoFweQ_sfntMk7q-0fvA=s96-c"
+      linkedin: "https://www.linkedin.com/in/pratheesh-krishnan-30b08a282?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+      avatar: "https://media.licdn.com/dms/image/v2/D5603AQHtiMA8pl5zrg/profile-displayphoto-shrink_400_400/B56ZcGKtOeGoAk-/0/1748155161590?e=1756944000&v=beta&t=5Nn7cvP_0XjuAoW-inlWz6a26qQRx1X0X2ZN3pUQQtI"
     },
     {
-      name: "Sai Vaishnavi Poreddy", // Replace with actual name
+      name: "Sai Vaishnavi Poreddy",
       role: "Developer",
-      linkedin: "https://www.linkedin.com/in/sai-vaishnavi-poreddy-498680284?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app", // Replace with actual LinkedIn
-      avatar: "https://via.placeholder.com/96/4F46E5/ffffff?text=F1"
+      linkedin: "https://www.linkedin.com/in/sai-vaishnavi-poreddy-498680284?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+      avatar: "https://media.licdn.com/dms/image/v2/D5603AQEq_iL7XtM8nw/profile-displayphoto-shrink_400_400/B56ZZwR4OTHsAg-/0/1745640458660?e=1756944000&v=beta&t=WYpk772UsxHoHf2EBvBkwGthXwbV2k1OpNnXYxP1p4Q" // Better placeholder with initials
     }
   ];
 
