@@ -93,7 +93,7 @@ const Footer: React.FC = () => {
             <span className="text-blue-300">•</span>
             <button
               className="hover:text-blue-900 font-semibold transition-colors"
-              onClick={() => window.open('https://wa.me/8870582663?text=Hi!%20I%20have%20a%20question%20about%20PlacedIn.', '_blank')}
+              onClick={() => window.open('https://wa.me/918870582663?text=Hi!%20I%20have%20a%20question%20about%20PlacedIn.', '_blank')}
             >
               Contact Us
             </button>
