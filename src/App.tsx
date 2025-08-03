@@ -1,7 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Home/Navigation';
-import Loader from './components/Loader';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Experience, GoogleUser } from './types';
 import { API_ENDPOINTS } from './config/api';
@@ -89,7 +88,7 @@ function App() {
             </div>
           }>
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Home user={user} />} />
               <Route 
                 path="/post" 
                 element={

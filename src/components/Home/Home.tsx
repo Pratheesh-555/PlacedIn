@@ -2,15 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusCircle, BookOpen, TrendingUp, Users, Building2 } from 'lucide-react';
 import Footer from './Footer';
+import { GoogleUser } from '../../types';
 
-const Home: React.FC = () => {
+interface HomeProps {
+  user: GoogleUser | null;
+}
 
-  // Helper to parse numbers from string (e.g., '2,500+' -> 2500)
-  const parseNumber = (str: string) => {
-    const match = str.replace(/[^\d.]/g, '');
-    return Number(match);
-  };
-
+const Home: React.FC<HomeProps> = ({ user }) => {
   const stats = [
     { icon: Users, label: 'Students', value: 2500, suffix: '+' },
     { icon: Building2, label: 'Companies', value: 150, suffix: '+' },
@@ -26,7 +24,7 @@ const Home: React.FC = () => {
     const startTime = performance.now();
     const animate = (now: number) => {
       const elapsed = now - startTime;
-      setAnimatedStats(stats.map((s, i) => {
+      setAnimatedStats(stats.map((s) => {
         const progress = Math.min(elapsed / duration, 1);
         return Math.floor(progress * s.value);
       }));
@@ -56,6 +54,35 @@ const Home: React.FC = () => {
             </p>
           </div>
 
+          {/* Mobile Sign-in Section (only show on mobile when not signed in) */}
+          {!user && (
+            <div className="md:hidden mb-8 p-6 bg-white rounded-xl shadow-lg mx-4">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-blue-900 mb-3">
+                  Join the Community
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Sign in to share your experiences and connect with fellow students
+                </p>
+                <div className="flex justify-center">
+                  <iframe 
+                    src="https://accounts.google.com/gsi/button?theme=outline&size=large&text=signin_with&shape=rectangular&width=250&is_fedcm_supported=true&client_id=751291179547-75l0g05ed5r4h6508mq9p02jiijjglo6.apps.googleusercontent.com&hl=en"
+                    className="border-0"
+                    allow="identity-credentials-get"
+                    title="Sign in with Google Button"
+                    style={{
+                      display: 'block',
+                      position: 'relative',
+                      width: '250px',
+                      height: '48px',
+                      border: '0px'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
             <Link
               to="/post"
@@ -75,7 +102,7 @@ const Home: React.FC = () => {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-            {stats.map(({ icon: Icon, label, value, suffix }, i) => (
+            {stats.map(({ icon: Icon, label, suffix }, i) => (
               <div key={label} className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-200">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Icon size={24} className="text-blue-600" />
