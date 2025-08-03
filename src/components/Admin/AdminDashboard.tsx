@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { ScaleLoader } from 'react-spinners';
 import { Check, Eye, Download, Calendar, User, Building2, AlertCircle, Trash2, Users, Bell } from 'lucide-react';
 import { Experience, GoogleUser } from '../../types';
 import { API_ENDPOINTS } from '../../config/api';
@@ -42,10 +41,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
     } catch (error) {
       console.error('Error fetching experiences:', error);
     } finally {
-      // Add minimum loading time for better UX
-      setTimeout(() => {
-        setLoading(false);
-      }, 1000);
+      // Remove artificial loading delay for faster response
+      setLoading(false);
     }
   };
 
@@ -125,8 +122,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <ScaleLoader color="#2563eb" height={35} width={4} radius={2} margin={2} />
-          <p className="text-gray-600 mt-4 animate-pulse">Loading admin dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 animate-pulse">Loading admin dashboard...</p>
         </div>
       </div>
     );

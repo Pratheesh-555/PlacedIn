@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ScaleLoader } from 'react-spinners';
 import Navigation from './components/Home/Navigation';
-import Home from './components/Home/Home';
-import PostExperience from './components/Experience/PostExperience';
-import Experiences from './components/Experience/Experiences';
-import AdminDashboard from './components/Admin/AdminDashboard';
-import ExperienceModal from './components/Experience/ExperienceModal';
+import Loader from './components/Loader';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Experience, GoogleUser } from './types';
 import { API_ENDPOINTS } from './config/api';
+
+// Lazy load components for better performance
+const Home = lazy(() => import('./components/Home/Home'));
+const PostExperience = lazy(() => import('./components/Experience/PostExperience'));
+const Experiences = lazy(() => import('./components/Experience/Experiences'));
+const AdminDashboard = lazy(() => import('./components/Admin/AdminDashboard'));
+const ExperienceModal = lazy(() => import('./components/Experience/ExperienceModal'));
 
 function App() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -30,13 +32,11 @@ function App() {
       }
     }
     
-    // Add loading delay for better UX
+    // Remove artificial loading delay for faster startup
     const initializeApp = async () => {
       await fetchExperiences();
-      // Reduced loading time for faster app startup
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
+      // Set loading to false immediately after fetching
+      setIsLoading(false);
     };
 
     initializeApp();
@@ -65,20 +65,13 @@ function App() {
     setIsModalOpen(false);
   };
 
-  // Show loading screen
+  // Show loading screen with custom loader
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="mb-8">
-            <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-3xl">S</span>
-            </div>
-            <h1 className="text-4xl font-bold text-blue-900 mb-2">SASTRA</h1>
-            <p className="text-gray-600 text-lg">Student Portal</p>
-          </div>
-          <ScaleLoader color="#2563eb" height={40} width={4} radius={2} margin={2} />
-          <p className="text-gray-600 mt-6 animate-pulse">Loading your experience portal...</p>
+        <div className="animate-pulse">
+          <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-4"></div>
+          <p className="text-blue-900 font-semibold">Loading PlacedIn...</p>
         </div>
       </div>
     );
@@ -90,40 +83,48 @@ function App() {
         <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} />
         
         <main className="pt-16">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route 
-              path="/post" 
-              element={
-                <ProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
-                  <PostExperience onSuccess={fetchExperiences} user={user} />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/experiences" 
-              element={
-                <Experiences 
-                  experiences={experiences}
-                />
-              } 
-            />
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
-                  <AdminDashboard user={user} onUpdate={fetchExperiences} />
-                </ProtectedRoute>
-              } 
-            />
-          </Routes>
+          <Suspense fallback={
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          }>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route 
+                path="/post" 
+                element={
+                  <ProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
+                    <PostExperience onSuccess={fetchExperiences} user={user} />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/experiences" 
+                element={
+                  <Experiences 
+                    experiences={experiences}
+                  />
+                } 
+              />
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
+                    <AdminDashboard user={user} onUpdate={fetchExperiences} />
+                  </ProtectedRoute>
+                } 
+              />
+            </Routes>
+          </Suspense>
         </main>
 
         {isModalOpen && selectedExperience && (
-          <ExperienceModal 
-            experience={selectedExperience} 
-            onClose={closeModal} 
-          />
+          <Suspense fallback={<div>Loading...</div>}>
+            <ExperienceModal 
+              experience={selectedExperience} 
+              onClose={closeModal} 
+            />
+          </Suspense>
         )}
       </div>
     </Router>

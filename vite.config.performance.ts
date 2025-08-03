@@ -1,11 +1,13 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+// Optimized Vite Configuration for Better Performance
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [react()],
   
   build: {
-    // Optimize build for production
+    // Optimize build for better performance
     rollupOptions: {
       output: {
         manualChunks: {
@@ -17,7 +19,7 @@ export default defineConfig({
       }
     },
     
-    // Enable compression and optimization
+    // Enable compression
     minify: 'terser',
     terserOptions: {
       compress: {
@@ -26,22 +28,27 @@ export default defineConfig({
       }
     },
     
-    // Optimize chunk size warning
+    // Optimize chunk size
     chunkSizeWarningLimit: 1000
   },
   
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react', 'styled-components'],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
+    }
   },
   
+  // Optimize dev server
   server: {
     port: 5173,
-    proxy: {
-      '/api': 'http://localhost:5000'
-    },
-    // Improve dev server performance
+    open: true,
     hmr: {
       overlay: false
     }
+  },
+  
+  // Optimize dependencies
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react']
   }
-});
+})
