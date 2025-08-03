@@ -2,13 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusCircle, BookOpen, TrendingUp, Users, Building2 } from 'lucide-react';
 import Footer from './Footer';
-import { GoogleUser } from '../../types';
 
-interface HomeProps {
-  user: GoogleUser | null;
-}
-
-const Home: React.FC<HomeProps> = ({ user }) => {
+const Home: React.FC = () => {
   const stats = [
     { icon: Users, label: 'Students', value: 2500, suffix: '+' },
     { icon: Building2, label: 'Companies', value: 150, suffix: '+' },
@@ -53,35 +48,6 @@ const Home: React.FC<HomeProps> = ({ user }) => {
               Help others learn from your journey and build a stronger community.
             </p>
           </div>
-
-          {/* Mobile Sign-in Section (only show on mobile when not signed in) */}
-          {!user && (
-            <div className="md:hidden mb-8 p-6 bg-white rounded-xl shadow-lg mx-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-blue-900 mb-3">
-                  Join the Community
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Sign in to share your experiences and connect with fellow students
-                </p>
-                <div className="flex justify-center">
-                  <iframe 
-                    src="https://accounts.google.com/gsi/button?theme=outline&size=large&text=signin_with&shape=rectangular&width=250&is_fedcm_supported=true&client_id=751291179547-75l0g05ed5r4h6508mq9p02jiijjglo6.apps.googleusercontent.com&hl=en"
-                    className="border-0"
-                    allow="identity-credentials-get"
-                    title="Sign in with Google Button"
-                    style={{
-                      display: 'block',
-                      position: 'relative',
-                      width: '250px',
-                      height: '48px',
-                      border: '0px'
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
             <Link
