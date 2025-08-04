@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Home/Navigation';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Experience, GoogleUser } from './types';
-import { API_ENDPOINTS } from './config/api';
 
 // Lazy load components for better performance
 const Home = lazy(() => import('./components/Home/Home'));
@@ -13,7 +12,6 @@ const AdminDashboard = lazy(() => import('./components/Admin/AdminDashboard'));
 const ExperienceModal = lazy(() => import('./components/Experience/ExperienceModal'));
 
 function App() {
-  const [experiences, setExperiences] = useState<Experience[]>([]);
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [user, setUser] = useState<GoogleUser | null>(null);
@@ -31,24 +29,15 @@ function App() {
       }
     }
     
-    // Remove artificial loading delay for faster startup
-    const initializeApp = async () => {
-      await fetchExperiences();
-      // Set loading to false immediately after fetching
-      setIsLoading(false);
-    };
-
-    initializeApp();
+    // Remove experience fetching from startup for faster loading
+    // Experiences will be fetched only when needed
+    setIsLoading(false);
   }, []);
 
   const fetchExperiences = async () => {
-    try {
-      const response = await fetch(API_ENDPOINTS.EXPERIENCES);
-      const data = await response.json();
-      setExperiences(data);
-    } catch (error) {
-      console.error('Error fetching experiences:', error);
-    }
+    // This function is kept for PostExperience component compatibility
+    // Individual components now fetch their own data
+    console.log('Experience added successfully');
   };
 
   const handleLogin = (user: GoogleUser) => {
@@ -99,11 +88,7 @@ function App() {
               />
               <Route 
                 path="/experiences" 
-                element={
-                  <Experiences 
-                    experiences={experiences}
-                  />
-                } 
+                element={<Experiences />} 
               />
               <Route 
                 path="/admin" 

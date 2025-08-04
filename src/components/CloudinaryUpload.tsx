@@ -18,6 +18,7 @@ const CloudinaryUpload: React.FC<CloudinaryUploadProps> = ({
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -47,25 +48,34 @@ const CloudinaryUpload: React.FC<CloudinaryUploadProps> = ({
   };
 
   const handleFile = (file: File) => {
+    setIsProcessing(true);
+    
     // Validate file type
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!allowedTypes.includes(file.type)) {
       onUploadError('Invalid file type. Only PDF and Word documents are allowed.');
+      setIsProcessing(false);
       return;
     }
 
     // Validate file size
     if (file.size > maxSize * 1024 * 1024) {
       onUploadError(`File size must be less than ${maxSize}MB.`);
+      setIsProcessing(false);
       return;
     }
 
-    setSelectedFile(file);
-    onUploadSuccess(file);
+    // Simulate processing time for better UX
+    setTimeout(() => {
+      setSelectedFile(file);
+      setIsProcessing(false);
+      onUploadSuccess(file);
+    }, 500);
   };
 
   const removeFile = () => {
     setSelectedFile(null);
+    setIsProcessing(false);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -78,7 +88,21 @@ const CloudinaryUpload: React.FC<CloudinaryUploadProps> = ({
 
   return (
     <div className="w-full">
-      {!selectedFile ? (
+      {isProcessing ? (
+        <div className="border-2 border-dashed border-blue-300 rounded-lg p-6 text-center bg-blue-50">
+          <div className="space-y-4">
+            <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            </div>
+            <div>
+              <p className="text-lg font-semibold text-blue-700">Processing File...</p>
+              <p className="text-sm text-blue-600 mt-1">
+                Validating your document
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : !selectedFile ? (
         <div
           className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-200 ${
             dragActive 

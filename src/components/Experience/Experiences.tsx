@@ -1,13 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Filter, Calendar, User, Eye } from 'lucide-react';
 import { Experience, FilterOptions } from '../../types';
 import { API_ENDPOINTS } from '../../config/api';
 
-interface ExperiencesProps {
-  experiences: Experience[];
-}
-
-const Experiences: React.FC<ExperiencesProps> = ({ experiences }) => {
+const Experiences: React.FC = () => {
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<FilterOptions>({
     company: '',
     student: '',
@@ -16,6 +14,23 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences }) => {
     search: ''
   });
   const [showFilters, setShowFilters] = useState(false);
+
+  // Fetch experiences when component mounts
+  useEffect(() => {
+    const fetchExperiences = async () => {
+      try {
+        const response = await fetch(API_ENDPOINTS.EXPERIENCES);
+        const data = await response.json();
+        setExperiences(data);
+      } catch (error) {
+        console.error('Error fetching experiences:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchExperiences();
+  }, []);
 
   // Function to open PDF document directly
   const openPDF = (experience: Experience) => {
@@ -61,6 +76,20 @@ const Experiences: React.FC<ExperiencesProps> = ({ experiences }) => {
 
   const uniqueCompanies = [...new Set(experiences.map(exp => exp.company))].sort();
   const uniqueYears = [...new Set(experiences.map(exp => exp.graduationYear))].sort((a, b) => b - a);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-blue-900 font-medium">Loading experiences...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">

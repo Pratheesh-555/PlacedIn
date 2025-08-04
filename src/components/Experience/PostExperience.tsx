@@ -30,6 +30,7 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
     setIsSubmitting(true);
     setError('');
     setErrors({});
+    setUploadProgress(0);
 
     // Validation
     const newErrors: Record<string, string> = {};
@@ -43,6 +44,9 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
       setIsSubmitting(false);
       return;
     }
+
+    // Small delay to show "Preparing upload..." state
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     try {
       // Submit the experience with the file directly using XMLHttpRequest for progress
@@ -69,7 +73,10 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
       // Use XMLHttpRequest for upload progress
       const xhr = new XMLHttpRequest();
       
-      return new Promise((resolve, reject) => {
+      // Set initial progress to show the bar
+      setUploadProgress(1);
+      
+      await new Promise((resolve, reject) => {
         xhr.upload.addEventListener('progress', (event) => {
           if (event.lengthComputable) {
             const percentComplete = (event.loaded / event.total) * 100;
@@ -80,6 +87,7 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
         xhr.addEventListener('load', () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             setSubmitted(true);
+            setIsSubmitting(false); // Move here
             onSuccess();
             setTimeout(() => {
               setSubmitted(false);
@@ -95,12 +103,22 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
             }, 3000);
             resolve(xhr.response);
           } else {
-            const errorData = JSON.parse(xhr.responseText);
-            throw new Error(errorData.error || 'Failed to submit experience');
+            try {
+              const errorData = JSON.parse(xhr.responseText);
+              setError(errorData.error || 'Failed to submit experience');
+            } catch {
+              setError('Failed to submit experience. Please try again.');
+            }
+            setIsSubmitting(false); // Move here
+            setUploadProgress(0);
+            reject(new Error('Failed to submit experience'));
           }
         });
 
         xhr.addEventListener('error', () => {
+          setError('Network error occurred. Please try again.');
+          setIsSubmitting(false); // Move here
+          setUploadProgress(0);
           reject(new Error('Network error occurred'));
         });
 
@@ -109,8 +127,8 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit experience. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Also here for any other errors
+      setUploadProgress(0);
     }
   };
 
@@ -280,31 +298,66 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
             )}
 
             {/* Upload Progress Bar */}
-            {isSubmitting && uploadProgress > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-blue-700">Uploading...</span>
-                  <span className="text-sm font-medium text-blue-700">{uploadProgress}%</span>
+            {isSubmitting && (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                    <span className="text-lg font-semibold text-blue-800">
+                      {uploadProgress === 0 || uploadProgress === 1 ? 'Preparing upload...' : 
+                       uploadProgress < 100 ? 'Uploading your document' : 'Processing...'}
+                    </span>
+                  </div>
+                  <span className="text-xl font-bold text-blue-800">{uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-blue-200 rounded-full h-2">
+                
+                {/* Progress Bar */}
+                <div className="w-full bg-blue-200 rounded-full h-4 mb-3 overflow-hidden shadow-inner">
                   <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 h-4 rounded-full transition-all duration-300 ease-out shadow-sm"
+                    style={{ width: `${Math.max(uploadProgress, 2)}%` }}
+                  >
+                    <div className="h-full w-full bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
+                  </div>
                 </div>
-                <p className="text-xs text-blue-600 mt-2">Please wait while we upload your document...</p>
+                
+                {/* Progress Text */}
+                <div className="flex justify-between text-sm text-blue-700">
+                  <span>
+                    {(uploadProgress === 0 || uploadProgress === 1) && 'Getting ready...'}
+                    {uploadProgress > 1 && uploadProgress < 30 && 'Starting upload...'}
+                    {uploadProgress >= 30 && uploadProgress < 70 && 'Uploading document...'}
+                    {uploadProgress >= 70 && uploadProgress < 100 && 'Almost done...'}
+                    {uploadProgress === 100 && 'Processing...'}
+                  </span>
+                  <span>{uploadProgress < 100 ? 'Please wait' : 'Finalizing'}</span>
+                </div>
+                
+                {uploadProgress > 1 && (
+                  <p className="text-xs text-blue-600 mt-3 text-center font-medium">
+                    📄 Your experience is being uploaded securely
+                  </p>
+                )}
               </div>
             )}
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
+              className={`w-full py-4 px-6 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
+                isSubmitting 
+                  ? 'bg-blue-400 cursor-not-allowed' 
+                  : 'bg-blue-600 hover:bg-blue-700 hover:scale-105 transform'
+              } text-white shadow-lg`}
             >
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>{uploadProgress > 0 ? `Uploading... ${uploadProgress}%` : 'Submitting...'}</span>
+                  <span>
+                    {uploadProgress === 0 && 'Preparing...'}
+                    {uploadProgress > 0 && uploadProgress < 100 && `Uploading ${uploadProgress}%`}
+                    {uploadProgress === 100 && 'Processing...'}
+                  </span>
                 </>
               ) : (
                 <>
