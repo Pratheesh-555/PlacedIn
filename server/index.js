@@ -2,7 +2,9 @@ import express from 'express';
 import mongoose from 'mongoose';    
 import cors from 'cors';
 import dotenv from 'dotenv';
-dotenv.config();
+
+// Load environment variables
+dotenv.config({ silent: true });
 
 async function startServer() {
   const app = express();
@@ -65,10 +67,7 @@ async function startServer() {
   });
 
   // MongoDB connection
-  mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 

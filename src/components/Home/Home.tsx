@@ -13,25 +13,64 @@ const Home: React.FC = () => {
 
   // Animated values state
   const [animatedStats, setAnimatedStats] = useState(stats.map(() => 0));
+  const [cardsVisible, setCardsVisible] = useState(false);
+  
   useEffect(() => {
     let raf: number;
     const duration = 1200;
-    const startTime = performance.now();
-    const animate = (now: number) => {
-      const elapsed = now - startTime;
-      setAnimatedStats(stats.map((s) => {
-        const progress = Math.min(elapsed / duration, 1);
-        return Math.floor(progress * s.value);
-      }));
-      if (elapsed < duration) {
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      const newValues = stats.map((stat) => {
+        const easeProgress = 1 - Math.pow(1 - progress, 3); // Ease-out cubic
+        return Math.floor(stat.value * easeProgress);
+      });
+
+      setAnimatedStats(newValues);
+
+      if (progress < 1) {
         raf = requestAnimationFrame(animate);
-      } else {
-        setAnimatedStats(stats.map(s => s.value));
       }
     };
-    raf = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    const timer = setTimeout(() => {
+      animate();
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+      if (raf) {
+        cancelAnimationFrame(raf);
+      }
+    };
+  }, []);
+
+  // Intersection Observer for card animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.target.id === 'features-section') {
+            setCardsVisible(true);
+          }
+        });
+      },
+      { threshold: 0.3 } // Trigger when 30% of the section is visible
+    );
+
+    const featuresSection = document.getElementById('features-section');
+    if (featuresSection) {
+      observer.observe(featuresSection);
+    }
+
+    return () => {
+      if (featuresSection) {
+        observer.unobserve(featuresSection);
+      }
+    };
   }, []);
 
   return (
@@ -84,14 +123,18 @@ const Home: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <section id="features-section" className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold text-center text-blue-900 mb-12">
             Why Share Your Experience?
           </h2>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
+            <div className={`text-center transform transition-all duration-700 ease-out ${
+              cardsVisible 
+                ? 'translate-x-0 opacity-100' 
+                : '-translate-x-full opacity-0'
+            }`} style={{ transitionDelay: '0ms' }}>
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Users size={32} className="text-blue-600" />
               </div>
@@ -101,7 +144,11 @@ const Home: React.FC = () => {
               </p>
             </div>
             
-            <div className="text-center">
+            <div className={`text-center transform transition-all duration-700 ease-out ${
+              cardsVisible 
+                ? 'translate-y-0 opacity-100' 
+                : 'translate-y-full opacity-0'
+            }`} style={{ transitionDelay: '200ms' }}>
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Building2 size={32} className="text-blue-600" />
               </div>
@@ -111,7 +158,11 @@ const Home: React.FC = () => {
               </p>
             </div>
             
-            <div className="text-center">
+            <div className={`text-center transform transition-all duration-700 ease-out ${
+              cardsVisible 
+                ? 'translate-x-0 opacity-100' 
+                : 'translate-x-full opacity-0'
+            }`} style={{ transitionDelay: '400ms' }}>
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <TrendingUp size={32} className="text-blue-600" />
               </div>

@@ -108,7 +108,11 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
           <img 
             src={user.picture} 
             alt={user.name}
-            className="w-8 h-8 rounded-full"
+            className="w-8 h-8 rounded-full object-cover border-2 border-blue-100"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=3b82f6&color=ffffff&size=128`;
+            }}
           />
           <span className="text-sm font-medium text-gray-700">{user.name}</span>
         </div>

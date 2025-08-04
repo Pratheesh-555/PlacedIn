@@ -43,7 +43,7 @@ const Footer: React.FC = () => {
       name: "Pratheesh Krishnan",
       role: "Developer",
       linkedin: "https://www.linkedin.com/in/pratheesh-krishnan-30b08a282?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
-      avatar: "https://media.licdn.com/dms/image/v2/D5603AQHtiMA8pl5zrg/profile-displayphoto-shrink_400_400/B56ZcGKtOeGoAk-/0/1748155161590?e=1756944000&v=beta&t=5Nn7cvP_0XjuAoW-inlWz6a26qQRx1X0X2ZN3pUQQtI"
+      avatar: "https://media.licdn.com/dms/image/v2/D5603AQGiNkdeVQY26A/profile-displayphoto-scale_400_400/B56ZhvOVd.HkAg-/0/1754212689852?e=1756944000&v=beta&t=Vdd_6EwpWdQaOS49iIag9yIALtvuP9moBJhsumrKPNM"
     },
     {
       name: "Sai Vaishnavi Poreddy",

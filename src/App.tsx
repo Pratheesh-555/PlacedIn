@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Home/Navigation';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Experience, GoogleUser } from './types';
+import { PropagateLoader } from 'react-spinners';
 
 // Lazy load components for better performance
 const Home = lazy(() => import('./components/Home/Home'));
@@ -29,9 +30,12 @@ function App() {
       }
     }
     
-    // Remove experience fetching from startup for faster loading
-    // Experiences will be fetched only when needed
-    setIsLoading(false);
+    // Show nice loading screen for 1.5 seconds for better UX
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const fetchExperiences = async () => {
@@ -53,13 +57,21 @@ function App() {
     setIsModalOpen(false);
   };
 
-  // Show loading screen with custom loader
+  // Show loading screen with PropagateLoader
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="animate-pulse">
-          <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-4"></div>
-          <p className="text-blue-900 font-semibold">Loading PlacedIn...</p>
+        <div className="text-center">
+          <div className="mb-8">
+            <PropagateLoader 
+              color="#2563eb" 
+              size={15}
+              speedMultiplier={1.2}
+            />
+          </div>
+          
+          <h2 className="text-3xl font-bold text-blue-900 mb-3">PlacedIn</h2>
+          <p className="text-blue-700 font-medium text-lg">Loading your experience hub...</p>
         </div>
       </div>
     );
