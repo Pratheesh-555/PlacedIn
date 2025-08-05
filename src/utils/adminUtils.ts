@@ -3,7 +3,7 @@ import { GoogleUser } from '../types';
 // Define admin email addresses
 export const ADMIN_EMAILS = [
   'pratheeshkrishnan595@gmail.com', // Add your admin email
-  'saivaishnaviporeddy@gmail.com',               // Add domain admin email
+  'poreddysaivaishnavi@gmail.com',               // Add domain admin email
   // Add more admin emails here as needed
 ];
 
