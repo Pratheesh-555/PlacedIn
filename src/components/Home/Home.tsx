@@ -3,16 +3,17 @@ import { Link } from 'react-router-dom';
 import { PlusCircle, BookOpen, TrendingUp, Users, Building2 } from 'lucide-react';
 import Footer from './Footer';
 
-const Home: React.FC = () => {
-  const stats = [
-    { icon: Users, label: 'Students', value: 2500, suffix: '+' },
-    { icon: Building2, label: 'Companies', value: 150, suffix: '+' },
-    { icon: BookOpen, label: 'Experiences', value: 800, suffix: '+' },
-    { icon: TrendingUp, label: 'Success Rate', value: 95, suffix: '%' },
-  ];
+// Constants moved outside component to avoid recreation on each render
+const STATS = [
+  { icon: Users, label: 'Students', value: 2500, suffix: '+' },
+  { icon: Building2, label: 'Companies', value: 150, suffix: '+' },
+  { icon: BookOpen, label: 'Experiences', value: 800, suffix: '+' },
+  { icon: TrendingUp, label: 'Success Rate', value: 95, suffix: '%' },
+];
 
+const Home: React.FC = () => {
   // Animated values state
-  const [animatedStats, setAnimatedStats] = useState(stats.map(() => 0));
+  const [animatedStats, setAnimatedStats] = useState(STATS.map(() => 0));
   const [cardsVisible, setCardsVisible] = useState(false);
   
   useEffect(() => {
@@ -24,7 +25,7 @@ const Home: React.FC = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
-      const newValues = stats.map((stat) => {
+      const newValues = STATS.map((stat) => {
         const easeProgress = 1 - Math.pow(1 - progress, 3); // Ease-out cubic
         return Math.floor(stat.value * easeProgress);
       });
@@ -107,7 +108,7 @@ const Home: React.FC = () => {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-            {stats.map(({ icon: Icon, label, suffix }, i) => (
+            {STATS.map(({ icon: Icon, label, suffix }, i) => (
               <div key={label} className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-200">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Icon size={24} className="text-blue-600" />

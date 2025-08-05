@@ -4,11 +4,11 @@ export interface Experience {
   email: string;
   company: string;
   graduationYear: number;
-  experienceText: string;
-  documentUrl: string;
-  documentName: string;
+  experienceText: string; // Now required for text-based experiences
+  documentName?: string; // Optional for backward compatibility
   type: 'placement' | 'internship';
   isApproved?: boolean;
+  createdAt?: string;
   postedBy?: {
     googleId: string;
     name: string;
@@ -23,7 +23,6 @@ export interface Experience {
   };
   approvedAt?: string;
   rejectionReason?: string;
-  createdAt?: string;
   updatedAt?: string;
 }
 

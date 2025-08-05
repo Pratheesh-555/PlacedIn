@@ -2,10 +2,12 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Filter, Calendar, User, Eye } from 'lucide-react';
 import { Experience, FilterOptions } from '../../types';
 import { API_ENDPOINTS } from '../../config/api';
+import ExperienceModal from './ExperienceModal';
 
 const Experiences: React.FC = () => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
     company: '',
     student: '',
@@ -32,14 +34,20 @@ const Experiences: React.FC = () => {
     fetchExperiences();
   }, []);
 
-  // Function to open PDF document directly
-  const openPDF = (experience: Experience) => {
-    const documentUrl = `${API_ENDPOINTS.EXPERIENCES}/${experience._id}/document`;
-    try {
-      window.open(documentUrl, '_blank', 'width=800,height=600,scrollbars=yes,toolbar=no,menubar=no');
-    } catch (error) {
-      console.error('Error opening PDF:', error);
-      alert('Unable to open document. Please try again.');
+  // Function to open experience (modal for text, fallback for files)
+  const openExperience = (experience: Experience) => {
+    if (experience.experienceText && experience.experienceText.trim()) {
+      // Text-based experience - open in modal
+      setSelectedExperience(experience);
+    } else {
+      // Fallback for older file-based entries
+      const documentUrl = `${API_ENDPOINTS.EXPERIENCES}/${experience._id}/document`;
+      try {
+        window.open(documentUrl, '_blank', 'width=800,height=600,scrollbars=yes,toolbar=no,menubar=no');
+      } catch (error) {
+        console.error('Error opening document:', error);
+        alert('Unable to open experience. Please try again.');
+      }
     }
   };
 
@@ -225,11 +233,11 @@ const Experiences: React.FC = () => {
                     {new Date(experience.createdAt || '').toLocaleDateString()}
                   </div>
                   <button
-                    onClick={() => openPDF(experience)}
+                    onClick={() => openExperience(experience)}
                     className="flex items-center space-x-1 text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors"
                   >
                     <Eye size={14} />
-                    <span>View Document</span>
+                    <span>{experience.experienceText ? 'Read Experience' : 'View Document'}</span>
                   </button>
                 </div>
               </div>
@@ -255,6 +263,14 @@ const Experiences: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Experience Modal */}
+      {selectedExperience && (
+        <ExperienceModal
+          experience={selectedExperience}
+          onClose={() => setSelectedExperience(null)}
+        />
+      )}
     </div>
   );
 };

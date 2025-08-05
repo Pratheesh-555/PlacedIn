@@ -1,8 +1,6 @@
 import express from 'express';
 import multer from 'multer';
 import Experience from '../models/Experience.js';
-import cloudinary from '../config/cloudinary.js';
-import axios from 'axios';
 
 const router = express.Router();
 
@@ -54,6 +52,7 @@ router.post('/', upload.single('document'), async (req, res) => {
       company, 
       graduationYear, 
       type,
+      experienceText,
       postedBy 
     } = req.body;
 
@@ -63,9 +62,15 @@ router.post('/', upload.single('document'), async (req, res) => {
       return res.status(400).json({ error: 'All required fields must be provided' });
     }
 
-    if (!req.file) {
-      console.log('No file uploaded');
-      return res.status(400).json({ error: 'Document upload is required' });
+    // Check if either experienceText or file is provided
+    if (!experienceText && !req.file) {
+      console.log('No experience text or file provided');
+      return res.status(400).json({ error: 'Either experience text or document upload is required' });
+    }
+
+    // If experienceText is provided, validate minimum length
+    if (experienceText && experienceText.trim().length < 50) {
+      return res.status(400).json({ error: 'Experience text must be at least 50 characters long' });
     }
 
     if (!['placement', 'internship'].includes(type)) {
@@ -85,45 +90,21 @@ router.post('/', upload.single('document'), async (req, res) => {
       }
     }
 
-    // Temporary fallback: Store in MongoDB if Cloudinary fails
+    // Handle file upload if present
     let documentUrl = null;
     let documentPublicId = null;
     
-    try {
-      // Try Cloudinary upload first
-      console.log('Uploading file to Cloudinary...');
-      console.log('Cloudinary config check:', {
-        cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'not set',
-        apiKeyExists: !!process.env.CLOUDINARY_API_KEY,
-        apiSecretExists: !!process.env.CLOUDINARY_API_SECRET
-      });
-      
-      const uploadResult = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream(
-          {
-            resource_type: "raw", // For PDFs and other documents
-            folder: "placedin_documents",
-            public_id: `${studentName.replace(/\s+/g, '_')}_${company.replace(/\s+/g, '_')}_${Date.now()}`,
-          },
-          (error, result) => {
-            if (error) {
-              console.error('Cloudinary upload error:', error);
-              reject(new Error(`Cloudinary upload failed: ${error.message}`));
-            } else {
-              console.log('Cloudinary upload success:', result?.secure_url);
-              resolve(result);
-            }
-          }
-        ).end(req.file.buffer);
-      });
-      
-      documentUrl = uploadResult.secure_url;
-      documentPublicId = uploadResult.public_id;
-      console.log('Using Cloudinary storage');
-      
-    } catch (cloudinaryError) {
-      console.warn('Cloudinary upload failed, falling back to MongoDB storage:', cloudinaryError.message);
-      // Don't throw error, continue with MongoDB storage
+    // Handle file upload if present (store in MongoDB only)
+    if (req.file) {
+      try {
+        console.log('Storing file in MongoDB...');
+        documentUrl = null; // No Cloudinary, so no URL
+        documentPublicId = null; // No Cloudinary, so no public ID
+        console.log('Using MongoDB storage');
+      } catch (error) {
+        console.error('File processing failed:', error);
+        return res.status(500).json({ error: 'File processing failed' });
+      }
     }
 
     // Create new experience with flexible storage
@@ -132,25 +113,22 @@ router.post('/', upload.single('document'), async (req, res) => {
       email: email.trim().toLowerCase(),
       company: company.trim(),
       graduationYear: parseInt(graduationYear),
-      experienceText: '', // Optional field, can be empty
-      documentName: req.file.originalname.trim(),
+      experienceText: experienceText ? experienceText.trim() : '', // Handle text-based experiences
       type,
       postedBy: parsedPostedBy,
       isApproved: false // Normal workflow: requires admin approval
     };
     
-    // Add Cloudinary fields if upload was successful
-    if (documentUrl && documentPublicId) {
-      experienceData.documentUrl = documentUrl;
-      experienceData.documentPublicId = documentPublicId;
-      console.log('Experience will use Cloudinary storage');
-    } else {
-      // Fallback to MongoDB storage
+    // Add file-related fields only if file was uploaded
+    if (req.file) {
+      experienceData.documentName = req.file.originalname.trim();
+      
+      // Store file in MongoDB
       experienceData.document = {
         data: req.file.buffer,
         contentType: req.file.mimetype
       };
-      console.log('Experience will use MongoDB storage (fallback)');
+      console.log('Experience will use MongoDB storage');
     }
     
     console.log('Creating experience with data:', experienceData);

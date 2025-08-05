@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Calendar, User, Tag } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { X, Calendar, User } from 'lucide-react';
 import { Experience } from '../../types';
 
 interface ExperienceModalProps {
@@ -8,6 +8,22 @@ interface ExperienceModalProps {
 }
 
 const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, onClose }) => {
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [onClose]);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
@@ -23,10 +39,9 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, onClose }
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar size={16} />
-                  <span>{experience.graduationYear}</span>
+                  <span>Class of {experience.graduationYear}</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Tag size={16} />
                   <span className="capitalize">{experience.type}</span>
                 </div>
               </div>

@@ -2,12 +2,13 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Home/Navigation';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
 import { Experience, GoogleUser } from './types';
 import { PropagateLoader } from 'react-spinners';
 
 // Lazy load components for better performance
 const Home = lazy(() => import('./components/Home/Home'));
-const PostExperience = lazy(() => import('./components/Experience/PostExperience'));
+const PostExperience = lazy(() => import('./components/Experience/PostExperience_NEW'));
 const Experiences = lazy(() => import('./components/Experience/Experiences'));
 const AdminDashboard = lazy(() => import('./components/Admin/AdminDashboard'));
 const ExperienceModal = lazy(() => import('./components/Experience/ExperienceModal'));
@@ -105,9 +106,9 @@ function App() {
               <Route 
                 path="/admin" 
                 element={
-                  <ProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
+                  <AdminProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
                     <AdminDashboard user={user} onUpdate={fetchExperiences} />
-                  </ProtectedRoute>
+                  </AdminProtectedRoute>
                 } 
               />
             </Routes>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Eye, Download, Calendar, User, Building2, AlertCircle, Trash2, Users, Bell } from 'lucide-react';
+import { Check, Eye, Calendar, User, Building2, AlertCircle, Trash2, Users, Bell } from 'lucide-react';
 import { Experience, GoogleUser } from '../../types';
 import { API_ENDPOINTS } from '../../config/api';
 import NotificationManager from './NotificationManager';
@@ -104,18 +104,35 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
     }
   };
 
-  const viewDocument = (experience: Experience) => {
-    const documentUrl = `${API_ENDPOINTS.ADMIN}/document/${experience._id}`;
-    window.open(documentUrl, '_blank', 'width=800,height=600,scrollbars=yes,toolbar=no,menubar=no');
-  };
-
-  const downloadDocument = (experience: Experience) => {
-    const link = document.createElement('a');
-    link.href = `${API_ENDPOINTS.ADMIN}/document/${experience._id}`;
-    link.download = experience.documentName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const viewExperienceText = (experience: Experience) => {
+    // Create a modal to display the experience text
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50';
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 class="text-xl font-semibold text-gray-900">Experience by ${experience.studentName}</h2>
+          <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="p-6 overflow-y-auto max-h-[70vh]">
+          <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div><strong>Company:</strong> ${experience.company}</div>
+            <div><strong>Graduation Year:</strong> ${experience.graduationYear}</div>
+            <div><strong>Type:</strong> ${experience.type}</div>
+            <div><strong>Email:</strong> ${experience.email}</div>
+          </div>
+          <div class="border-t pt-4">
+            <h3 class="font-semibold text-gray-900 mb-3">Experience Content:</h3>
+            <div class="prose max-w-none text-gray-700 whitespace-pre-wrap">${experience.experienceText || 'No experience text available'}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
   };
 
   if (loading) {
@@ -220,8 +237,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
                       isPending={true}
                       onApprove={handleApprove}
                       onDelete={handleDelete}
-                      onViewDocument={viewDocument}
-                      onDownloadDocument={downloadDocument}
+                      onViewExperience={viewExperienceText}
                       isProcessing={processingId === experience._id}
                     />
                   ))}
@@ -243,8 +259,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
                       isPending={false}
                       onApprove={handleApprove}
                       onDelete={handleDelete}
-                      onViewDocument={viewDocument}
-                      onDownloadDocument={downloadDocument}
+                      onViewExperience={viewExperienceText}
                       isProcessing={processingId === experience._id}
                     />
                   ))}
@@ -265,8 +280,7 @@ interface ExperienceCardProps {
   isPending: boolean;
   onApprove: (experience: Experience) => void;
   onDelete: (experience: Experience) => void;
-  onViewDocument: (experience: Experience) => void;
-  onDownloadDocument: (experience: Experience) => void;
+  onViewExperience: (experience: Experience) => void;
   isProcessing: boolean;
 }
 
@@ -275,8 +289,7 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
   isPending,
   onApprove,
   onDelete,
-  onViewDocument,
-  onDownloadDocument,
+  onViewExperience,
   isProcessing
 }) => {
   return (
@@ -308,25 +321,29 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
               <span className="capitalize font-medium">{experience.type}</span>
             </div>
           </div>
+
+          {/* Experience Preview */}
+          {experience.experienceText && (
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <h4 className="font-medium text-gray-900 mb-2">Experience Preview:</h4>
+              <p className="text-sm text-gray-700 line-clamp-3">
+                {experience.experienceText.length > 150 
+                  ? `${experience.experienceText.substring(0, 150)}...` 
+                  : experience.experienceText}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <button
-            onClick={() => onViewDocument(experience)}
+            onClick={() => onViewExperience(experience)}
             className="flex items-center space-x-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
           >
             <Eye size={16} />
-            <span>View PDF</span>
-          </button>
-          
-          <button
-            onClick={() => onDownloadDocument(experience)}
-            className="flex items-center space-x-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            <Download size={16} />
-            <span>Download</span>
+            <span>View Full Experience</span>
           </button>
         </div>
 

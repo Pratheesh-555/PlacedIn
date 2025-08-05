@@ -28,27 +28,16 @@ const ExperienceSchema = new mongoose.Schema({
   },
   experienceText: {
     type: String,
-    required: false,
-    minlength: 0,
-    maxlength: 5000
+    required: true,
+    minlength: 50,  // Minimum 50 characters for meaningful content
+    maxlength: 10000  // Increased to 10,000 characters for detailed experiences
   },
   document: {
     data: Buffer,
     contentType: String
   },
-  // New Cloudinary fields
-  documentUrl: {
-    type: String,
-    required: false // Optional for backward compatibility
-  },
-  documentPublicId: {
-    type: String,
-    required: false // Optional for backward compatibility
-  },
-
   documentName: {
     type: String,
-    required: true,
     trim: true
   },
   type: {
