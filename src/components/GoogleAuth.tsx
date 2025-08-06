@@ -108,17 +108,17 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
           <img 
             src={user.picture} 
             alt={user.name}
-            className="w-8 h-8 rounded-full object-cover border-2 border-blue-100"
+            className="w-8 h-8 rounded-full object-cover border-2 border-blue-100 dark:border-blue-400"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=3b82f6&color=ffffff&size=128`;
             }}
           />
-          <span className="text-sm font-medium text-gray-700">{user.name}</span>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{user.name}</span>
         </div>
         <button
           onClick={handleLogout}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
           Sign Out
         </button>
@@ -134,7 +134,7 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
         style={{ minHeight: '40px' }}
       ></div>
       {isLoading && (
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 ml-2"></div>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400 ml-2"></div>
       )}
     </div>
   );

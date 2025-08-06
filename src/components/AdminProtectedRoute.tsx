@@ -20,16 +20,16 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
   // Check if user is logged in
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4 transition-colors duration-300">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield size={32} className="text-red-600" />
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Shield size={32} className="text-red-600 dark:text-red-400" />
             </div>
-            <h2 className="text-2xl font-bold text-red-900 mb-4">
+            <h2 className="text-2xl font-bold text-red-900 dark:text-red-100 mb-4">
               Admin Access Required
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Please sign in with an authorized admin account to access the admin panel
             </p>
           </div>
@@ -43,7 +43,7 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
           </div>
           
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Only authorized administrators can access this area
             </p>
           </div>
@@ -57,24 +57,24 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
   
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4 transition-colors duration-300">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle size={32} className="text-red-600" />
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle size={32} className="text-red-600 dark:text-red-400" />
             </div>
-            <h2 className="text-2xl font-bold text-red-900 mb-4">
+            <h2 className="text-2xl font-bold text-red-900 dark:text-red-100 mb-4">
               Access Denied
             </h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               You don't have permission to access the admin panel.
             </p>
-            <div className="bg-gray-100 rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-600">
+            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 mb-6">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Signed in as: <span className="font-medium">{user.email}</span>
               </p>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Contact the system administrator if you believe this is an error.
             </p>
           </div>
@@ -82,13 +82,13 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
           <div className="flex justify-center space-x-4">
             <button
               onClick={() => window.history.back()}
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+              className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
             >
               Go Back
             </button>
             <button
               onClick={onLogout}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              className="px-4 py-2 bg-red-600 dark:bg-red-500 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors"
             >
               Sign Out
             </button>

@@ -88,11 +88,11 @@ const Experiences: React.FC = () => {
   // Show loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-blue-900 font-medium">Loading experiences...</span>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
+            <span className="ml-3 text-blue-900 dark:text-blue-100 font-medium">Loading experiences...</span>
           </div>
         </div>
       </div>
@@ -100,35 +100,35 @@ const Experiences: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-blue-900 mb-4">Student Experiences</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-4">Student Experiences</h1>
+          <p className="text-gray-600 dark:text-gray-300">
             Discover insights from {filteredExperiences.length} placement and internship experiences
           </p>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4 items-center">
             {/* Search Bar */}
             <div className="relative flex-1">
-              <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search experiences, companies, or students..."
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
 
             {/* Filter Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 px-4 py-3 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+              className="flex items-center space-x-2 px-4 py-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
             >
               <Filter size={20} />
               <span>Filters</span>
@@ -137,14 +137,14 @@ const Experiences: React.FC = () => {
 
           {/* Advanced Filters */}
           {showFilters && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Company</label>
                   <select
                     value={filters.company}
                     onChange={(e) => handleFilterChange('company', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   >
                     <option value="">All Companies</option>
                     {uniqueCompanies.map(company => (
@@ -154,11 +154,11 @@ const Experiences: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Graduation Year</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Graduation Year</label>
                   <select
                     value={filters.graduationYear}
                     onChange={(e) => handleFilterChange('graduationYear', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   >
                     <option value="">All Years</option>
                     {uniqueYears.map(year => (
@@ -168,11 +168,11 @@ const Experiences: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
                   <select
                     value={filters.type}
                     onChange={(e) => handleFilterChange('type', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   >
                     <option value="">All Types</option>
                     <option value="placement">Placement</option>
@@ -183,7 +183,7 @@ const Experiences: React.FC = () => {
                 <div className="flex items-end">
                   <button
                     onClick={clearFilters}
-                    className="w-full px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="w-full px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Clear Filters
                   </button>
@@ -198,13 +198,13 @@ const Experiences: React.FC = () => {
           {filteredExperiences.map((experience) => (
             <div
               key={experience._id}
-              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-all duration-200 transform hover:scale-105"
             >
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-blue-900 mb-2">{experience.company}</h3>
-                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                    <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-100 mb-2">{experience.company}</h3>
+                    <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
                       <div className="flex items-center space-x-1">
                         <User size={14} />
                         <span>{experience.studentName}</span>
@@ -217,24 +217,24 @@ const Experiences: React.FC = () => {
                   </div>
                   <div className={`px-3 py-1 rounded-full text-xs font-medium ${
                     experience.type === 'placement' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-blue-100 text-blue-800'
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
+                      : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
                   }`}>
                     {experience.type.charAt(0).toUpperCase() + experience.type.slice(1)}
                   </div>
                 </div>
 
-                <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+                <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4">
                   {experience.experienceText}
                 </p>
 
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                  <div className="text-xs text-gray-500">
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
                     {new Date(experience.createdAt || '').toLocaleDateString()}
                   </div>
                   <button
                     onClick={() => openExperience(experience)}
-                    className="flex items-center space-x-1 text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors"
+                    className="flex items-center space-x-1 text-blue-600 dark:text-blue-400 text-sm font-medium hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                   >
                     <Eye size={14} />
                     <span>{experience.experienceText ? 'Read Experience' : 'View Document'}</span>
@@ -247,13 +247,13 @@ const Experiences: React.FC = () => {
 
         {filteredExperiences.length === 0 && (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search size={32} className="text-gray-400" />
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search size={32} className="text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">
               {experiences.length === 0 ? 'No experiences shared yet' : 'No experiences match your filters'}
             </h3>
-            <p className="text-gray-500 mb-6">
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
               {experiences.length === 0 
                 ? 'Be the first to share your placement or internship journey with fellow students!'
                 : 'Try adjusting your search criteria or filters'

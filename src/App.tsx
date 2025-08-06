@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Home/Navigation';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { Experience, GoogleUser } from './types';
 import { PropagateLoader } from 'react-spinners';
 
@@ -61,70 +62,74 @@ function App() {
   // Show loading screen with PropagateLoader
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="mb-8">
-            <PropagateLoader 
-              color="#2563eb" 
-              size={15}
-              speedMultiplier={1.2}
-            />
+      <ThemeProvider>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900 flex items-center justify-center transition-colors duration-300">
+          <div className="text-center">
+            <div className="mb-8">
+              <PropagateLoader 
+                color="#2563eb" 
+                size={15}
+                speedMultiplier={1.2}
+              />
+            </div>
+            
+            <h2 className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-3">PlacedIn</h2>
+            <p className="text-blue-700 dark:text-blue-300 font-medium text-lg">Loading your experience hub...</p>
           </div>
-          
-          <h2 className="text-3xl font-bold text-blue-900 mb-3">PlacedIn</h2>
-          <p className="text-blue-700 font-medium text-lg">Loading your experience hub...</p>
         </div>
-      </div>
+      </ThemeProvider>
     );
   }
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} />
-        
-        <main className="pt-16">
-          <Suspense fallback={
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-          }>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route 
-                path="/post" 
-                element={
-                  <ProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
-                    <PostExperience onSuccess={fetchExperiences} user={user} />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/experiences" 
-                element={<Experiences />} 
-              />
-              <Route 
-                path="/admin" 
-                element={
-                  <AdminProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
-                    <AdminDashboard user={user} onUpdate={fetchExperiences} />
-                  </AdminProtectedRoute>
-                } 
-              />
-            </Routes>
-          </Suspense>
-        </main>
+    <ThemeProvider>
+      <Router>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+          <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} />
+          
+          <main className="pt-16">
+            <Suspense fallback={
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
+              </div>
+            }>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route 
+                  path="/post" 
+                  element={
+                    <ProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
+                      <PostExperience onSuccess={fetchExperiences} user={user} />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/experiences" 
+                  element={<Experiences />} 
+                />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <AdminProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
+                      <AdminDashboard user={user} onUpdate={fetchExperiences} />
+                    </AdminProtectedRoute>
+                  } 
+                />
+              </Routes>
+            </Suspense>
+          </main>
 
-        {isModalOpen && selectedExperience && (
-          <Suspense fallback={<div>Loading...</div>}>
-            <ExperienceModal 
-              experience={selectedExperience} 
-              onClose={closeModal} 
-            />
-          </Suspense>
-        )}
-      </div>
-    </Router>
+          {isModalOpen && selectedExperience && (
+            <Suspense fallback={<div>Loading...</div>}>
+              <ExperienceModal 
+                experience={selectedExperience} 
+                onClose={closeModal} 
+              />
+            </Suspense>
+          )}
+        </div>
+      </Router>
+    </ThemeProvider>
   );
 }
 

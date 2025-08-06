@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, PlusCircle, BookOpen, Settings, LogOut } from 'lucide-react';
 import GoogleAuth from '../GoogleAuth';
 import NotificationBell from './NotificationBell';
+import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import { GoogleUser } from '../../types';
 
 interface NavigationProps {
@@ -30,17 +31,17 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white shadow-lg z-50 border-b-2 border-blue-600">
+    <nav className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-lg z-50 border-b-2 border-blue-600 dark:border-blue-500 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-lg">S</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-blue-900">SASTRA</h1>
-              <p className="text-xs text-gray-600">PlacedIn</p>
+              <h1 className="text-xl font-bold text-blue-900 dark:text-blue-100">SASTRA</h1>
+              <p className="text-xs text-gray-600 dark:text-gray-300">PlacedIn</p>
             </div>
           </div>
 
@@ -52,8 +53,8 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
                 to={path}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                   isActive(path)
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
+                    ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-md'
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400'
                 }`}
               >
                 <Icon size={18} />
@@ -64,22 +65,23 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
 
           {/* User Menu */}
           <div className="hidden md:flex items-center space-x-4">
+            <ThemeToggle />
             {user && <NotificationBell />}
             {user ? (
               <div className="flex items-center space-x-2">
                 <img 
                   src={user.picture} 
                   alt={user.name}
-                  className="w-8 h-8 rounded-full object-cover border-2 border-blue-100"
+                  className="w-8 h-8 rounded-full object-cover border-2 border-blue-100 dark:border-blue-400"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=3b82f6&color=ffffff&size=128`;
                   }}
                 />
-                <span className="text-sm text-gray-700 max-w-32 truncate">{user.name}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-200 max-w-32 truncate">{user.name}</span>
                 <button
                   onClick={onLogout}
-                  className="text-gray-500 hover:text-red-600 transition-colors"
+                  className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                   title="Sign Out"
                 >
                   <LogOut size={18} />
@@ -97,6 +99,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
           {/* Mobile menu button */}
           <div className="md:hidden">
             <div className="flex items-center space-x-2">
+              <ThemeToggle />
               {/* Always show Google Auth for mobile when not logged in */}
               {!user && (
                 <div className="flex-shrink-0">
@@ -115,7 +118,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
                   <img 
                     src={user.picture} 
                     alt={user.name}
-                    className="w-7 h-7 rounded-full object-cover border-2 border-blue-100"
+                    className="w-7 h-7 rounded-full object-cover border-2 border-blue-100 dark:border-blue-400"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=3b82f6&color=ffffff&size=128`;
@@ -123,7 +126,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
                   />
                   <button
                     onClick={onLogout}
-                    className="text-gray-500 hover:text-red-600 transition-colors p-1"
+                    className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1"
                     title="Sign Out"
                   >
                     <LogOut size={14} />
@@ -134,7 +137,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
               {/* Mobile menu toggle button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 flex-shrink-0 ml-2"
+                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex-shrink-0 ml-2"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -146,7 +149,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
+          <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800">
             <div className="space-y-2">
               {navItems.map(({ path, label, icon: Icon }) => (
                 <Link
@@ -155,8 +158,8 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
                     isActive(path)
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-700 hover:bg-blue-50'
+                      ? 'bg-blue-600 dark:bg-blue-500 text-white'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <Icon size={20} />
@@ -165,33 +168,33 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
               ))}
               
               {/* Mobile User Section */}
-              <div className="px-4 py-3 border-t border-gray-200">
+              <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-600">
                 {user ? (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <img 
                         src={user.picture} 
                         alt={user.name}
-                        className="w-8 h-8 rounded-full object-cover border-2 border-blue-100"
+                        className="w-8 h-8 rounded-full object-cover border-2 border-blue-100 dark:border-blue-400"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=3b82f6&color=ffffff&size=128`;
                         }}
                       />
-                      <span className="text-sm text-gray-700">{user.name}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-200">{user.name}</span>
                     </div>
                     <button
                       onClick={() => {
                         onLogout();
                         setIsMobileMenuOpen(false);
                       }}
-                      className="text-gray-500 hover:text-red-600 transition-colors"
+                      className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                     >
                       <LogOut size={18} />
                     </button>
                   </div>
                 ) : (
-                  <div className="text-center text-gray-500 text-sm">
+                  <div className="text-center text-gray-500 dark:text-gray-400 text-sm">
                     Please sign in using the button above to access more features
                   </div>
                 )}
