@@ -19,8 +19,11 @@ PlacedIn is a **next-generation student portal** designed exclusively for SASTRA
 ### ✨ Key Features
 
 🎯 **Smart Experience Sharing**
-- Rich text editor with PDF document uploads
-- Company-wise categorization with autocomplete
+- **Advanced Rich Text Editor** with formatting toolbar (Bold, Italic, Lists, Quotes, Headings)
+- **Live Preview Mode** to see exactly how content will appear
+- **SASTRA Email Validation** with animated progress feedback
+- PDF document uploads with Cloudinary integration
+- Company-wise categorization with intelligent autocomplete
 - Anonymous posting options for sensitive content
 
 🔍 **Advanced Discovery Engine**
@@ -35,9 +38,11 @@ PlacedIn is a **next-generation student portal** designed exclusively for SASTRA
 - Bulk operations for efficient management
 
 🎨 **Modern UX/UI**
-- Responsive design optimized for all devices
-- Dark/light theme support
-- Animated loading states and micro-interactions
+- **Rich Text Editor** with markdown-style formatting and real-time preview
+- **Institutional Email Validation** with animated progress indicators
+- Responsive design optimized for all devices (mobile-first approach)
+- Dark/light theme support with seamless transitions
+- Animated loading states and smooth micro-interactions
 - Progressive Web App (PWA) capabilities
 
 ## 🛠️ Technology Arsenal
@@ -45,11 +50,12 @@ PlacedIn is a **next-generation student portal** designed exclusively for SASTRA
 ### Frontend Powerhouse
 ```typescript
 React 18.3          // Latest React with concurrent features
-TypeScript 5.5      // Type-safe development
-TailwindCSS 3.4     // Utility-first styling
-React Router 6.20   // Client-side routing
-Lucide React        // Beautiful icon library
-Styled Components   // CSS-in-JS for complex animations
+TypeScript 5.5      // Type-safe development with strict mode
+TailwindCSS 3.4     // Utility-first styling with custom design system
+React Router 6.20   // Client-side routing with lazy loading
+Lucide React        // Beautiful icon library (Bold, Italic, List, Quote, etc.)
+Custom Rich Text    // Advanced text editor with markdown-style formatting
+Email Validation    // SASTRA domain enforcement with animated feedback
 ```
 
 ### Backend Infrastructure
@@ -172,7 +178,8 @@ const ADMIN_EMAILS = [
 │   │   │   ├── Footer.tsx          # Footer with team modal
 │   │   │   └── NotificationBell.tsx # Real-time notifications
 │   │   ├── 📝 Experience/          # Experience management
-│   │   │   ├── PostExperience.tsx  # Form for new experiences
+│   │   │   ├── PostExperience_NEW.tsx  # Enhanced form with email validation
+│   │   │   ├── ExperienceTextEditor.tsx # Rich text editor with toolbar
 │   │   │   ├── Experiences.tsx     # Experience listing & search
 │   │   │   ├── ExperienceModal.tsx # Detailed view modal
 │   │   │   └── CompanySelector.tsx # Smart company picker
@@ -184,7 +191,8 @@ const ADMIN_EMAILS = [
 │   │   ├── 🛡️ ProtectedRoute.tsx   # Route protection
 │   │   └── ☁️ CloudinaryUpload.tsx # File upload handler
 │   ├── 🎣 hooks/                   # Custom React hooks
-│   │   └── useNotifications.ts     # Notification management
+│   │   ├── useNotifications.ts     # Notification management
+│   │   └── useTheme.ts             # Theme context hook
 │   ├── ⚙️ config/                  # Configuration files
 │   │   └── api.ts                  # API endpoints & base URL
 │   ├── 📊 data/                    # Static data & constants
@@ -200,11 +208,7 @@ const ADMIN_EMAILS = [
 │   │   └── notifications.js       # Notification system
 │   ├── 🗃️ models/                 # Database schemas
 │   │   └── Experience.js          # MongoDB/Mongoose models
-│   ├── ⚙️ config/                 # Server configuration
-│   │   └── cloudinary.js          # Media upload config
-│   ├── 🛠️ utils/                  # Utility functions
-│   │   └── testCloudinary.js      # Upload testing tools
-│   └── 🚀 index.js                # Server entry point
+│   └── 🚀 index.js                # Server entry point & configuration
 │
 ├── 📋 Configuration Files
 │   ├── package.json               # Frontend dependencies
@@ -366,7 +370,71 @@ PORT=5000
 - 📱 **WhatsApp**: [Connect with us](https://wa.me/yourwhatsapplink)
 - 🐛 **Issues**: [GitHub Issues](https://github.com/Pratheesh-555/PlacedIn/issues)
 
-## 📄 License & Attribution
+## 🆕 Recent Enhancements (Latest Update)
+
+### ✨ **Rich Text Editor System**
+- **Professional Formatting Toolbar**: Bold, Italic, Lists, Quotes, Headings with intuitive icons
+- **Live Preview Mode**: Real-time markdown-style rendering with toggle functionality
+- **Keyboard Shortcuts**: Ctrl+B for bold, Ctrl+I for italic - just like professional editors
+- **Responsive Design**: Mobile-optimized toolbar with touch-friendly interactions
+- **Dark Mode Integration**: Complete theme support with smooth transitions
+- **Smart Validation**: Real-time character counting with visual feedback (50-10,000 characters)
+- **Writing Assistance**: Built-in tips, formatting guidelines, and content structure suggestions
+
+### 📧 **Enhanced Email Validation**
+- **SASTRA Domain Enforcement**: Automatic validation for @sastra.ac.in institutional emails
+- **Animated Progress Feedback**: 5-step validation process with smooth progress indicators
+- **Real-time Validation**: Immediate feedback during form submission
+- **Educational Guidance**: Clear error messages and instructions for students
+- **Secure Processing**: Multi-layer validation for data integrity
+
+### 🎨 **User Experience Improvements**
+- **Smooth Animations**: Hover effects, focus states, and micro-interactions throughout
+- **Accessibility Enhanced**: ARIA labels, keyboard navigation, and screen reader support
+- **Mobile-First Design**: Touch-optimized interfaces for seamless mobile experience
+- **Performance Optimized**: Faster loading, efficient rendering, and reduced bundle size
+- **Error Recovery**: Graceful error handling with user-friendly messages
+
+---
+
+## � Changelog
+
+### Version 2.1.0 (Latest - August 2025)
+🎉 **Major UX/UI Enhancements**
+
+#### ✨ New Features
+- **Rich Text Editor**: Complete rewrite with professional formatting toolbar
+  - Bold, Italic, Lists, Quotes, Headings with markdown-style syntax
+  - Live preview mode with real-time rendering
+  - Keyboard shortcuts (Ctrl+B, Ctrl+I) for power users
+  - Mobile-responsive toolbar with touch-friendly design
+  
+- **SASTRA Email Validation**: Institutional email enforcement
+  - Animated 5-step validation process with progress indicators
+  - Real-time domain checking for @sastra.ac.in emails
+  - Educational error messages and user guidance
+  
+- **Enhanced User Experience**:
+  - Dark mode integration across all new components
+  - Smooth animations and micro-interactions
+  - Improved accessibility with ARIA labels and keyboard navigation
+  - Mobile-first responsive design optimizations
+
+#### 🔧 Technical Improvements
+- Updated component architecture for better maintainability
+- Optimized bundle size with tree shaking
+- Enhanced TypeScript strict mode compliance
+- Improved error handling and user feedback systems
+
+#### 🗂️ Code Cleanup
+- Removed unused server configuration folders
+- Streamlined project structure
+- Updated documentation to reflect current architecture
+- Enhanced inline code comments and type definitions
+
+---
+
+## �📄 License & Attribution
 
 ```
 MIT License - feel free to use this project for educational purposes

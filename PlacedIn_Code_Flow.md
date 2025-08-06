@@ -99,11 +99,18 @@ graph TB
 ```typescript
 // src/components/Experience/ - Core business logic
 📝 Experience Management
-├── PostExperience.tsx - Submission form
-│   ├── 📋 Multi-step form validation
-│   ├── 📎 File upload with Cloudinary
-│   ├── 🏢 Smart company selection
+├── PostExperience_NEW.tsx - Enhanced submission form
+│   ├── 📋 Multi-step form validation with SASTRA email verification
+│   ├── 📎 File upload with Cloudinary integration
+│   ├── 🏢 Smart company selection with autocomplete
+│   ├── ⏳ Animated progress bars for email validation
 │   └── 🔄 Real-time form state management
+├── ExperienceTextEditor.tsx - Advanced rich text editor
+│   ├── 🎨 Formatting toolbar (Bold, Italic, Lists, Quotes, Headings)
+│   ├── 👁️ Live preview mode with markdown-style rendering
+│   ├── ⌨️ Keyboard shortcuts (Ctrl+B, Ctrl+I)
+│   ├── 📱 Responsive design for mobile/desktop
+│   └── 🌙 Dark mode compatible interface
 ├── Experiences.tsx - Listing & search
 │   ├── 🔍 Advanced filtering system
 │   ├── 📱 Responsive grid layout
@@ -168,27 +175,31 @@ graph TB
 
 ### 1. **Server Bootstrap & Configuration**
 ```javascript
-// server/index.js - Express server setup
+// server/index.js - Express server setup (Enhanced with latest features)
 🚀 Express Server
 ├── 🔧 Middleware Configuration
-│   ├── CORS (Cross-Origin Resource Sharing)
-│   ├── Body parsing (JSON, URL-encoded, multipart)
-│   ├── Static file serving
-│   └── Error handling middleware
+│   ├── CORS (Cross-Origin Resource Sharing) with environment-specific origins
+│   ├── Body parsing (JSON, URL-encoded, multipart) with size limits
+│   ├── Static file serving with cache headers
+│   ├── Error handling middleware with detailed logging
+│   └── Request logging and monitoring
 ├── 🗄️ Database Connection
-│   ├── MongoDB connection with Mongoose
-│   ├── Connection pooling optimization
-│   ├── Automatic reconnection handling
-│   └── Database health monitoring
+│   ├── MongoDB connection with Mongoose (latest ODM features)
+│   ├── Connection pooling optimization for high traffic
+│   ├── Automatic reconnection handling with retry logic
+│   ├── Database health monitoring and alerts
+│   └── Optimized indexes for rich text search
 ├── 🛣️ Route Registration
-│   ├── /api/experiences - Experience management
-│   ├── /api/admin - Administrative functions
-│   ├── /api/notifications - Notification system
-│   └── Health check endpoints
+│   ├── /api/experiences - Enhanced experience management with rich text
+│   ├── /api/admin - Administrative functions with improved analytics
+│   ├── /api/notifications - Real-time notification system
+│   ├── /api/health - Health check endpoints
+│   └── File upload routes with Cloudinary integration
 └── 🚀 Server Initialization
-    ├── Port configuration (env-based)
+    ├── Environment-based port configuration
     ├── Graceful shutdown handling
-    └── Process monitoring setup
+    ├── Process monitoring and error recovery
+    └── Performance metrics collection
 ```
 
 ### 2. **Database Layer & Models**
@@ -467,6 +478,109 @@ sequenceDiagram
     ├── Error tracking
     ├── Database performance
     └── Uptime monitoring
+```
+
+---
+
+---
+
+## 🎨 Rich Text Editor System
+
+### 📝 **ExperienceTextEditor Component**
+```typescript
+// src/components/Experience/ExperienceTextEditor.tsx - Professional text editing
+🎨 Rich Text Editor
+├── 🛠️ Formatting Toolbar
+│   ├── Bold (**text**) with Ctrl+B shortcut
+│   ├── Italic (*text*) with Ctrl+I shortcut
+│   ├── Bullet lists (• item)
+│   ├── Numbered lists (1. item)
+│   ├── Blockquotes (> quote)
+│   └── Headings (## title)
+├── 👁️ Live Preview System
+│   ├── Real-time markdown-style rendering
+│   ├── Toggle between edit/preview modes
+│   ├── HTML sanitization and security
+│   └── Responsive preview layout
+├── 📱 Responsive Design
+│   ├── Mobile-optimized toolbar layout
+│   ├── Touch-friendly button sizing
+│   ├── Adaptive textarea height
+│   └── Collapsible toolbar sections
+├── 🌙 Dark Mode Support
+│   ├── Theme-aware color schemes
+│   ├── Consistent contrast ratios
+│   ├── Smooth transition animations
+│   └── Icon color adaptations
+├── ✅ Smart Validation
+│   ├── Real-time character counting
+│   ├── Minimum length enforcement (50 chars)
+│   ├── Maximum length protection (10,000 chars)
+│   ├── Visual feedback indicators
+│   └── Error state management
+└── 💡 Writing Assistance
+    ├── Content structure suggestions
+    ├── Formatting help tooltips
+    ├── Best practice guidelines
+    └── Real-time writing tips
+```
+
+### 📧 **Email Validation System**
+```typescript
+// Enhanced email validation with SASTRA domain checking
+📧 Email Validation Flow
+├── 🔍 Multi-step Validation Process
+│   ├── Step 1: Email format verification
+│   ├── Step 2: Domain validation
+│   ├── Step 3: SASTRA domain checking (@sastra.ac.in)
+│   ├── Step 4: Institutional email confirmation
+│   └── Step 5: Validation completion
+├── ⏳ Animated Progress Feedback
+│   ├── 5-step progress bar (0% → 100%)
+│   ├── 300ms delay between steps for smooth UX
+│   ├── Real-time progress messages
+│   ├── Success/error state animations
+│   └── Loading spinner integration
+├── 🎯 SASTRA Domain Enforcement
+│   ├── Case-insensitive domain checking
+│   ├── Automatic rejection of non-SASTRA emails
+│   ├── Clear error messages for invalid domains
+│   └── Educational guidance for students
+└── 🔄 Form Integration
+    ├── Real-time validation on submit
+    ├── Form state management during validation
+    ├── Error recovery mechanisms
+    └── User feedback integration
+```
+
+### 🎭 **User Experience Enhancements**
+```typescript
+// Comprehensive UX improvements across the platform
+🎭 UX Enhancement System
+├── 🎨 Visual Feedback
+│   ├── Smooth hover animations on toolbar buttons
+│   ├── Focus states with blue border animations
+│   ├── Success/error state color transitions
+│   ├── Loading skeletons for content areas
+│   └── Micro-interactions for user actions
+├── ⌨️ Keyboard Accessibility
+│   ├── Ctrl+B for bold formatting
+│   ├── Ctrl+I for italic formatting
+│   ├── Tab navigation through toolbar
+│   ├── Enter key for form submission
+│   └── Escape key for modal closing
+├── 📱 Mobile Optimizations
+│   ├── Touch-friendly button sizes (44px min)
+│   ├── Responsive toolbar wrapping
+│   ├── Mobile-optimized spacing
+│   ├── Gesture-friendly interactions
+│   └── Adaptive font sizing
+└── 🌐 Accessibility Features
+    ├── ARIA labels for screen readers
+    ├── Semantic HTML structure
+    ├── High contrast mode support
+    ├── Focus management
+    └── Keyboard navigation support
 ```
 
 ---

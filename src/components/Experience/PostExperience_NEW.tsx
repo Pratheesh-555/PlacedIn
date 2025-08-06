@@ -23,6 +23,33 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isValidatingEmail, setIsValidatingEmail] = useState(false);
+  const [emailValidationProgress, setEmailValidationProgress] = useState(0);
+
+  const validateEmail = async (email: string): Promise<boolean> => {
+    setIsValidatingEmail(true);
+    setEmailValidationProgress(0);
+    
+    // Simulate email validation with progress
+    const steps = [
+      { progress: 20, message: 'Checking email format...' },
+      { progress: 40, message: 'Validating domain...' },
+      { progress: 60, message: 'Verifying SASTRA domain...' },
+      { progress: 80, message: 'Confirming institutional email...' },
+      { progress: 100, message: 'Validation complete!' }
+    ];
+
+    for (const step of steps) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setEmailValidationProgress(step.progress);
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setIsValidatingEmail(false);
+    
+    // Check if email ends with sastra.ac.in
+    return email.toLowerCase().endsWith('@sastra.ac.in');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +57,7 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
     setError('');
     setErrors({});
 
-    // Validation
+    // Basic validation
     const newErrors: Record<string, string> = {};
     if (!formData.studentName.trim()) newErrors.studentName = 'Full name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
@@ -45,6 +72,15 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
     }
 
     try {
+      // Email validation with progress bar
+      const isValidEmail = await validateEmail(formData.email);
+      
+      if (!isValidEmail) {
+        setError('Please use your SASTRA institutional email address (@sastra.ac.in)');
+        setIsSubmitting(false);
+        return;
+      }
+
       const response = await fetch(API_ENDPOINTS.EXPERIENCES, {
         method: 'POST',
         headers: {
@@ -238,16 +274,52 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
 
             {/* Submit Button */}
             <div className="pt-6">
+              {/* Email Validation Progress Bar */}
+              {isValidatingEmail && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-700 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                      Validating Email Address...
+                    </span>
+                    <span className="text-sm font-bold text-blue-800 dark:text-blue-200">
+                      {emailValidationProgress}%
+                    </span>
+                  </div>
+                  
+                  <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-3 mb-2 overflow-hidden">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 h-3 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${emailValidationProgress}%` }}
+                    >
+                      <div className="h-full w-full bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-blue-600 dark:text-blue-400">
+                    {emailValidationProgress <= 20 && '🔍 Checking email format...'}
+                    {emailValidationProgress > 20 && emailValidationProgress <= 40 && '🌐 Validating domain...'}
+                    {emailValidationProgress > 40 && emailValidationProgress <= 60 && '🏫 Verifying SASTRA domain...'}
+                    {emailValidationProgress > 60 && emailValidationProgress <= 80 && '✅ Confirming institutional email...'}
+                    {emailValidationProgress > 80 && '🎉 Validation complete!'}
+                  </div>
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isValidatingEmail}
                 className={`w-full flex items-center justify-center space-x-2 px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-200 ${
-                  isSubmitting
+                  isSubmitting || isValidatingEmail
                     ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 text-white hover:from-blue-700 hover:to-purple-700 dark:hover:from-blue-600 dark:hover:to-purple-600 transform hover:scale-105 shadow-lg hover:shadow-xl'
                 }`}
               >
-                {isSubmitting ? (
+                {isValidatingEmail ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500 dark:border-gray-400"></div>
+                    <span>Validating Email...</span>
+                  </>
+                ) : isSubmitting ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500 dark:border-gray-400"></div>
                     <span>Submitting Experience...</span>
@@ -263,10 +335,14 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
 
             {/* Disclaimer */}
             <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <p className="text-sm text-blue-700 dark:text-blue-300">
-                <strong>Note:</strong> Your experience will be reviewed before publication to ensure quality and appropriateness. 
-                This helps maintain a helpful and professional community for all students.
+              <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                <strong>Requirements:</strong>
               </p>
+              <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                <li>• Use your SASTRA institutional email (@sastra.ac.in)</li>
+                <li>• Your experience will be reviewed before publication</li>
+                <li>• This helps maintain a helpful and professional community</li>
+              </ul>
             </div>
           </form>
         </div>
