@@ -75,15 +75,15 @@ const Home: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       {/* Hero Section */}
       <section className="relative py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           <div className="mb-8">
-            <h1 className="text-4xl md:text-6xl font-bold text-blue-900 mb-6 leading-tight">
-              Share Your <span className="text-blue-600">Success Story</span>
+            <h1 className="text-4xl md:text-6xl font-bold text-blue-900 dark:text-blue-100 mb-6 leading-tight">
+              Share Your <span className="text-blue-600 dark:text-blue-400">Success Story</span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               Connect with fellow SASTRA students by sharing your placement and internship experiences. 
               Help others learn from your journey and build a stronger community.
             </p>
@@ -92,14 +92,14 @@ const Home: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
             <Link
               to="/post"
-              className="bg-blue-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg flex items-center space-x-2"
+              className="bg-blue-600 dark:bg-blue-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 dark:hover:bg-blue-600 transform hover:scale-105 transition-all duration-200 shadow-lg flex items-center space-x-2"
             >
               <PlusCircle size={24} />
               <span>Share Experience</span>
             </Link>
             <Link
               to="/experiences"
-              className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg border-2 border-blue-600 hover:bg-blue-50 transform hover:scale-105 transition-all duration-200 shadow-lg flex items-center space-x-2"
+              className="bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 px-8 py-4 rounded-xl font-semibold text-lg border-2 border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 transform hover:scale-105 transition-all duration-200 shadow-lg flex items-center space-x-2"
             >
               <BookOpen size={24} />
               <span>Browse Stories</span>
@@ -109,14 +109,14 @@ const Home: React.FC = () => {
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
             {STATS.map(({ icon: Icon, label, suffix }, i) => (
-              <div key={label} className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-200">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Icon size={24} className="text-blue-600" />
+              <div key={label} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-200">
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Icon size={24} className="text-blue-600 dark:text-blue-400" />
                 </div>
-                <div className="text-2xl font-bold text-blue-900 mb-1">
+                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-1">
                   <span>{animatedStats[i].toLocaleString()}{suffix}</span>
                 </div>
-                <div className="text-gray-600 font-medium">{label}</div>
+                <div className="text-gray-600 dark:text-gray-300 font-medium">{label}</div>
               </div>
             ))}
           </div>
@@ -124,9 +124,9 @@ const Home: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features-section" className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <section id="features-section" className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-blue-900 mb-12">
+          <h2 className="text-3xl font-bold text-center text-blue-900 dark:text-blue-100 mb-12">
             Why Share Your Experience?
           </h2>
           
@@ -136,11 +136,11 @@ const Home: React.FC = () => {
                 ? 'translate-x-0 opacity-100' 
                 : '-translate-x-full opacity-0'
             }`} style={{ transitionDelay: '0ms' }}>
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Users size={32} className="text-blue-600" />
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users size={32} className="text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-xl font-semibold text-blue-900 mb-4">Help Fellow Students</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-100 mb-4">Help Fellow Students</h3>
+              <p className="text-gray-600 dark:text-gray-300">
                 Guide juniors through the placement process with your real experiences and insights.
               </p>
             </div>
@@ -150,11 +150,11 @@ const Home: React.FC = () => {
                 ? 'translate-y-0 opacity-100' 
                 : 'translate-y-full opacity-0'
             }`} style={{ transitionDelay: '200ms' }}>
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Building2 size={32} className="text-blue-600" />
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Building2 size={32} className="text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-xl font-semibold text-blue-900 mb-4">Company Insights</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-100 mb-4">Company Insights</h3>
+              <p className="text-gray-600 dark:text-gray-300">
                 Share detailed information about company culture, interview processes, and expectations.
               </p>
             </div>
@@ -164,11 +164,11 @@ const Home: React.FC = () => {
                 ? 'translate-x-0 opacity-100' 
                 : 'translate-x-full opacity-0'
             }`} style={{ transitionDelay: '400ms' }}>
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <TrendingUp size={32} className="text-blue-600" />
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <TrendingUp size={32} className="text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-xl font-semibold text-blue-900 mb-4">Build Your Network</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-100 mb-4">Build Your Network</h3>
+              <p className="text-gray-600 dark:text-gray-300">
                 Connect with students and alumni, creating lasting professional relationships.
               </p>
             </div>

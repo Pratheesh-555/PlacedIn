@@ -58,12 +58,12 @@ const NotificationBell: React.FC = () => {
       {/* Notification Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-blue-600 transition-colors focus:outline-none"
+        className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors focus:outline-none"
         aria-label="Notifications"
       >
         <Bell size={20} />
         {activeNotifications.length > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+          <span className="absolute -top-1 -right-1 bg-red-500 dark:bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
             {activeNotifications.length > 9 ? '9+' : activeNotifications.length}
           </span>
         )}
@@ -71,13 +71,13 @@ const NotificationBell: React.FC = () => {
 
       {/* Notification Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
-          <div className="p-4 border-b border-gray-200">
+        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600 z-50 max-h-96 overflow-y-auto">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-600">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">Notifications</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 <X size={18} />
               </button>
@@ -86,16 +86,16 @@ const NotificationBell: React.FC = () => {
 
           <div className="max-h-80 overflow-y-auto">
             {activeNotifications.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
-                <Bell size={32} className="mx-auto mb-2 text-gray-300" />
+              <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+                <Bell size={32} className="mx-auto mb-2 text-gray-300 dark:text-gray-600" />
                 <p>No new notifications</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
                 {activeNotifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`p-4 hover:bg-gray-50 transition-colors border-l-4 ${getNotificationBorderColor(notification.type)}`}
+                    className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-l-4 ${getNotificationBorderColor(notification.type)}`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-3 flex-1">
@@ -103,20 +103,20 @@ const NotificationBell: React.FC = () => {
                           {getNotificationIcon(notification.type)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 text-sm">
+                          <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                             {notification.title}
                           </p>
-                          <p className="text-gray-600 text-sm mt-1 leading-relaxed">
+                          <p className="text-gray-600 dark:text-gray-300 text-sm mt-1 leading-relaxed">
                             {notification.message}
                           </p>
-                          <p className="text-xs text-gray-400 mt-2">
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                             {new Date(notification.createdAt).toLocaleString()}
                           </p>
                         </div>
                       </div>
                       <button
                         onClick={() => dismissNotification(notification.id)}
-                        className="ml-2 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                        className="ml-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0"
                         aria-label="Dismiss notification"
                       >
                         <X size={14} />

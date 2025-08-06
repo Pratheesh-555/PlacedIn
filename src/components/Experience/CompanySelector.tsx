@@ -96,14 +96,17 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({ value, onChange, erro
   return (
     <div className="relative" ref={dropdownRef}>
       <div className="relative">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          Company *
+        </label>
         <input
           type="text"
           value={searchQuery || value}
           onChange={handleInputChange}
           onFocus={() => setIsOpen(true)}
           placeholder="Search for a company..."
-          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-            error ? 'border-red-500' : 'border-gray-300'
+          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
+            error ? 'border-red-500 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
           }`}
         />
         
@@ -112,7 +115,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({ value, onChange, erro
             <button
               type="button"
               onClick={clearSelection}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
               <X size={16} />
             </button>
@@ -120,7 +123,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({ value, onChange, erro
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
           </button>
@@ -128,11 +131,11 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({ value, onChange, erro
       </div>
 
       {error && (
-        <p className="text-red-500 text-sm mt-1">{error}</p>
+        <p className="text-red-500 dark:text-red-400 text-sm mt-1">{error}</p>
       )}
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
           {filteredCompanies.length > 0 ? (
             <div className="py-2">
               {filteredCompanies.map((company) => (
@@ -140,19 +143,19 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({ value, onChange, erro
                   key={company.id}
                   type="button"
                   onClick={() => handleCompanySelect(company)}
-                  className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors"
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-3 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-semibold text-blue-600">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
                       {company.name.substring(0, 2).toUpperCase()}
                     </span>
                   </div>
-                  <span className="text-gray-900">{company.name}</span>
+                  <span className="text-gray-900 dark:text-gray-100">{company.name}</span>
                 </button>
               ))}
             </div>
           ) : (
-            <div className="px-4 py-3 text-gray-500 text-center">
+            <div className="px-4 py-3 text-gray-500 dark:text-gray-400 text-center">
               No companies found matching "{searchQuery}"
             </div>
           )}
