@@ -1,12 +1,14 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, Calendar, User, Eye } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { Search, Filter, Calendar, User, Eye, RefreshCw } from 'lucide-react';
 import { Experience, FilterOptions } from '../../types';
 import { API_ENDPOINTS } from '../../config/api';
+import { PerformanceMonitor } from '../../utils/performance';
 import ExperienceModal from './ExperienceModal';
 
 const Experiences: React.FC = () => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
     company: '',
@@ -16,23 +18,59 @@ const Experiences: React.FC = () => {
     search: ''
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [searchInput, setSearchInput] = useState('');
+  const ITEMS_PER_PAGE = 12;
 
-  // Fetch experiences when component mounts
+  // Debounced search to improve performance
   useEffect(() => {
-    const fetchExperiences = async () => {
-      try {
-        const response = await fetch(API_ENDPOINTS.EXPERIENCES);
-        const data = await response.json();
-        setExperiences(data);
-      } catch (error) {
-        console.error('Error fetching experiences:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    const timeoutId = setTimeout(() => {
+      setFilters(prev => ({ ...prev, search: searchInput }));
+    }, 300);
 
-    fetchExperiences();
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
+
+  // Optimized fetch with pagination and caching
+  const fetchExperiences = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
+    try {
+      if (refresh) {
+        setIsRefreshing(true);
+        setExperiences([]);
+        setPage(1);
+        setHasMore(true);
+      }
+      
+      const result = await PerformanceMonitor.measureApiCall(
+        `Fetch experiences page ${pageNum}`,
+        async () => {
+          const response = await fetch(`${API_ENDPOINTS.EXPERIENCES}?page=${pageNum}&limit=${ITEMS_PER_PAGE}`);
+          return response.json();
+        }
+      );
+      
+      if (refresh || pageNum === 1) {
+        setExperiences(result);
+      } else {
+        setExperiences(prev => [...prev, ...result]);
+      }
+      
+      if (result.length < ITEMS_PER_PAGE) {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error('Error fetching experiences:', error);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
   }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchExperiences(1, true);
+  }, [fetchExperiences]);
 
   // Function to open experience (modal for text, fallback for files)
   const openExperience = (experience: Experience) => {
@@ -51,28 +89,55 @@ const Experiences: React.FC = () => {
     }
   };
 
+  // Optimized filtering with debouncing
   const filteredExperiences = useMemo(() => {
-    return experiences.filter(exp => {
-      if (!exp.isApproved) return false;
-      
-      const matchesCompany = !filters.company || exp.company.toLowerCase().includes(filters.company.toLowerCase());
-      const matchesStudent = !filters.student || exp.studentName.toLowerCase().includes(filters.student.toLowerCase());
-      const matchesYear = !filters.graduationYear || exp.graduationYear.toString() === filters.graduationYear;
-      const matchesType = !filters.type || exp.type === filters.type;
-      const matchesSearch = !filters.search || 
-        exp.company.toLowerCase().includes(filters.search.toLowerCase()) ||
-        exp.studentName.toLowerCase().includes(filters.search.toLowerCase()) ||
-        exp.experienceText.toLowerCase().includes(filters.search.toLowerCase());
-
-      return matchesCompany && matchesStudent && matchesYear && matchesType && matchesSearch;
-    });
+    let filtered = experiences.filter(exp => exp.isApproved);
+    
+    // Company filter
+    if (filters.company) {
+      filtered = filtered.filter(exp => 
+        exp.company.toLowerCase().includes(filters.company.toLowerCase())
+      );
+    }
+    
+    // Student filter
+    if (filters.student) {
+      filtered = filtered.filter(exp => 
+        exp.studentName.toLowerCase().includes(filters.student.toLowerCase())
+      );
+    }
+    
+    // Year filter
+    if (filters.graduationYear) {
+      filtered = filtered.filter(exp => 
+        exp.graduationYear.toString() === filters.graduationYear
+      );
+    }
+    
+    // Type filter
+    if (filters.type) {
+      filtered = filtered.filter(exp => exp.type === filters.type);
+    }
+    
+    // Search filter (optimized for performance)
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      filtered = filtered.filter(exp => 
+        exp.company.toLowerCase().includes(searchLower) ||
+        exp.studentName.toLowerCase().includes(searchLower) ||
+        (exp.experienceText && exp.experienceText.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    return filtered;
   }, [experiences, filters]);
 
-  const handleFilterChange = (key: keyof FilterOptions, value: string) => {
+  // Debounced filter handler
+  const handleFilterChange = useCallback((key: keyof FilterOptions, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-  };
+  }, []);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setFilters({
       company: '',
       student: '',
@@ -80,13 +145,36 @@ const Experiences: React.FC = () => {
       type: '',
       search: ''
     });
-  };
+    setSearchInput('');
+  }, []);
 
-  const uniqueCompanies = [...new Set(experiences.map(exp => exp.company))].sort();
-  const uniqueYears = [...new Set(experiences.map(exp => exp.graduationYear))].sort((a, b) => b - a);
+  // Load more data
+  const loadMore = useCallback(() => {
+    if (!isLoading && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchExperiences(nextPage, false);
+    }
+  }, [isLoading, hasMore, page, fetchExperiences]);
+
+  // Refresh data
+  const refreshData = useCallback(() => {
+    fetchExperiences(1, true);
+  }, [fetchExperiences]);
+
+  // Memoized computed values for better performance
+  const uniqueCompanies = useMemo(() => 
+    [...new Set(experiences.map(exp => exp.company))].sort(),
+    [experiences]
+  );
+  
+  const uniqueYears = useMemo(() => 
+    [...new Set(experiences.map(exp => exp.graduationYear))].sort((a, b) => b - a),
+    [experiences]
+  );
 
   // Show loading state
-  if (isLoading) {
+  if (isLoading && experiences.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
@@ -104,9 +192,20 @@ const Experiences: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-4">Student Experiences</h1>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-100">Student Experiences</h1>
+            <button
+              onClick={refreshData}
+              disabled={isRefreshing}
+              className="p-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors disabled:opacity-50"
+              title="Refresh experiences"
+            >
+              <RefreshCw size={20} className={isRefreshing ? 'animate-spin' : ''} />
+            </button>
+          </div>
           <p className="text-gray-600 dark:text-gray-300">
             Discover insights from {filteredExperiences.length} placement and internship experiences
+            {experiences.length !== filteredExperiences.length && ` (${experiences.length} total)`}
           </p>
         </div>
 
@@ -119,8 +218,8 @@ const Experiences: React.FC = () => {
               <input
                 type="text"
                 placeholder="Search experiences, companies, or students..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
@@ -244,6 +343,26 @@ const Experiences: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {/* Load More Button */}
+        {hasMore && !isLoading && filteredExperiences.length > 0 && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={loadMore}
+              disabled={isLoading}
+              className="px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Loading...</span>
+                </div>
+              ) : (
+                'Load More Experiences'
+              )}
+            </button>
+          </div>
+        )}
 
         {filteredExperiences.length === 0 && (
           <div className="text-center py-12">

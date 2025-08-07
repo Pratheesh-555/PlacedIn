@@ -22,12 +22,19 @@ const upload = multer({
   }
 });
 
-// Get all approved experiences
+// Get all approved experiences with pagination
 router.get('/', async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
     const experiences = await Experience.find({ isApproved: true })
       .sort({ createdAt: -1 })
-      .limit(100);
+      .skip(skip)
+      .limit(limit)
+      .select('-document'); // Exclude heavy document data for list view
+
     res.json(experiences);
   } catch (error) {
     console.error('Error fetching experiences:', error);
