@@ -134,9 +134,17 @@ const ExperienceTextEditor: React.FC<ExperienceTextEditorProps> = ({
       </div>
       
       {!isPreviewMode && (
-        <>
+        <div className={`border-2 rounded-lg transition-colors duration-200 ${
+          error 
+            ? 'border-red-300 dark:border-red-600' 
+            : isFocused 
+              ? 'border-blue-400 dark:border-blue-500' 
+              : isValid 
+                ? 'border-green-300 dark:border-green-600'
+                : 'border-gray-300 dark:border-gray-600'
+        }`}>
           {/* Formatting Toolbar */}
-          <div className="flex flex-wrap gap-2 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-t-lg">
+          <div className="flex flex-wrap gap-2 p-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600 rounded-t-lg">
             <div className="flex flex-wrap gap-1">
               {/* Text Formatting */}
               <button
@@ -202,14 +210,12 @@ const ExperienceTextEditor: React.FC<ExperienceTextEditorProps> = ({
           </div>
 
           {/* Text Area */}
-          <div className={`relative border-2 border-t-0 rounded-b-lg transition-colors duration-200 ${
+          <div className={`relative rounded-b-lg ${
             error 
-              ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/30' 
+              ? 'bg-red-50 dark:bg-red-900/30' 
               : isFocused 
-                ? 'border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30' 
-                : isValid 
-                  ? 'border-green-300 dark:border-green-600 bg-white dark:bg-gray-700'
-                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700'
+                ? 'bg-blue-50 dark:bg-blue-900/30' 
+                : 'bg-white dark:bg-gray-700'
           }`}>
             <textarea
               ref={textareaRef}
@@ -218,7 +224,7 @@ const ExperienceTextEditor: React.FC<ExperienceTextEditorProps> = ({
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               placeholder={placeholder}
-              className="w-full h-64 sm:h-80 p-4 bg-transparent border-none outline-none resize-none text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 text-sm leading-relaxed"
+              className="w-full h-64 sm:h-80 p-4 bg-transparent border-none outline-none resize-none text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 text-sm leading-relaxed rounded-b-lg"
               style={{ 
                 fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif',
                 lineHeight: '1.6'
@@ -248,7 +254,7 @@ const ExperienceTextEditor: React.FC<ExperienceTextEditorProps> = ({
               )}
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Preview Mode */}

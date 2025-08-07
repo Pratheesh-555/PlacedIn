@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Eye, Calendar, User, Building2, AlertCircle, Trash2, Users, Bell } from 'lucide-react';
+import { Check, Eye, Calendar, User, Building2, AlertCircle, Trash2, Users, Bell, Search, Filter, X, CheckSquare, Square } from 'lucide-react';
 import { Experience, GoogleUser } from '../../types';
 import { API_ENDPOINTS } from '../../config/api';
 import NotificationManager from './NotificationManager';
@@ -15,12 +15,131 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'notifications'>('pending');
   const [processingId, setProcessingId] = useState<string | null>(null);
+  
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [companyFilter, setCompanyFilter] = useState('');
+  const [yearFilter, setYearFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  
+  // Bulk operation states
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkProcessing, setBulkProcessing] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchExperiences();
     }
   }, [user]);
+
+  // Filter experiences based on search and filter criteria
+  const filterExperiences = (experiences: Experience[]) => {
+    return experiences.filter(experience => {
+      const matchesSearch = searchTerm === '' || 
+        experience.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        experience.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        experience.email.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesCompany = companyFilter === '' || experience.company === companyFilter;
+      const matchesYear = yearFilter === '' || experience.graduationYear.toString() === yearFilter;
+      const matchesType = typeFilter === '' || experience.type === typeFilter;
+      
+      return matchesSearch && matchesCompany && matchesYear && matchesType;
+    });
+  };
+
+  // Get unique filter options
+  const getFilterOptions = (experiences: Experience[]) => {
+    const companies = [...new Set(experiences.map(exp => exp.company))].sort();
+    const years = [...new Set(experiences.map(exp => exp.graduationYear.toString()))].sort();
+    const types = [...new Set(experiences.map(exp => exp.type))];
+    return { companies, years, types };
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchTerm('');
+    setCompanyFilter('');
+    setYearFilter('');
+    setTypeFilter('');
+    setSelectedIds(new Set());
+  };
+
+  // Bulk operations
+  const handleSelectAll = (experiences: Experience[]) => {
+    const allIds = new Set(experiences.map(exp => exp._id!));
+    setSelectedIds(selectedIds.size === experiences.length ? new Set() : allIds);
+  };
+
+  const handleSelectOne = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedIds.size === 0 || !user) return;
+    
+    const confirmMessage = `Are you sure you want to approve ${selectedIds.size} experience(s)?`;
+    if (!confirm(confirmMessage)) return;
+
+    setBulkProcessing(true);
+    try {
+      const promises = Array.from(selectedIds).map(id => 
+        fetch(`${API_ENDPOINTS.ADMIN}/experiences/${id}/approve`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            postedBy: {
+              googleId: user.googleId,
+              name: user.name,
+              email: user.email,
+              picture: user.picture
+            }
+          })
+        })
+      );
+      
+      await Promise.all(promises);
+      await fetchExperiences();
+      setSelectedIds(new Set());
+      onUpdate();
+    } catch (error) {
+      console.error('Error bulk approving experiences:', error);
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    
+    const confirmMessage = `Are you sure you want to delete ${selectedIds.size} experience(s)? This action cannot be undone.`;
+    if (!confirm(confirmMessage)) return;
+
+    setBulkProcessing(true);
+    try {
+      const promises = Array.from(selectedIds).map(id => 
+        fetch(`${API_ENDPOINTS.ADMIN}/experiences/${id}`, {
+          method: 'DELETE'
+        })
+      );
+      
+      await Promise.all(promises);
+      await fetchExperiences();
+      setSelectedIds(new Set());
+      onUpdate();
+    } catch (error) {
+      console.error('Error bulk deleting experiences:', error);
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
 
   const fetchExperiences = async () => {
     try {
@@ -156,6 +275,99 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
           <p className="text-gray-600 dark:text-gray-300">Manage and review student experiences</p>
         </div>
 
+        {/* Search and Filter Controls */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search Bar */}
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search by name, company, or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+            </div>
+
+            {/* Filter Toggle */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center space-x-2 px-4 py-3 rounded-lg font-medium transition-colors ${
+                  showFilters 
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                <Filter size={20} />
+                <span>Filters</span>
+              </button>
+
+              {(searchTerm || companyFilter || yearFilter || typeFilter) && (
+                <button
+                  onClick={clearFilters}
+                  className="flex items-center space-x-2 px-4 py-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                >
+                  <X size={20} />
+                  <span>Clear</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Filter Options */}
+          {showFilters && (
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Company</label>
+                  <select
+                    value={companyFilter}
+                    onChange={(e) => setCompanyFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="">All Companies</option>
+                    {getFilterOptions([...pendingExperiences, ...approvedExperiences]).companies.map(company => (
+                      <option key={company} value={company}>{company}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Graduation Year</label>
+                  <select
+                    value={yearFilter}
+                    onChange={(e) => setYearFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="">All Years</option>
+                    {getFilterOptions([...pendingExperiences, ...approvedExperiences]).years.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="">All Types</option>
+                    {getFilterOptions([...pendingExperiences, ...approvedExperiences]).types.map(type => (
+                      <option key={type} value={type} className="capitalize">{type}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
@@ -222,50 +434,159 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
           </div>
 
           <div className="p-6">
+            {activeTab !== 'notifications' && (
+              <>
+                {/* Bulk Operations Controls */}
+                {selectedIds.size > 0 && (
+                  <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                          {selectedIds.size} item(s) selected
+                        </span>
+                        <button
+                          onClick={() => setSelectedIds(new Set())}
+                          className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 underline"
+                        >
+                          Clear selection
+                        </button>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        {activeTab === 'pending' && (
+                          <button
+                            onClick={handleBulkApprove}
+                            disabled={bulkProcessing}
+                            className="flex items-center space-x-1 px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50 transition-colors"
+                          >
+                            <Check size={16} />
+                            <span>Approve Selected</span>
+                          </button>
+                        )}
+                        
+                        <button
+                          onClick={handleBulkDelete}
+                          disabled={bulkProcessing}
+                          className="flex items-center space-x-1 px-4 py-2 bg-red-600 dark:bg-red-700 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 disabled:opacity-50 transition-colors"
+                        >
+                          <Trash2 size={16} />
+                          <span>Delete Selected</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
             {activeTab === 'pending' ? (
-              pendingExperiences.length === 0 ? (
-                <div className="text-center py-12">
-                  <AlertCircle size={48} className="mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Pending Experiences</h3>
-                  <p className="text-gray-600 dark:text-gray-300">All experiences have been reviewed.</p>
-                </div>
-              ) : (
-                <div className="grid gap-6">
-                  {pendingExperiences.map((experience) => (
-                    <ExperienceCard
-                      key={experience._id}
-                      experience={experience}
-                      isPending={true}
-                      onApprove={handleApprove}
-                      onDelete={handleDelete}
-                      onViewExperience={viewExperienceText}
-                      isProcessing={processingId === experience._id}
-                    />
-                  ))}
-                </div>
-              )
+              (() => {
+                const filteredPending = filterExperiences(pendingExperiences);
+                return filteredPending.length === 0 ? (
+                  <div className="text-center py-12">
+                    <AlertCircle size={48} className="mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                      {pendingExperiences.length === 0 ? 'No Pending Experiences' : 'No Matching Results'}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {pendingExperiences.length === 0 
+                        ? 'All experiences have been reviewed.' 
+                        : 'Try adjusting your search or filter criteria.'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Select All Checkbox */}
+                    <div className="flex items-center space-x-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                      <button
+                        onClick={() => handleSelectAll(filteredPending)}
+                        className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                      >
+                        {selectedIds.size === filteredPending.length && filteredPending.length > 0 ? (
+                          <CheckSquare size={16} className="text-blue-600 dark:text-blue-400" />
+                        ) : (
+                          <Square size={16} />
+                        )}
+                        <span>Select All ({filteredPending.length})</span>
+                      </button>
+                      
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {filteredPending.length} of {pendingExperiences.length} experiences
+                      </span>
+                    </div>
+
+                    <div className="grid gap-6">
+                      {filteredPending.map((experience) => (
+                        <ExperienceCard
+                          key={experience._id}
+                          experience={experience}
+                          isPending={true}
+                          onApprove={handleApprove}
+                          onDelete={handleDelete}
+                          onViewExperience={viewExperienceText}
+                          isProcessing={processingId === experience._id}
+                          isSelected={selectedIds.has(experience._id!)}
+                          onSelect={handleSelectOne}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()
             ) : activeTab === 'approved' ? (
-              approvedExperiences.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users size={48} className="mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Approved Experiences</h3>
-                  <p className="text-gray-600">No experiences have been approved yet.</p>
-                </div>
-              ) : (
-                <div className="grid gap-6">
-                  {approvedExperiences.map((experience) => (
-                    <ExperienceCard
-                      key={experience._id}
-                      experience={experience}
-                      isPending={false}
-                      onApprove={handleApprove}
-                      onDelete={handleDelete}
-                      onViewExperience={viewExperienceText}
-                      isProcessing={processingId === experience._id}
-                    />
-                  ))}
-                </div>
-              )
+              (() => {
+                const filteredApproved = filterExperiences(approvedExperiences);
+                return filteredApproved.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Users size={48} className="mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                      {approvedExperiences.length === 0 ? 'No Approved Experiences' : 'No Matching Results'}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {approvedExperiences.length === 0 
+                        ? 'No experiences have been approved yet.' 
+                        : 'Try adjusting your search or filter criteria.'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Select All Checkbox */}
+                    <div className="flex items-center space-x-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                      <button
+                        onClick={() => handleSelectAll(filteredApproved)}
+                        className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                      >
+                        {selectedIds.size === filteredApproved.length && filteredApproved.length > 0 ? (
+                          <CheckSquare size={16} className="text-blue-600 dark:text-blue-400" />
+                        ) : (
+                          <Square size={16} />
+                        )}
+                        <span>Select All ({filteredApproved.length})</span>
+                      </button>
+                      
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {filteredApproved.length} of {approvedExperiences.length} experiences
+                      </span>
+                    </div>
+
+                    <div className="grid gap-6">
+                      {filteredApproved.map((experience) => (
+                        <ExperienceCard
+                          key={experience._id}
+                          experience={experience}
+                          isPending={false}
+                          onApprove={handleApprove}
+                          onDelete={handleDelete}
+                          onViewExperience={viewExperienceText}
+                          isProcessing={processingId === experience._id}
+                          isSelected={selectedIds.has(experience._id!)}
+                          onSelect={handleSelectOne}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()
             ) : (
               <NotificationManager />
             )}
@@ -283,6 +604,8 @@ interface ExperienceCardProps {
   onDelete: (experience: Experience) => void;
   onViewExperience: (experience: Experience) => void;
   isProcessing: boolean;
+  isSelected?: boolean;
+  onSelect?: (id: string) => void;
 }
 
 const ExperienceCard: React.FC<ExperienceCardProps> = ({
@@ -291,49 +614,71 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
   onApprove,
   onDelete,
   onViewExperience,
-  isProcessing
+  isProcessing,
+  isSelected = false,
+  onSelect
 }) => {
   return (
-    <div className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg p-6 hover:shadow-md transition-shadow">
+    <div className={`border rounded-lg p-6 hover:shadow-md transition-all ${
+      isSelected 
+        ? 'border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20' 
+        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+    }`}>
       <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <div className="flex items-center space-x-2 mb-2">
-            <User size={20} className="text-gray-600 dark:text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{experience.studentName}</h3>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              isPending 
-                ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300' 
-                : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-            }`}>
-              {isPending ? 'Pending' : 'Approved'}
-            </span>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-300 mb-4">
-            <div className="flex items-center space-x-2">
-              <Building2 size={16} />
-              <span>{experience.company}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Calendar size={16} />
-              <span>{experience.graduationYear}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="capitalize font-medium">{experience.type}</span>
-            </div>
-          </div>
-
-          {/* Experience Preview */}
-          {experience.experienceText && (
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
-              <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Experience Preview:</h4>
-              <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
-                {experience.experienceText.length > 150 
-                  ? `${experience.experienceText.substring(0, 150)}...` 
-                  : experience.experienceText}
-              </p>
-            </div>
+        <div className="flex items-start space-x-3 flex-1">
+          {/* Selection Checkbox */}
+          {onSelect && (
+            <button
+              onClick={() => onSelect(experience._id!)}
+              className="mt-1 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+            >
+              {isSelected ? (
+                <CheckSquare size={20} className="text-blue-600 dark:text-blue-400" />
+              ) : (
+                <Square size={20} className="text-gray-400 dark:text-gray-500" />
+              )}
+            </button>
           )}
+          
+          <div className="flex-1">
+            <div className="flex items-center space-x-2 mb-2">
+              <User size={20} className="text-gray-600 dark:text-gray-400" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{experience.studentName}</h3>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                isPending 
+                  ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300' 
+                  : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+              }`}>
+                {isPending ? 'Pending' : 'Approved'}
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-300 mb-4">
+              <div className="flex items-center space-x-2">
+                <Building2 size={16} />
+                <span>{experience.company}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Calendar size={16} />
+                <span>{experience.graduationYear}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="capitalize font-medium">{experience.type}</span>
+              </div>
+            </div>
+
+            {/* Experience Preview */}
+            {experience.experienceText && (
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
+                <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Experience Preview:</h4>
+                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
+                  {experience.experienceText.length > 150 
+                    ? `${experience.experienceText.substring(0, 150)}...` 
+                    : experience.experienceText}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Send, AlertCircle, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Send, AlertCircle, CheckCircle, X, BookOpen, Shield, Users, Star } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
 import CompanySelector from './CompanySelector';
 import ExperienceTextEditor from './ExperienceTextEditor';
@@ -11,6 +11,7 @@ interface PostExperienceProps {
 }
 
 const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [formData, setFormData] = useState({
     studentName: user?.name || '',
     email: user?.email || '',
@@ -25,6 +26,29 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isValidatingEmail, setIsValidatingEmail] = useState(false);
   const [emailValidationProgress, setEmailValidationProgress] = useState(0);
+
+  // Check if welcome modal should be shown (every time user visits this tab after logging in)
+  useEffect(() => {
+    if (user) {
+      // Create a session key based on user and current session
+      const sessionKey = `postExperienceWelcome_${user.googleId}`;
+      const hasSeenInThisSession = sessionStorage.getItem(sessionKey);
+      
+      // Always show modal if user hasn't seen it in this login session
+      if (!hasSeenInThisSession) {
+        setShowWelcomeModal(true);
+      }
+    }
+  }, [user]);
+
+  // Handle modal close - mark as seen for this session only
+  const handleCloseModal = () => {
+    setShowWelcomeModal(false);
+    if (user) {
+      const sessionKey = `postExperienceWelcome_${user.googleId}`;
+      sessionStorage.setItem(sessionKey, 'true');
+    }
+  };
 
   const validateEmail = async (email: string): Promise<boolean> => {
     setIsValidatingEmail(true);
@@ -145,6 +169,138 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
     }
   };
 
+  // Welcome Modal Component
+  const WelcomeModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 px-8 py-6 rounded-t-2xl">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Welcome to Experience Sharing! 🎉</h2>
+              <p className="text-blue-100 dark:text-blue-200">
+                Help your fellow SASTRA students by sharing your journey
+              </p>
+            </div>
+            <button
+              onClick={handleCloseModal}
+              className="text-white hover:text-blue-200 transition-colors p-1"
+            >
+              <X size={24} />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-8 space-y-6">
+          {/* Guidelines Section */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                <BookOpen size={20} className="text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Sharing Guidelines</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">What makes a great experience post</p>
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+              <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-300">
+                <li className="flex items-start space-x-2">
+                  <Star size={16} className="mt-0.5 flex-shrink-0" />
+                  <span><strong>Interview Process:</strong> Share specific questions, rounds, and preparation tips</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <Star size={16} className="mt-0.5 flex-shrink-0" />
+                  <span><strong>Company Culture:</strong> Describe work environment, team dynamics, and learning opportunities</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <Star size={16} className="mt-0.5 flex-shrink-0" />
+                  <span><strong>Preparation Resources:</strong> Mention books, courses, platforms that helped you</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <Star size={16} className="mt-0.5 flex-shrink-0" />
+                  <span><strong>Practical Advice:</strong> Tips for future candidates and lessons learned</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Requirements Section */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                <Shield size={20} className="text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Requirements</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Please ensure you meet these criteria</p>
+              </div>
+            </div>
+            
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+              <ul className="space-y-2 text-sm text-green-800 dark:text-green-300">
+                <li className="flex items-start space-x-2">
+                  <CheckCircle size={16} className="mt-0.5 flex-shrink-0" />
+                  <span><strong>SASTRA Email Required:</strong> Use your institutional email (@sastra.ac.in)</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle size={16} className="mt-0.5 flex-shrink-0" />
+                  <span><strong>Detailed Content:</strong> Minimum 50 characters with meaningful insights</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle size={16} className="mt-0.5 flex-shrink-0" />
+                  <span><strong>Admin Review:</strong> All experiences are reviewed before publication</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle size={16} className="mt-0.5 flex-shrink-0" />
+                  <span><strong>Professional Tone:</strong> Keep content helpful and respectful</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Community Impact */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                <Users size={20} className="text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Community Impact</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Your contribution makes a difference</p>
+              </div>
+            </div>
+            
+            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+              <p className="text-sm text-purple-800 dark:text-purple-300">
+                By sharing your experience, you're helping hundreds of SASTRA students prepare better for their 
+                career opportunities. Your insights about interview processes, company culture, and preparation 
+                strategies become valuable resources for the entire community.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-50 dark:bg-gray-900/50 px-8 py-6 rounded-b-2xl">
+          <div className="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Ready to share your experience and help others?
+            </p>
+            <button
+              onClick={handleCloseModal}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+            >
+              Let's Get Started! 🚀
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   if (submitted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-green-900/20 flex items-center justify-center p-4 transition-colors duration-300">
@@ -166,6 +322,9 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+      {/* Welcome Modal */}
+      {showWelcomeModal && <WelcomeModal />}
+      
       <div className="max-w-3xl mx-auto">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 px-8 py-6">
@@ -331,18 +490,6 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
                   </>
                 )}
               </button>
-            </div>
-
-            {/* Disclaimer */}
-            <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
-                <strong>Requirements:</strong>
-              </p>
-              <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                <li>• Use your SASTRA institutional email (@sastra.ac.in)</li>
-                <li>• Your experience will be reviewed before publication</li>
-                <li>• This helps maintain a helpful and professional community</li>
-              </ul>
             </div>
           </form>
         </div>
