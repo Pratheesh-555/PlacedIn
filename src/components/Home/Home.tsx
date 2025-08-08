@@ -75,7 +75,7 @@ const Home: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 overflow-x-hidden">
       {/* Hero Section */}
       <section className="relative py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
@@ -124,7 +124,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features-section" className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
+      <section id="features-section" className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-800 transition-colors duration-300 overflow-x-hidden">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold text-center text-blue-900 dark:text-blue-100 mb-12">
             Why Share Your Experience?
