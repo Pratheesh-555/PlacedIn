@@ -30,21 +30,13 @@ export class PerformanceMonitor {
   static endTimer(label: string): number {
     const startTime = this.timers.get(label);
     if (!startTime) {
-      console.warn(`Timer '${label}' was not started`);
       return 0;
     }
 
     const endTime = performance.now();
     const duration = endTime - startTime;
     
-    // Log slow operations (>100ms)
-    if (duration > 100) {
-      console.warn(`🐌 Slow operation: ${label} took ${duration.toFixed(2)}ms`);
-    } else if (duration > 50) {
-      console.log(`⚠️ ${label} took ${duration.toFixed(2)}ms`);
-    } else {
-      console.log(`✅ ${label} took ${duration.toFixed(2)}ms`);
-    }
+    // Performance logging disabled for production security
 
     this.timers.delete(label);
     return duration;
@@ -91,15 +83,9 @@ export class PerformanceMonitor {
   /**
    * Log memory usage
    */
-  static logMemoryUsage(label: string): void {
-    const memory = this.getMemoryInfo();
-    if (memory) {
-      console.log(`💾 ${label} Memory:`, {
-        used: `${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)} MB`,
-        total: `${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)} MB`,
-        limit: `${(memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2)} MB`
-      });
-    }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static logMemoryUsage(_label: string): void {
+    // Memory logging disabled for production security
   }
 }
 

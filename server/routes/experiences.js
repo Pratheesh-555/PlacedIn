@@ -60,14 +60,6 @@ router.get('/', async (req, res) => {
 // Create new experience with Cloudinary upload
 router.post('/', upload.single('document'), async (req, res) => {
   try {
-    console.log('Received POST request to create experience');
-    console.log('Request body:', req.body);
-    console.log('Request file:', req.file ? { 
-      originalname: req.file.originalname, 
-      mimetype: req.file.mimetype, 
-      size: req.file.size 
-    } : 'No file');
-    
     const { 
       studentName, 
       email, 
@@ -80,13 +72,11 @@ router.post('/', upload.single('document'), async (req, res) => {
 
     // Validation
     if (!studentName || !email || !company || !graduationYear || !type) {
-      console.log('Missing required fields:', { studentName: !!studentName, email: !!email, company: !!company, graduationYear: !!graduationYear, type: !!type });
       return res.status(400).json({ error: 'All required fields must be provided' });
     }
 
     // Check if either experienceText or file is provided
     if (!experienceText && !req.file) {
-      console.log('No experience text or file provided');
       return res.status(400).json({ error: 'Either experience text or document upload is required' });
     }
 
@@ -96,7 +86,6 @@ router.post('/', upload.single('document'), async (req, res) => {
     }
 
     if (!['placement', 'internship'].includes(type)) {
-      console.log('Invalid type:', type);
       return res.status(400).json({ error: 'Type must be either placement or internship' });
     }
 
@@ -105,9 +94,7 @@ router.post('/', upload.single('document'), async (req, res) => {
     if (typeof postedBy === 'string') {
       try {
         parsedPostedBy = JSON.parse(postedBy);
-        console.log('Parsed postedBy:', parsedPostedBy);
       } catch (parseError) {
-        console.error('Error parsing postedBy:', parseError);
         parsedPostedBy = null;
       }
     }
@@ -119,12 +106,9 @@ router.post('/', upload.single('document'), async (req, res) => {
     // Handle file upload if present (store in MongoDB only)
     if (req.file) {
       try {
-        console.log('Storing file in MongoDB...');
         documentUrl = null; // No Cloudinary, so no URL
         documentPublicId = null; // No Cloudinary, so no public ID
-        console.log('Using MongoDB storage');
       } catch (error) {
-        console.error('File processing failed:', error);
         return res.status(500).json({ error: 'File processing failed' });
       }
     }
@@ -150,32 +134,17 @@ router.post('/', upload.single('document'), async (req, res) => {
         data: req.file.buffer,
         contentType: req.file.mimetype
       };
-      console.log('Experience will use MongoDB storage');
     }
-    
-    console.log('Creating experience with data:', experienceData);
     
     const experience = new Experience(experienceData);
     await experience.save();
-    console.log('Experience saved successfully with ID:', experience._id);
     
     res.status(201).json({ 
       message: 'Experience submitted successfully. It will be reviewed and published soon.',
       experienceId: experience._id 
     });
   } catch (error) {
-    console.error('Error creating experience:', error);
-    console.error('Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    });
-    console.error('Request body:', req.body);
-    console.error('Request file:', req.file ? { 
-      originalname: req.file.originalname, 
-      mimetype: req.file.mimetype, 
-      size: req.file.size 
-    } : 'No file');
+    console.error('Error creating experience:', error.message);
     
     if (error.name === 'ValidationError') {
       return res.status(400).json({ error: error.message });
@@ -225,7 +194,6 @@ router.get('/:id/document', async (req, res) => {
 
     // Check if we have a Cloudinary URL (new system) or old document data
     if (experience.documentUrl) {
-      console.log('Serving Cloudinary document for viewing:', experience.documentUrl);
       // Instead of redirect, fetch and serve with proper headers for inline viewing
       try {
         const response = await axios.get(experience.documentUrl, {
@@ -248,7 +216,6 @@ router.get('/:id/document', async (req, res) => {
         return res.status(404).json({ error: 'Document could not be loaded' });
       }
     } else if (experience.document && experience.document.data) {
-      console.log('Serving document from MongoDB for viewing:', req.params.id);
       // Set headers for inline viewing instead of download
       res.set({
         'Content-Type': experience.document.contentType || 'application/pdf',
@@ -257,7 +224,6 @@ router.get('/:id/document', async (req, res) => {
       });
       res.send(experience.document.data);
     } else {
-      console.log('No document found for experience:', req.params.id);
       return res.status(404).json({ error: 'Document not found' });
     }
   } catch (error) {

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, PlusCircle, BookOpen, Settings, LogOut } from 'lucide-react';
 import GoogleAuth from '../GoogleAuth';
-import NotificationBell from './NotificationBell';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import { GoogleUser } from '../../types';
 
@@ -66,7 +65,6 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
           {/* User Menu */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
-            {user && <NotificationBell />}
             {user ? (
               <div className="flex items-center space-x-2">
                 <img 
@@ -111,10 +109,9 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
                 </div>
               )}
               
-              {/* Show user info and notification bell when logged in */}
+              {/* Show user info when logged in */}
               {user && (
                 <div className="flex items-center space-x-2 flex-shrink-0">
-                  <NotificationBell />
                   <img 
                     src={user.picture} 
                     alt={user.name}

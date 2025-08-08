@@ -218,6 +218,8 @@ const ExperienceTextEditor: React.FC<ExperienceTextEditorProps> = ({
                 : 'bg-white dark:bg-gray-700'
           }`}>
             <textarea
+              id="experienceContent"
+              name="experienceContent"
               ref={textareaRef}
               value={value}
               onChange={handleChange}

@@ -63,7 +63,6 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
         auto_select: false,
         cancel_on_tap_outside: true,
       });
-      console.log(import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
       // Disable auto-select to prevent automatic login
       window.google.accounts.id.disableAutoSelect();
@@ -94,7 +93,7 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
     if (window.google) {
       window.google.accounts.id.disableAutoSelect();
       window.google.accounts.id.revoke(user?.email || '', () => {
-        console.log('Google session revoked');
+        // Google session revoked
       });
     }
     

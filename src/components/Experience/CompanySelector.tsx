@@ -96,10 +96,12 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({ value, onChange, erro
   return (
     <div className="relative" ref={dropdownRef}>
       <div className="relative">
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        <label htmlFor="companySelector" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Company *
         </label>
         <input
+          id="companySelector"
+          name="companySelector"
           type="text"
           value={searchQuery || value}
           onChange={handleInputChange}

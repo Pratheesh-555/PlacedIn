@@ -238,6 +238,8 @@ const Experiences: React.FC = () => {
             <div className="relative flex-1">
               <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
               <input
+                id="searchExperiences"
+                name="searchExperiences"
                 type="text"
                 placeholder="Search experiences, companies, or students..."
                 value={searchInput}
@@ -261,8 +263,10 @@ const Experiences: React.FC = () => {
             <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Company</label>
+                  <label htmlFor="filterCompany" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Company</label>
                   <select
+                    id="filterCompany"
+                    name="filterCompany"
                     value={filters.company}
                     onChange={(e) => handleFilterChange('company', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
@@ -275,8 +279,10 @@ const Experiences: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Graduation Year</label>
+                  <label htmlFor="filterGraduationYear" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Graduation Year</label>
                   <select
+                    id="filterGraduationYear"
+                    name="filterGraduationYear"
                     value={filters.graduationYear}
                     onChange={(e) => handleFilterChange('graduationYear', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
@@ -289,8 +295,10 @@ const Experiences: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
+                  <label htmlFor="filterType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
                   <select
+                    id="filterType"
+                    name="filterType"
                     value={filters.type}
                     onChange={(e) => handleFilterChange('type', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"

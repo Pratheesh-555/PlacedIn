@@ -18,7 +18,6 @@ const authenticateAdmin = (req, res, next) => {
   
   // For now, allow all requests to pass through since frontend auth is handled separately
   // In production, you'd want proper JWT token validation here
-  console.log('Admin route accessed by:', user?.email || 'unknown user');
   
   // Skip authentication for now - frontend handles admin checking
   next();
@@ -173,23 +172,13 @@ router.get('/user-experiences/:googleId', async (req, res) => {
 // Admin route to access any document (approved or pending)
 router.get('/document/:id', async (req, res) => {
   try {
-    console.log('Admin document request for experience ID:', req.params.id);
     const experience = await Experience.findById(req.params.id);
     if (!experience) {
-      console.log('Experience not found:', req.params.id);
       return res.status(404).json({ error: 'Experience not found' });
     }
 
-    console.log('Experience found:', {
-      id: experience._id,
-      hasCloudinaryUrl: !!experience.documentUrl,
-      hasMongoDocument: !!(experience.document && experience.document.data),
-      documentName: experience.documentName
-    });
-
     // Check if we have a Cloudinary URL (new system) or old document data
     if (experience.documentUrl) {
-      console.log('Serving Cloudinary document for admin viewing:', experience.documentUrl);
       // Instead of redirect, fetch and serve with proper headers for inline viewing
       try {
         const response = await axios.get(experience.documentUrl, {
@@ -212,7 +201,6 @@ router.get('/document/:id', async (req, res) => {
         return res.status(404).json({ error: 'Document could not be loaded' });
       }
     } else if (experience.document && experience.document.data) {
-      console.log('Serving admin document from MongoDB for viewing');
       // Set headers for inline viewing instead of download
       res.set({
         'Content-Type': experience.document.contentType || 'application/pdf',
@@ -221,7 +209,6 @@ router.get('/document/:id', async (req, res) => {
       });
       res.send(experience.document.data);
     } else {
-      console.log('No document found for admin request:', req.params.id);
       return res.status(404).json({ error: 'Document not found' });
     }
   } catch (error) {

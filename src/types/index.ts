@@ -48,15 +48,3 @@ export interface FilterOptions {
   type: string;
   search: string;
 }
-
-export interface Notification {
-  id: number;
-  title: string;
-  message: string;
-  type: 'info' | 'warning' | 'success' | 'error';
-  priority: 'low' | 'normal' | 'high';
-  isActive: boolean;
-  createdAt: string;
-  updatedAt?: string;
-  createdBy: string;
-}

@@ -345,10 +345,12 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
             {/* Personal Information */}
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="studentName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Full Name *
                 </label>
                 <input
+                  id="studentName"
+                  name="studentName"
                   type="text"
                   value={formData.studentName}
                   onChange={(e) => handleInputChange('studentName', e.target.value)}
@@ -364,10 +366,12 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Email Address *
                 </label>
                 <input
+                  id="email"
+                  name="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
@@ -395,10 +399,12 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
             {/* Academic Year and Type */}
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="graduationYear" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Graduation Year *
                 </label>
                 <select
+                  id="graduationYear"
+                  name="graduationYear"
                   value={formData.graduationYear}
                   onChange={(e) => handleInputChange('graduationYear', parseInt(e.target.value))}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
@@ -410,10 +416,12 @@ const PostExperience: React.FC<PostExperienceProps> = ({ onSuccess, user }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="experienceType" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Experience Type *
                 </label>
                 <select
+                  id="experienceType"
+                  name="experienceType"
                   value={formData.type}
                   onChange={(e) => handleInputChange('type', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"

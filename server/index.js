@@ -32,21 +32,15 @@ async function startServer() {
 
   // Simple request logging (only for errors and important requests)
   app.use((req, res, next) => {
-    // Only log API requests, not static files
-    if (req.path.includes('/api/')) {
-      console.log(`${req.method} ${req.path}`);
-    }
     next();
   });
 
   // Use simplified routes
   const experiencesRouter = await import('./routes/experiences.js');
   const adminRouter = await import('./routes/admin.js');
-  const notificationsRouter = await import('./routes/notifications.js');
 
   app.use('/api/experiences', experiencesRouter.default);
   app.use('/api/admin', adminRouter.default);
-  app.use('/api/notifications', notificationsRouter.default);
 
   // Test route for debugging
   app.get('/api/test', async (req, res) => {

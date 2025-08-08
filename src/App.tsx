@@ -43,7 +43,6 @@ function App() {
   const fetchExperiences = async () => {
     // This function is kept for PostExperience component compatibility
     // Individual components now fetch their own data
-    console.log('Experience added successfully');
   };
 
   const handleLogin = (user: GoogleUser) => {
@@ -83,7 +82,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
           <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} />
           

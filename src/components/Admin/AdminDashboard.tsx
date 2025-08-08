@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Eye, Calendar, User, Building2, AlertCircle, Trash2, Users, Bell, Search, Filter, X, CheckSquare, Square } from 'lucide-react';
+import { Check, Eye, Calendar, User, Building2, AlertCircle, Trash2, Users, Search, Filter, X, CheckSquare, Square } from 'lucide-react';
 import { Experience, GoogleUser } from '../../types';
 import { API_ENDPOINTS } from '../../config/api';
-import NotificationManager from './NotificationManager';
 
 interface AdminDashboardProps {
   user: GoogleUser | null;
@@ -13,7 +12,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
   const [pendingExperiences, setPendingExperiences] = useState<Experience[]>([]);
   const [approvedExperiences, setApprovedExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'notifications'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('pending');
   const [processingId, setProcessingId] = useState<string | null>(null);
   
   // Search and filter states
@@ -283,6 +282,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
                 <input
+                  id="adminSearch"
+                  name="adminSearch"
                   type="text"
                   placeholder="Search by name, company, or email..."
                   value={searchTerm}
@@ -323,8 +324,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Company</label>
+                  <label htmlFor="adminCompanyFilter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Company</label>
                   <select
+                    id="adminCompanyFilter"
+                    name="adminCompanyFilter"
                     value={companyFilter}
                     onChange={(e) => setCompanyFilter(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
@@ -337,8 +340,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Graduation Year</label>
+                  <label htmlFor="adminYearFilter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Graduation Year</label>
                   <select
+                    id="adminYearFilter"
+                    name="adminYearFilter"
                     value={yearFilter}
                     onChange={(e) => setYearFilter(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
@@ -351,8 +356,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
+                  <label htmlFor="adminTypeFilter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
                   <select
+                    id="adminTypeFilter"
+                    name="adminTypeFilter"
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
@@ -419,24 +426,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
               >
                 Approved Experiences ({approvedExperiences.length})
               </button>
-              <button
-                onClick={() => setActiveTab('notifications')}
-                className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
-                  activeTab === 'notifications'
-                    ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
-              >
-                <Bell size={16} className="inline-block mr-2" />
-                Notifications
-              </button>
             </nav>
           </div>
 
           <div className="p-6">
-            {activeTab !== 'notifications' && (
-              <>
-                {/* Bulk Operations Controls */}
+            <>
+              {/* Bulk Operations Controls */}
                 {selectedIds.size > 0 && (
                   <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <div className="flex items-center justify-between">
@@ -477,7 +472,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
                   </div>
                 )}
               </>
-            )}
 
             {activeTab === 'pending' ? (
               (() => {
@@ -588,7 +582,39 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
                 );
               })()
             ) : (
-              <NotificationManager />
+              (() => {
+                const filteredApproved = filterExperiences(approvedExperiences);
+                return filteredApproved.length === 0 ? (
+                  <div className="text-center py-12">
+                    <AlertCircle size={48} className="mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                      {approvedExperiences.length === 0 ? 'No Approved Experiences' : 'No Matching Results'}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {approvedExperiences.length === 0 
+                        ? 'No experiences have been approved yet.' 
+                        : 'Try adjusting your search or filter criteria.'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-6">
+                    {filteredApproved.map((experience) => (
+                      <ExperienceCard
+                        key={experience._id}
+                        experience={experience}
+                        isPending={false}
+                        onApprove={() => {}}
+                        onReject={() => {}}
+                        onDelete={handleDelete}
+                        onViewExperience={viewExperienceText}
+                        isProcessing={processingId === experience._id}
+                        isSelected={selectedIds.has(experience._id!)}
+                        onSelect={handleSelectOne}
+                      />
+                    ))}
+                  </div>
+                );
+              })()
             )}
           </div>
         </div>
