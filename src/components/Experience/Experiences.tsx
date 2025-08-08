@@ -46,19 +46,41 @@ const Experiences: React.FC = () => {
         `Fetch experiences page ${pageNum}`,
         async () => {
           const response = await fetch(`${API_ENDPOINTS.EXPERIENCES}?page=${pageNum}&limit=${ITEMS_PER_PAGE}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
           return response.json();
         }
       );
       
-      if (refresh || pageNum === 1) {
-        setExperiences(result);
+      // Handle both new and old response formats
+      let experiencesArray;
+      let hasMoreData = true;
+      
+      if (result.experiences && result.pagination) {
+        // New format with metadata
+        experiencesArray = result.experiences;
+        hasMoreData = result.pagination.page < result.pagination.pages;
+      } else if (Array.isArray(result)) {
+        // Old format - direct array
+        experiencesArray = result;
+        hasMoreData = result.length >= ITEMS_PER_PAGE;
       } else {
-        setExperiences(prev => [...prev, ...result]);
+        experiencesArray = [];
+        hasMoreData = false;
       }
       
-      if (result.length < ITEMS_PER_PAGE) {
-        setHasMore(false);
+      // Filter for approved experiences (backup filter)
+      const approvedExperiences = experiencesArray.filter((exp: Experience) => exp.isApproved);
+      
+      if (refresh || pageNum === 1) {
+        setExperiences(approvedExperiences);
+      } else {
+        setExperiences(prev => [...prev, ...approvedExperiences]);
       }
+      
+      setHasMore(hasMoreData);
+      
     } catch (error) {
       console.error('Error fetching experiences:', error);
     } finally {

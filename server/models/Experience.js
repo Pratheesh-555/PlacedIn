@@ -73,13 +73,15 @@ const ExperienceSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for better query performance
+// Enhanced indexes for better query performance and scalability
 ExperienceSchema.index({ company: 1 });
 ExperienceSchema.index({ graduationYear: -1 });
 ExperienceSchema.index({ type: 1 });
-ExperienceSchema.index({ isApproved: 1 });
+ExperienceSchema.index({ isApproved: 1, createdAt: -1 }); // Compound index for approved experiences
 ExperienceSchema.index({ createdAt: -1 });
-ExperienceSchema.index({ 'postedBy.googleId': 1 });
+ExperienceSchema.index({ 'postedBy.googleId': 1, createdAt: -1 }); // Compound index for user experiences
 ExperienceSchema.index({ 'approvedBy.googleId': 1 });
+ExperienceSchema.index({ email: 1 }); // Index for email lookups
+ExperienceSchema.index({ isApproved: 1, type: 1 }); // Compound index for filtering
 
 export default mongoose.model('Experience', ExperienceSchema);

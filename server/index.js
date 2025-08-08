@@ -30,6 +30,15 @@ async function startServer() {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+  // Simple request logging (only for errors and important requests)
+  app.use((req, res, next) => {
+    // Only log API requests, not static files
+    if (req.path.includes('/api/')) {
+      console.log(`${req.method} ${req.path}`);
+    }
+    next();
+  });
+
   // Use simplified routes
   const experiencesRouter = await import('./routes/experiences.js');
   const adminRouter = await import('./routes/admin.js');
@@ -66,10 +75,29 @@ async function startServer() {
     }
   });
 
-  // MongoDB connection
-  mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  // MongoDB connection with optimization for university scale (3000+ users)
+  const mongooseOptions = {
+    maxPoolSize: 20, // Maximum number of connections in the connection pool
+    minPoolSize: 5,  // Minimum number of connections in the connection pool
+    maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
+    serverSelectionTimeoutMS: 5000, // How long to try to connect to server
+    socketTimeoutMS: 45000, // How long to wait for a response
+    // Removed unsupported options: bufferMaxEntries and bufferCommands
+  };
+
+  mongoose.connect(process.env.MONGODB_URI, mongooseOptions)
+  .then(() => {
+    console.log('✅ MongoDB connected successfully');
+  })
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);
+  });
+
+  // Handle MongoDB connection events
+  mongoose.connection.on('error', (err) => {
+    console.error('MongoDB error:', err);
+  });
 
   // Error handling middleware
   app.use((err, req, res, next) => {

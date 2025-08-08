@@ -26,19 +26,34 @@ const upload = multer({
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = parseInt(req.query.limit) || 100;
     const skip = (page - 1) * limit;
 
+    const totalCount = await Experience.countDocuments({ isApproved: true });
     const experiences = await Experience.find({ isApproved: true })
-      .sort({ createdAt: -1 })
+      .sort({ approvedAt: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .select('-document'); // Exclude heavy document data for list view
+      .select('-document')
+      .lean();
 
-    res.json(experiences);
+    const response = {
+      experiences,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        pages: Math.ceil(totalCount / limit),
+        returned: experiences.length
+      }
+    };
+
+    res.json(response);
   } catch (error) {
-    console.error('Error fetching experiences:', error);
-    res.status(500).json({ error: 'Failed to fetch experiences' });
+    console.error('Error fetching approved experiences:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch experiences'
+    });
   }
 });
 

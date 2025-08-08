@@ -58,14 +58,17 @@ router.put('/experiences/:id/approve', async (req, res) => {
         approvedBy: req.body.postedBy,
         approvedAt: new Date()
       },
-      { new: true }
+      { new: true, runValidators: true }
     );
     
     if (!experience) {
       return res.status(404).json({ error: 'Experience not found' });
     }
     
-    res.json({ message: 'Experience approved successfully', experience });
+    res.json({ 
+      message: 'Experience approved successfully', 
+      experience
+    });
   } catch (error) {
     console.error('Error approving experience:', error);
     res.status(500).json({ error: 'Failed to approve experience' });

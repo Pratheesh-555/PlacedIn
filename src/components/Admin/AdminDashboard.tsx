@@ -155,12 +155,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
 
       if (approvedResponse.ok) {
         const allData = await approvedResponse.json();
-        setApprovedExperiences(allData.filter((exp: Experience) => exp.isApproved));
+        const approved = allData.filter((exp: Experience) => exp.isApproved === true);
+        setApprovedExperiences(approved);
       }
     } catch (error) {
       console.error('Error fetching experiences:', error);
     } finally {
-      // Remove artificial loading delay for faster response
       setLoading(false);
     }
   };
