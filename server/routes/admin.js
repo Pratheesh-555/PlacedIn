@@ -23,11 +23,15 @@ const authenticateAdmin = (req, res, next) => {
   next();
 };
 
-// Get all pending experiences
+// Get all pending experiences with optimization
 router.get('/pending-experiences', async (req, res) => {
   try {
     const experiences = await Experience.find({ isApproved: false })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .select('studentName email company graduationYear experienceText type isApproved createdAt postedBy') // Only essential fields
+      .lean() // Better performance
+      .limit(100) // Limit to prevent huge loads
+      .exec();
     res.json(experiences);
   } catch (error) {
     console.error('Error fetching pending experiences:', error);
@@ -35,14 +39,51 @@ router.get('/pending-experiences', async (req, res) => {
   }
 });
 
-// Get all experiences (approved and pending)
+// Get all experiences (approved and pending) with optimized pagination
 router.get('/experiences', async (req, res) => {
   try {
-    const experiences = await Experience.find({})
-      .sort({ createdAt: -1 });
-    res.json(experiences);
+    // Get pagination parameters - optimized limits for admin
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit) || 50, 100); // Reduced for better performance
+    const skip = (page - 1) * limit;
+    
+    // Execute parallel queries with timeout for better performance
+    const queryPromise = Promise.race([
+      Promise.all([
+        Experience.find({})
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .select('studentName email company graduationYear experienceText type isApproved createdAt approvedAt postedBy') // Only essential fields
+          .lean()
+          .exec(),
+        Experience.countDocuments({}).exec()
+      ]),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Query timeout')), 10000) // 10 second timeout
+      )
+    ]);
+
+    const [experiences, totalCount] = await queryPromise;
+    
+    // Return with pagination metadata
+    res.json({
+      experiences,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        pages: Math.ceil(totalCount / limit),
+        returned: experiences.length,
+        hasNext: page * limit < totalCount,
+        hasPrev: page > 1
+      }
+    });
   } catch (error) {
     console.error('Error fetching all experiences:', error);
+    if (error.message === 'Query timeout') {
+      return res.status(408).json({ error: 'Request timeout - please try again' });
+    }
     res.status(500).json({ error: 'Failed to fetch experiences' });
   }
 });

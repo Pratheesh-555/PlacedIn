@@ -21,7 +21,7 @@ const Experiences: React.FC = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchInput, setSearchInput] = useState('');
-  const ITEMS_PER_PAGE = 12;
+  const ITEMS_PER_PAGE = 20; // Optimized for better performance and faster loading
 
   // Debounced search to improve performance
   useEffect(() => {
@@ -32,7 +32,7 @@ const Experiences: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [searchInput]);
 
-  // Optimized fetch with pagination and caching
+  // Optimized fetch with better error handling and performance
   const fetchExperiences = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
     try {
       if (refresh) {
@@ -45,11 +45,34 @@ const Experiences: React.FC = () => {
       const result = await PerformanceMonitor.measureApiCall(
         `Fetch experiences page ${pageNum}`,
         async () => {
-          const response = await fetch(`${API_ENDPOINTS.EXPERIENCES}?page=${pageNum}&limit=${ITEMS_PER_PAGE}`);
+          // Build query parameters for filtering
+          const params = new URLSearchParams({
+            page: pageNum.toString(),
+            limit: ITEMS_PER_PAGE.toString()
+          });
+          
+          // Add filters if they exist
+          if (filters.company && filters.company !== 'all') params.append('company', filters.company);
+          if (filters.graduationYear && filters.graduationYear !== 'all') params.append('graduationYear', filters.graduationYear);
+          if (filters.type && filters.type !== 'all') params.append('type', filters.type);
+          if (filters.search && filters.search.trim()) params.append('search', filters.search);
+          
+          const url = `${API_ENDPOINTS.EXPERIENCES}?${params}`;
+          
+          // Simplified fetch without cache for debugging
+          const response = await fetch(url, {
+            headers: { 
+              'Accept': 'application/json'
+            }
+          });
+          
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
-          return response.json();
+          
+          const data = await response.json();
+          
+          return data;
         }
       );
       
@@ -60,7 +83,7 @@ const Experiences: React.FC = () => {
       if (result.experiences && result.pagination) {
         // New format with metadata
         experiencesArray = result.experiences;
-        hasMoreData = result.pagination.page < result.pagination.pages;
+        hasMoreData = result.pagination.hasNext || false;
       } else if (Array.isArray(result)) {
         // Old format - direct array
         experiencesArray = result;
@@ -70,29 +93,27 @@ const Experiences: React.FC = () => {
         hasMoreData = false;
       }
       
-      // Filter for approved experiences (backup filter)
-      const approvedExperiences = experiencesArray.filter((exp: Experience) => exp.isApproved);
-      
+      // All experiences from API are already approved, no need to filter again
       if (refresh || pageNum === 1) {
-        setExperiences(approvedExperiences);
+        setExperiences(experiencesArray);
       } else {
-        setExperiences(prev => [...prev, ...approvedExperiences]);
+        setExperiences(prev => [...prev, ...experiencesArray]);
       }
       
       setHasMore(hasMoreData);
       
-    } catch (error) {
-      console.error('Error fetching experiences:', error);
+    } catch {
+      // Error handling - no console output for production
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [filters.company, filters.graduationYear, filters.type, filters.search]);
 
-  // Initial fetch
+  // Initial fetch and filter dependency
   useEffect(() => {
     fetchExperiences(1, true);
-  }, [fetchExperiences]);
+  }, [fetchExperiences, filters]);
 
   // Function to open experience (modal for text, fallback for files)
   const openExperience = (experience: Experience) => {
@@ -104,8 +125,7 @@ const Experiences: React.FC = () => {
       const documentUrl = `${API_ENDPOINTS.EXPERIENCES}/${experience._id}/document`;
       try {
         window.open(documentUrl, '_blank', 'width=800,height=600,scrollbars=yes,toolbar=no,menubar=no');
-      } catch (error) {
-        console.error('Error opening document:', error);
+      } catch {
         alert('Unable to open experience. Please try again.');
       }
     }
@@ -113,7 +133,8 @@ const Experiences: React.FC = () => {
 
   // Optimized filtering with debouncing
   const filteredExperiences = useMemo(() => {
-    let filtered = experiences.filter(exp => exp.isApproved);
+    // API already returns only approved experiences, no need to filter again
+    let filtered = experiences;
     
     // Company filter
     if (filters.company) {

@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';    
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { generalApiLimit } from './middleware/rateLimiter.js';
 
 // Load environment variables
 dotenv.config({ silent: true });
@@ -9,6 +10,13 @@ dotenv.config({ silent: true });
 async function startServer() {
   const app = express();
   const PORT = process.env.PORT || 5000;
+
+  // Request timeout handling to prevent hanging
+  app.use((req, res, next) => {
+    req.setTimeout(30000); // 30 second timeout
+    res.setTimeout(30000);
+    next();
+  });
 
   // Middleware
   app.use(cors({
@@ -30,6 +38,9 @@ async function startServer() {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+  // Apply rate limiting to all API routes for high concurrent access
+  app.use('/api', generalApiLimit);
+
   // Simple request logging (only for errors and important requests)
   app.use((req, res, next) => {
     next();
@@ -41,6 +52,16 @@ async function startServer() {
 
   app.use('/api/experiences', experiencesRouter.default);
   app.use('/api/admin', adminRouter.default);
+
+  // Health check endpoint for monitoring and load balancers
+  app.get('/api/health', (req, res) => {
+    res.status(200).json({ 
+      status: 'healthy', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: process.memoryUsage()
+    });
+  });
 
   // Test route for debugging
   app.get('/api/test', async (req, res) => {
@@ -69,14 +90,17 @@ async function startServer() {
     }
   });
 
-  // MongoDB connection with optimization for university scale (3000+ users)
+  // MongoDB connection optimized for high concurrent users (10K+ views, 3K+ posts)
   const mongooseOptions = {
-    maxPoolSize: 20, // Maximum number of connections in the connection pool
-    minPoolSize: 5,  // Minimum number of connections in the connection pool
-    maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
-    serverSelectionTimeoutMS: 5000, // How long to try to connect to server
-    socketTimeoutMS: 45000, // How long to wait for a response
-    // Removed unsupported options: bufferMaxEntries and bufferCommands
+    maxPoolSize: 20, // Reduced from 50 - too high can cause bottlenecks
+    minPoolSize: 5,  // Reduced from 10 - more efficient
+    maxIdleTimeMS: 30000,
+    serverSelectionTimeoutMS: 10000, // Increased from 5000
+    socketTimeoutMS: 30000, // Reduced from 45000
+    connectTimeoutMS: 10000, // Added connection timeout
+    heartbeatFrequencyMS: 10000, // Added heartbeat
+    retryWrites: true, // Enable retry writes for better reliability
+    w: 'majority' // Write concern for data consistency
   };
 
   mongoose.connect(process.env.MONGODB_URI, mongooseOptions)

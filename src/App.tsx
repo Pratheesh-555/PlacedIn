@@ -26,8 +26,8 @@ function App() {
     if (savedUser) {
       try {
         setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing saved user:', error);
+      } catch {
+        // Invalid saved user data, clear it
         localStorage.removeItem('googleUser');
       }
     }

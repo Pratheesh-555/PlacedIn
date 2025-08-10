@@ -1,8 +1,34 @@
 import express from 'express';
 import multer from 'multer';
 import Experience from '../models/Experience.js';
+import { experienceReadLimit, experiencePostLimit } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
+
+// Debug route to check database status
+router.get('/debug', async (req, res) => {
+  try {
+    const totalExperiences = await Experience.countDocuments({});
+    const approvedExperiences = await Experience.countDocuments({ isApproved: true });
+    const pendingExperiences = await Experience.countDocuments({ isApproved: false });
+    
+    const sampleApproved = await Experience.findOne({ isApproved: true }).lean();
+    
+    res.json({
+      total: totalExperiences,
+      approved: approvedExperiences,
+      pending: pendingExperiences,
+      sampleApproved: sampleApproved ? {
+        id: sampleApproved._id,
+        studentName: sampleApproved.studentName,
+        company: sampleApproved.company,
+        isApproved: sampleApproved.isApproved
+      } : null
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Configure multer for memory storage (Cloudinary upload)
 const storage = multer.memoryStorage();
@@ -22,20 +48,65 @@ const upload = multer({
   }
 });
 
-// Get all approved experiences with pagination
-router.get('/', async (req, res) => {
+// Get all approved experiences with optimized pagination and filtering
+router.get('/', experienceReadLimit, async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 100;
+    // Sanitize and validate input parameters
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50); // Reduced default for better performance
     const skip = (page - 1) * limit;
+    
+    // Build query for approved experiences
+    const baseQuery = { isApproved: true };
+    
+    // Add optional filters
+    const query = { ...baseQuery };
+    if (req.query.company && req.query.company !== '') {
+      query.company = new RegExp(req.query.company, 'i');
+    }
+    if (req.query.graduationYear && req.query.graduationYear !== '') {
+      query.graduationYear = parseInt(req.query.graduationYear);
+    }
+    if (req.query.type && req.query.type !== '') {
+      query.type = req.query.type;
+    }
+    if (req.query.search && req.query.search !== '') {
+      const searchRegex = new RegExp(req.query.search, 'i');
+      query.$or = [
+        { studentName: searchRegex },
+        { company: searchRegex },
+        { experienceText: searchRegex }
+      ];
+    }
 
-    const totalCount = await Experience.countDocuments({ isApproved: true });
-    const experiences = await Experience.find({ isApproved: true })
-      .sort({ approvedAt: -1, createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .select('-document')
-      .lean();
+    // Execute optimized parallel queries with timeout
+    const queryPromise = Promise.race([
+      Promise.all([
+        Experience.find(query)
+          .sort({ approvedAt: -1, createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .select('studentName email company graduationYear experienceText type isApproved createdAt approvedAt postedBy') // Only essential fields
+          .lean() // Return plain objects for better performance
+          .exec(),
+        
+        // Fast count for simple queries
+        Object.keys(query).length === 1 && query.isApproved ? 
+          Experience.estimatedDocumentCount() : 
+          Experience.countDocuments(query).lean().exec()
+      ]),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Query timeout')), 15000) // 15 second timeout
+      )
+    ]);
+
+    const [experiences, totalCount] = await queryPromise;
+
+    // Simple performance headers for client caching
+    res.set({
+      'Cache-Control': 'public, max-age=30, stale-while-revalidate=120', // Reduced cache times
+      'X-Total-Count': totalCount.toString()
+    });
 
     const response = {
       experiences,
@@ -44,21 +115,26 @@ router.get('/', async (req, res) => {
         limit,
         total: totalCount,
         pages: Math.ceil(totalCount / limit),
-        returned: experiences.length
+        returned: experiences.length,
+        hasNext: page * limit < totalCount,
+        hasPrev: page > 1
       }
     };
 
     res.json(response);
   } catch (error) {
     console.error('Error fetching approved experiences:', error);
+    if (error.message === 'Query timeout') {
+      return res.status(408).json({ error: 'Request timeout - please try again' });
+    }
     res.status(500).json({ 
       error: 'Failed to fetch experiences'
     });
   }
 });
 
-// Create new experience with Cloudinary upload
-router.post('/', upload.single('document'), async (req, res) => {
+// Create new experience with optimized processing
+router.post('/', experiencePostLimit, upload.single('document'), async (req, res) => {
   try {
     const { 
       studentName, 
@@ -70,17 +146,15 @@ router.post('/', upload.single('document'), async (req, res) => {
       postedBy 
     } = req.body;
 
-    // Validation
-    if (!studentName || !email || !company || !graduationYear || !type) {
+    // Fast validation with early returns
+    if (!studentName?.trim() || !email?.trim() || !company?.trim() || !graduationYear || !type) {
       return res.status(400).json({ error: 'All required fields must be provided' });
     }
 
-    // Check if either experienceText or file is provided
-    if (!experienceText && !req.file) {
+    if (!experienceText?.trim() && !req.file) {
       return res.status(400).json({ error: 'Either experience text or document upload is required' });
     }
 
-    // If experienceText is provided, validate minimum length
     if (experienceText && experienceText.trim().length < 50) {
       return res.status(400).json({ error: 'Experience text must be at least 50 characters long' });
     }

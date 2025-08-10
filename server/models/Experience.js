@@ -73,15 +73,16 @@ const ExperienceSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Enhanced indexes for better query performance and scalability
-ExperienceSchema.index({ company: 1 });
-ExperienceSchema.index({ graduationYear: -1 });
-ExperienceSchema.index({ type: 1 });
-ExperienceSchema.index({ isApproved: 1, createdAt: -1 }); // Compound index for approved experiences
-ExperienceSchema.index({ createdAt: -1 });
-ExperienceSchema.index({ 'postedBy.googleId': 1, createdAt: -1 }); // Compound index for user experiences
-ExperienceSchema.index({ 'approvedBy.googleId': 1 });
-ExperienceSchema.index({ email: 1 }); // Index for email lookups
-ExperienceSchema.index({ isApproved: 1, type: 1 }); // Compound index for filtering
+// Enhanced indexes for high-concurrent access and performance
+ExperienceSchema.index({ isApproved: 1, approvedAt: -1, createdAt: -1 }); // Primary query index
+ExperienceSchema.index({ isApproved: 1, company: 1, createdAt: -1 }); // Company filter
+ExperienceSchema.index({ isApproved: 1, graduationYear: 1, createdAt: -1 }); // Year filter
+ExperienceSchema.index({ isApproved: 1, type: 1, createdAt: -1 }); // Type filter
+ExperienceSchema.index({ 'postedBy.googleId': 1, createdAt: -1 }); // User's experiences
+ExperienceSchema.index({ email: 1 }); // Email lookups
+ExperienceSchema.index({ company: 'text', studentName: 'text', experienceText: 'text' }); // Text search
+
+// Additional performance optimizations
+ExperienceSchema.index({ isApproved: 1, company: 1, graduationYear: 1, type: 1, createdAt: -1 }); // Complex filters
 
 export default mongoose.model('Experience', ExperienceSchema);

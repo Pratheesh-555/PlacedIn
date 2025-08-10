@@ -108,8 +108,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
       await fetchExperiences();
       setSelectedIds(new Set());
       onUpdate();
-    } catch (error) {
-      console.error('Error bulk approving experiences:', error);
+    } catch {
+      // Handle bulk approval error
     } finally {
       setBulkProcessing(false);
     }
@@ -133,8 +133,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
       await fetchExperiences();
       setSelectedIds(new Set());
       onUpdate();
-    } catch (error) {
-      console.error('Error bulk deleting experiences:', error);
+    } catch {
+      // Handle bulk delete error
     } finally {
       setBulkProcessing(false);
     }
@@ -144,7 +144,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
     try {
       const [pendingResponse, approvedResponse] = await Promise.all([
         fetch(`${API_ENDPOINTS.ADMIN}/pending-experiences`),
-        fetch(`${API_ENDPOINTS.ADMIN}/experiences`)
+        fetch(`${API_ENDPOINTS.ADMIN}/experiences?limit=200`) // Get up to 200 experiences for admin
       ]);
 
       if (pendingResponse.ok) {
@@ -154,11 +154,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
 
       if (approvedResponse.ok) {
         const allData = await approvedResponse.json();
-        const approved = allData.filter((exp: Experience) => exp.isApproved === true);
+        // Handle new API response format with pagination
+        const allExperiences = allData.experiences || allData; // Support both formats
+        const approved = allExperiences.filter((exp: Experience) => exp.isApproved === true);
         setApprovedExperiences(approved);
       }
-    } catch (error) {
-      console.error('Error fetching experiences:', error);
+    } catch {
+      // Handle fetch error silently
     } finally {
       setLoading(false);
     }
@@ -189,8 +191,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
         fetchExperiences(); // Refresh to get updated approved list
         onUpdate();
       }
-    } catch (error) {
-      console.error('Error approving experience:', error);
+    } catch {
+      // Handle approval error
     } finally {
       setProcessingId(null);
     }
@@ -215,8 +217,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
         }
         onUpdate();
       }
-    } catch (error) {
-      console.error('Error deleting experience:', error);
+    } catch {
+      // Handle delete error
     } finally {
       setProcessingId(null);
     }

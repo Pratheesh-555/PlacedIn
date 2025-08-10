@@ -41,8 +41,8 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
       // Store user in localStorage
       localStorage.setItem('googleUser', JSON.stringify(user));
       onLogin(user);
-    } catch (error) {
-      console.error('Error handling Google sign-in:', error);
+    } catch {
+      // Handle sign-in error
     } finally {
       setIsLoading(false);
     }

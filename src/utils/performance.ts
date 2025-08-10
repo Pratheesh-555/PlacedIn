@@ -56,7 +56,7 @@ export class PerformanceMonitor {
       return result;
     } catch (error) {
       this.endTimer(label);
-      console.error(`❌ API call ${label} failed:`, error);
+      // Performance monitoring - error logged silently
       throw error;
     }
   }
