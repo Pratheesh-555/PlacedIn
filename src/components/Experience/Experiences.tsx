@@ -59,20 +59,34 @@ const Experiences: React.FC = () => {
           
           const url = `${API_ENDPOINTS.EXPERIENCES}?${params}`;
           
-          // Simplified fetch without cache for debugging
-          const response = await fetch(url, {
-            headers: { 
-              'Accept': 'application/json'
+          // Mobile-friendly fetch with timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout for mobile
+          
+          try {
+            const response = await fetch(url, {
+              headers: { 
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-          });
-          
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            
+            const data = await response.json();
+            return data;
+          } catch (error) {
+            clearTimeout(timeoutId);
+            if (error instanceof Error && error.name === 'AbortError') {
+              throw new Error('Request timeout - please check your internet connection');
+            }
+            throw error;
           }
-          
-          const data = await response.json();
-          
-          return data;
         }
       );
       
@@ -221,9 +235,12 @@ const Experiences: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-center items-center h-64">
+          <div className="flex flex-col justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
-            <span className="ml-3 text-blue-900 dark:text-blue-100 font-medium">Loading experiences...</span>
+            <span className="ml-3 text-blue-900 dark:text-blue-100 font-medium mt-4">Loading experiences...</span>
+            <span className="text-gray-600 dark:text-gray-400 text-sm mt-2">
+              {window.navigator.userAgent.includes('Mobile') ? 'Please ensure you have a stable internet connection' : 'This should only take a moment'}
+            </span>
           </div>
         </div>
       </div>

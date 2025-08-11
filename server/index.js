@@ -21,11 +21,16 @@ async function startServer() {
   // Middleware
   app.use(cors({
     origin: [
-      "https://placedin.netlify.app", // Production URL
-      "https://krishh.me",            // Your custom domain
+      "https://krishh.me",            // Your custom domain (primary)
+      "https://www.krishh.me",        // Your custom domain with www
+      "https://placedin.netlify.app", // Backup production URL
       "http://localhost:5173",        // Local development
       "http://localhost:5174",        // Alternate local port
-      "http://localhost:5175"         // Another alternate local port
+      "http://localhost:5175",        // Another alternate local port
+      // Allow any IP address on local network for mobile testing
+      /^http:\/\/192\.168\.\d+\.\d+:(5173|5174|5175)$/, // Local network IPs
+      /^http:\/\/10\.\d+\.\d+\.\d+:(5173|5174|5175)$/,  // Local network IPs
+      /^http:\/\/172\.\d+\.\d+\.\d+:(5173|5174|5175)$/, // Local network IPs
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -58,36 +63,8 @@ async function startServer() {
     res.status(200).json({ 
       status: 'healthy', 
       timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      memory: process.memoryUsage()
+      uptime: process.uptime()
     });
-  });
-
-  // Test route for debugging
-  app.get('/api/test', async (req, res) => {
-    try {
-      const testCloudinary = await import('./utils/testCloudinary.js');
-      const cloudinaryWorking = await testCloudinary.default();
-      
-      res.json({
-        message: 'Server is working!',
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || 'development',
-        cloudinary: {
-          configured: cloudinaryWorking,
-          cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'not set',
-          apiKeyExists: !!process.env.CLOUDINARY_API_KEY,
-          apiSecretExists: !!process.env.CLOUDINARY_API_SECRET
-        }
-      });
-    } catch (error) {
-      console.error('Test route error:', error);
-      res.status(500).json({ 
-        error: 'Test failed', 
-        message: error.message,
-        stack: error.stack 
-      });
-    }
   });
 
   // MongoDB connection optimized for high concurrent users (10K+ views, 3K+ posts)
@@ -119,12 +96,14 @@ async function startServer() {
 
   // Error handling middleware
   app.use((err, req, res, next) => {
-    console.error(err.stack);
+    // Log errors without exposing sensitive information
+    console.error('Server error occurred:', err.message);
     res.status(500).json({ error: 'Something went wrong!' });
   });
 
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
+    console.log(`📱 Mobile access: Available on local network`);
   });
 }
 

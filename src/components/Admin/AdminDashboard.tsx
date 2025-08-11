@@ -142,10 +142,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
 
   const fetchExperiences = async () => {
     try {
+      // Mobile-friendly fetch with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout for admin
+
       const [pendingResponse, approvedResponse] = await Promise.all([
-        fetch(`${API_ENDPOINTS.ADMIN}/pending-experiences`),
-        fetch(`${API_ENDPOINTS.ADMIN}/experiences?limit=200`) // Get up to 200 experiences for admin
+        fetch(`${API_ENDPOINTS.ADMIN}/pending-experiences`, {
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        }),
+        fetch(`${API_ENDPOINTS.ADMIN}/experiences?limit=200`, {
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        })
       ]);
+
+      clearTimeout(timeoutId);
 
       if (pendingResponse.ok) {
         const pendingData = await pendingResponse.json();
