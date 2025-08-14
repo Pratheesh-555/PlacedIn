@@ -7,7 +7,18 @@ export interface Experience {
   experienceText: string; // Now required for text-based experiences
   documentName?: string; // Optional for backward compatibility
   type: 'placement' | 'internship';
+  linkedinUrl?: string;
+  otherDiscussions?: string;
+  rounds?: Array<{
+    id: string;
+    name: string;
+    content: string;
+  }>;
   isApproved?: boolean;
+  approvalStatus?: 'pending' | 'approved' | 'rejected';
+  version?: number;
+  submissionCount?: number;
+  isResubmission?: boolean;
   createdAt?: string;
   postedBy?: {
     googleId: string;

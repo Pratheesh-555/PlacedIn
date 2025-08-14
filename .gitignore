@@ -26,3 +26,31 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Additional cleanup patterns
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+.cache/
+coverage/
+.nyc_output/
+
+# Build and deployment artifacts
+build/
+out/
+public/build/
+
+# Documentation artifacts (keep only essential docs)
+CLEANUP_REPORT*.md
+DEPLOYMENT*.md
+FINAL_*_REPORT.md
+PERFORMANCE_*.md
+*_Code_Flow.md
+
+# Development utility files
+test-*.js
+cleanup-*.js
+migrate.js
+performance-test.js

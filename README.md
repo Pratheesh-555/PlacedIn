@@ -1,49 +1,79 @@
-# 🎓 PlacedIn - SASTRA Student Portal
+# PlacedIn - SASTRA Student Portal
 
-> **Revolutionizing how students share placement experiences at SASTRA University**
+A platform for SASTRA University students to share placement and internship experiences.
 
-[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-22+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-6.0-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Cloudinary](https://img.shields.io/badge/Cloudinary-Media-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com/)
+## Features
 
-## 🚀 What is PlacedIn?
+- **SASTRA Email Authentication** - Only @sastra.ac.in accounts allowed
+- **Rich Text Editor** - Format experiences with bold, italic, lists, quotes
+- **Company Search** - Find experiences by company, role, or CTC
+- **Admin Dashboard** - Moderation and analytics panel
+- **Dark/Light Theme** - Toggle between themes
+- **Mobile Responsive** - Works on all devices
 
-PlacedIn is a **next-generation student portal** designed exclusively for SASTRA University students to:
-- 📝 **Share authentic placement & internship experiences**
-- 🔍 **Discover opportunities** through peer insights
-- 📊 **Track placement trends** with real-time analytics
-- 🤝 **Connect with alumni** and successful candidates
+## Quick Start
 
-### ✨ Key Features
+1. **Clone and Install**
+   ```bash
+   git clone https://github.com/Pratheesh-555/PlacedIn.git
+   cd PlacedIn
+   npm install
+   cd server && npm install
+   ```
 
-🎯 **Smart Experience Sharing**
-- **Advanced Rich Text Editor** with formatting toolbar (Bold, Italic, Lists, Quotes, Headings)
-- **Live Preview Mode** to see exactly how content will appear
-- **SASTRA Email Validation** with animated progress feedback
-- PDF document uploads with Cloudinary integration
-- Company-wise categorization with intelligent autocomplete
-- Anonymous posting options for sensitive content
+2. **Environment Setup**
+   ```bash
+   # Frontend (.env)
+   VITE_API_URL=http://localhost:5000/api
+   VITE_GOOGLE_CLIENT_ID=your_google_client_id
+   
+   # Backend (server/.env)
+   MONGODB_URI=mongodb://localhost:27017/placedin
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
+   ```
 
-🔍 **Advanced Discovery Engine**
-- Multi-parameter search (company, role, year, CTC)
-- Real-time filtering with instant results
-- Trending companies and roles dashboard
+3. **Run Development**
+   ```bash
+   npm run dev
+   ```
 
-👨‍💼 **Admin Excellence**
-- Comprehensive moderation panel
-- Real-time notification system  
-- Analytics dashboard with placement statistics
-- Bulk operations for efficient management
+## Tech Stack
 
-🎨 **Modern UX/UI**
-- **Rich Text Editor** with markdown-style formatting and real-time preview
-- **Institutional Email Validation** with animated progress indicators
-- Responsive design optimized for all devices (mobile-first approach)
-- Dark/light theme support with seamless transitions
-- Animated loading states and smooth micro-interactions
-- Progressive Web App (PWA) capabilities
+- **Frontend**: React, TypeScript, TailwindCSS
+- **Backend**: Node.js, Express, MongoDB
+- **Auth**: Google OAuth (SASTRA domain only)
+- **Media**: Cloudinary for file uploads
+
+## Project Structure
+
+```
+src/
+├── components/     # React components
+├── hooks/         # Custom hooks
+├── config/        # API configuration
+└── types/         # TypeScript types
+
+server/
+├── routes/        # API endpoints
+├── models/        # Database schemas
+└── index.js       # Server entry
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create feature branch
+3. Make changes and test
+4. Submit pull request
+
+## Contact
+
+- **Repository**: [PlacedIn GitHub](https://github.com/Pratheesh-555/PlacedIn)
+- **Issues**: [Report bugs](https://github.com/Pratheesh-555/PlacedIn/issues)
+
+Made with ❤️ for SASTRA students
 
 ## 🛠️ Technology Arsenal
 
@@ -55,7 +85,7 @@ TailwindCSS 3.4     // Utility-first styling with custom design system
 React Router 6.20   // Client-side routing with lazy loading
 Lucide React        // Beautiful icon library (Bold, Italic, List, Quote, etc.)
 Custom Rich Text    // Advanced text editor with markdown-style formatting
-Email Validation    // SASTRA domain enforcement with animated feedback
+Google OAuth        // Secure authentication with SASTRA domain restriction
 ```
 
 ### Backend Infrastructure

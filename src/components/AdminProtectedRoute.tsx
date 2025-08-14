@@ -2,7 +2,7 @@ import React from 'react';
 import { GoogleUser } from '../types';
 import GoogleAuth from './GoogleAuth';
 import { AlertCircle, Shield } from 'lucide-react';
-import { isUserAdmin } from '../utils/adminUtils';
+import { ADMIN_CONFIG } from '../config/adminConfig';
 
 interface AdminProtectedRouteProps {
   children: React.ReactNode;
@@ -53,7 +53,7 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
   }
 
   // Check if the logged-in user is an admin
-  const isAdmin = isUserAdmin(user);
+  const isAdmin = ADMIN_CONFIG.isAdminEmail(user.email || '');
   
   if (!isAdmin) {
     return (

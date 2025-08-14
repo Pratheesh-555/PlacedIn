@@ -9,7 +9,7 @@ import { PropagateLoader } from 'react-spinners';
 
 // Lazy load components for better performance
 const Home = lazy(() => import('./components/Home/Home'));
-const PostExperience = lazy(() => import('./components/Experience/PostExperience_NEW'));
+const ExperienceCard = lazy(() => import('./components/Experience/ExperienceCard'));
 const Experiences = lazy(() => import('./components/Experience/Experiences'));
 const AdminDashboard = lazy(() => import('./components/Admin/AdminDashboard'));
 const ExperienceModal = lazy(() => import('./components/Experience/ExperienceModal'));
@@ -25,7 +25,14 @@ function App() {
     const savedUser = localStorage.getItem('googleUser');
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser);
+        // Validate that the user object has required fields
+        if (parsedUser && parsedUser.googleId && parsedUser.email && parsedUser.name) {
+          setUser(parsedUser);
+        } else {
+          // Invalid or incomplete user data, clear it
+          localStorage.removeItem('googleUser');
+        }
       } catch {
         // Invalid saved user data, clear it
         localStorage.removeItem('googleUser');
@@ -41,7 +48,7 @@ function App() {
   }, []);
 
   const fetchExperiences = async () => {
-    // This function is kept for PostExperience component compatibility
+    // This function is kept for ExperienceCard component compatibility
     // Individual components now fetch their own data
   };
 
@@ -51,6 +58,7 @@ function App() {
 
   const handleLogout = () => {
     setUser(null);
+    // The GoogleAuth component will handle the page reload
   };
 
   const closeModal = () => {
@@ -98,7 +106,7 @@ function App() {
                   path="/post" 
                   element={
                     <ProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
-                      <PostExperience onSuccess={fetchExperiences} user={user} />
+                      <ExperienceCard onSuccess={fetchExperiences} user={user} />
                     </ProtectedRoute>
                   } 
                 />

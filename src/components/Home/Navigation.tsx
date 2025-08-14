@@ -4,6 +4,7 @@ import { Home, PlusCircle, BookOpen, Settings, LogOut } from 'lucide-react';
 import GoogleAuth from '../GoogleAuth';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import { GoogleUser } from '../../types';
+import { ADMIN_CONFIG } from '../../config/adminConfig';
 
 interface NavigationProps {
   user: GoogleUser | null;
@@ -15,7 +16,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const isAdmin = user?.email === 'poreddysaivaishnavi@gmail.com' || user?.email === 'pratheeshkrishnan595@gmail.com';
+  const isAdmin = ADMIN_CONFIG.isAdminEmail(user?.email || '');
 
   const navItems = [
     { path: '/', label: 'Home', icon: Home },

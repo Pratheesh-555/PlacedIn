@@ -1,0 +1,42 @@
+.experience-card-container {
+  perspective: 1000px;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.experience-card {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  transition: transform 0.8s ease-in-out;
+  transform-style: preserve-3d;
+}
+
+.experience-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.experience-card-front,
+.experience-card-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100vh;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow-y: auto;
+}
+
+.experience-card-back {
+  transform: rotateY(180deg);
+}
+
+/* Hide content when flipped */
+.experience-card.flipped .experience-card-front {
+  visibility: hidden;
+}
+
+.experience-card:not(.flipped) .experience-card-back {
+  visibility: hidden;
+}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { GoogleUser } from '../types';
+import { useTheme } from '../hooks/useTheme';
 
 interface GoogleAuthProps {
   onLogin: (user: GoogleUser) => void;
@@ -24,12 +25,20 @@ declare global {
 
 const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const { theme } = useTheme();
 
   const handleCredentialResponse = useCallback(async (response: { credential: string }) => {
     setIsLoading(true);
+    
     try {
       // Decode the JWT token to get user info
       const payload = JSON.parse(atob(response.credential.split('.')[1]));
+      
+      // Validate SASTRA email domain
+      if (!payload.email?.toLowerCase().endsWith('@sastra.ac.in')) {
+        setIsLoading(false);
+        return;
+      }
       
       const user: GoogleUser = {
         googleId: payload.sub,
@@ -41,59 +50,103 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
       // Store user in localStorage
       localStorage.setItem('googleUser', JSON.stringify(user));
       onLogin(user);
-    } catch {
-      // Handle sign-in error
+    } catch (error) {
+      console.error('Error processing authentication:', error);
     } finally {
       setIsLoading(false);
     }
   }, [onLogin]);
 
   useEffect(() => {
-    // Load Google OAuth script
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    
+    if (!clientId) {
+      console.error('Google Client ID not configured');
+      return;
+    }
 
-    script.onload = () => {
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        callback: handleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-      });
+    const renderGoogleButton = () => {
+      if (window.google?.accounts?.id) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: handleCredentialResponse,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
 
-      // Disable auto-select to prevent automatic login
-      window.google.accounts.id.disableAutoSelect();
+          window.google.accounts.id.disableAutoSelect();
 
-      window.google.accounts.id.renderButton(
-        document.getElementById('google-signin-button'),
-        { 
-          theme: 'outline', 
-          size: 'large',
-          text: 'signin_with',
-          shape: 'rectangular',
-          width: 250,
-          locale: 'en'
+          // Clear the button container first
+          const buttonContainer = document.getElementById('google-signin-button');
+          if (buttonContainer) {
+            buttonContainer.innerHTML = '';
+            
+            window.google.accounts.id.renderButton(
+              buttonContainer,
+              { 
+                theme: theme === 'dark' ? 'filled_black' : 'outline', 
+                size: 'large',
+                text: 'signin_with',
+                shape: 'rectangular',
+                width: 250,
+                locale: 'en'
+              }
+            );
+          }
+        } catch (error) {
+          console.error('Google OAuth rendering failed:', error);
         }
-      );
+      }
     };
+
+    // Check if Google script is already loaded
+    if (window.google?.accounts?.id) {
+      renderGoogleButton();
+    } else {
+      // Load Google OAuth script if not already loaded
+      const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+
+        script.onload = renderGoogleButton;
+        script.onerror = () => {
+          console.error('Failed to load Google OAuth script');
+        };
+      } else {
+        // Script exists but might not be loaded yet
+        const checkGoogle = setInterval(() => {
+          if (window.google?.accounts?.id) {
+            clearInterval(checkGoogle);
+            renderGoogleButton();
+          }
+        }, 100);
+
+        // Clear interval after 10 seconds to avoid infinite checking
+        setTimeout(() => clearInterval(checkGoogle), 10000);
+      }
+    }
 
     return () => {
-      document.head.removeChild(script);
+      // Clean up the button when component unmounts or theme changes
+      const buttonContainer = document.getElementById('google-signin-button');
+      if (buttonContainer) {
+        buttonContainer.innerHTML = '';
+      }
     };
-  }, [handleCredentialResponse]);
+  }, [handleCredentialResponse, theme]);
 
   const handleLogout = () => {
-    // Clear localStorage
     localStorage.removeItem('googleUser');
     
-    // Disable auto-select and revoke Google session
-    if (window.google) {
+    if (window.google && user?.email) {
       window.google.accounts.id.disableAutoSelect();
-      window.google.accounts.id.revoke(user?.email || '', () => {
-        // Google session revoked
+      window.google.accounts.id.revoke(user.email, () => {
+        // Google session revoked successfully
       });
     }
     
@@ -126,17 +179,17 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onLogin, onLogout, user }) => {
   }
 
   return (
-    <div className="flex items-center justify-center w-full">
+    <div className="flex flex-col items-center justify-center w-full">
       <div 
         id="google-signin-button" 
-        className="w-full max-w-xs"
-        style={{ minHeight: '40px' }}
+        className="flex justify-center"
       ></div>
+      
       {isLoading && (
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400 ml-2"></div>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400 mt-4"></div>
       )}
     </div>
   );
 };
 
-export default GoogleAuth; 
+export default GoogleAuth;

@@ -13,7 +13,6 @@ interface ThemeProviderProps {
   children: React.ReactNode;
 }
 
-
 const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const getSystemTheme = () =>
     window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -53,5 +52,5 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   );
 };
 
-// Export both the provider and hook together
+export default ThemeProvider;
 export { ThemeProvider };

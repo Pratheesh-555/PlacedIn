@@ -54,9 +54,11 @@ async function startServer() {
   // Use simplified routes
   const experiencesRouter = await import('./routes/experiences.js');
   const adminRouter = await import('./routes/admin.js');
+  const userExperiencesRouter = await import('./routes/userExperiences.js');
 
   app.use('/api/experiences', experiencesRouter.default);
   app.use('/api/admin', adminRouter.default);
+  app.use('/api/user-experiences', userExperiencesRouter.default);
 
   // Health check endpoint for monitoring and load balancers
   app.get('/api/health', (req, res) => {

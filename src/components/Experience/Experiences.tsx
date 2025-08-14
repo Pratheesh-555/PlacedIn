@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Search, Filter, Calendar, User, Eye, RefreshCw } from 'lucide-react';
 import { Experience, FilterOptions } from '../../types';
 import { API_ENDPOINTS } from '../../config/api';
-import { PerformanceMonitor } from '../../utils/performance';
+
 import ExperienceModal from './ExperienceModal';
 
 const Experiences: React.FC = () => {
@@ -42,53 +42,48 @@ const Experiences: React.FC = () => {
         setHasMore(true);
       }
       
-      const result = await PerformanceMonitor.measureApiCall(
-        `Fetch experiences page ${pageNum}`,
-        async () => {
-          // Build query parameters for filtering
-          const params = new URLSearchParams({
-            page: pageNum.toString(),
-            limit: ITEMS_PER_PAGE.toString()
-          });
-          
-          // Add filters if they exist
-          if (filters.company && filters.company !== 'all') params.append('company', filters.company);
-          if (filters.graduationYear && filters.graduationYear !== 'all') params.append('graduationYear', filters.graduationYear);
-          if (filters.type && filters.type !== 'all') params.append('type', filters.type);
-          if (filters.search && filters.search.trim()) params.append('search', filters.search);
-          
-          const url = `${API_ENDPOINTS.EXPERIENCES}?${params}`;
-          
-          // Mobile-friendly fetch with timeout
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout for mobile
-          
-          try {
-            const response = await fetch(url, {
-              headers: { 
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-              },
-              signal: controller.signal
-            });
-            
-            clearTimeout(timeoutId);
-            
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            return data;
-          } catch (error) {
-            clearTimeout(timeoutId);
-            if (error instanceof Error && error.name === 'AbortError') {
-              throw new Error('Request timeout - please check your internet connection');
-            }
-            throw error;
-          }
+      // Build query parameters for filtering
+      const params = new URLSearchParams({
+        page: pageNum.toString(),
+        limit: ITEMS_PER_PAGE.toString()
+      });
+      
+      // Add filters if they exist
+      if (filters.company && filters.company !== 'all') params.append('company', filters.company);
+      if (filters.graduationYear && filters.graduationYear !== 'all') params.append('graduationYear', filters.graduationYear);
+      if (filters.type && filters.type !== 'all') params.append('type', filters.type);
+      if (filters.search && filters.search.trim()) params.append('search', filters.search);
+      
+      const url = `${API_ENDPOINTS.EXPERIENCES}?${params}`;
+      
+      // Mobile-friendly fetch with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout for mobile
+      
+      let result;
+      try {
+        const response = await fetch(url, {
+          headers: { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-      );
+        
+        result = await response.json();
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw new Error('Request timeout - please check your internet connection');
+        }
+        throw error;
+      }
       
       // Handle both new and old response formats
       let experiencesArray;
@@ -140,7 +135,8 @@ const Experiences: React.FC = () => {
       try {
         window.open(documentUrl, '_blank', 'width=800,height=600,scrollbars=yes,toolbar=no,menubar=no');
       } catch {
-        alert('Unable to open experience. Please try again.');
+        // Fallback: navigate to document URL
+        window.location.href = documentUrl;
       }
     }
   };
