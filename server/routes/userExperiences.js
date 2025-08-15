@@ -1,62 +1,57 @@
 import express from 'express';
+import multer from 'multer';
 import Experience from '../models/Experience.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
-// Get user's submissions (latest versions only, max 3)
+// Configure multer for memory storage
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx/;
+    const extname = allowedTypes.test(file.originalname.toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'));
+    }
+  }
+});
+
+// Get user's submissions (max 2 submissions allowed)
 router.get('/user/:googleId', async (req, res) => {
   try {
     const { googleId } = req.params;
     
-    const experiences = await Experience.aggregate([
-      {
-        $match: { 
-          'postedBy.googleId': googleId,
-          // Get only the latest version of each original experience
-          $or: [
-            { originalExperienceId: { $exists: false } }, // Original experiences
-            { 
-              $expr: { 
-                $eq: [
-                  '$version',
-                  { $max: { $ifNull: ['$version', 1] } }
-                ]
-              }
-            }
-          ]
-        }
-      },
-      { $sort: { createdAt: -1 } },
-      { $limit: 3 },
-      {
-        $project: {
-          company: 1,
-          approvalStatus: 1,
-          rejectionReason: 1,
-          version: 1,
-          submissionCount: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          rounds: 1,
-          otherDiscussions: 1,
-          linkedinUrl: 1,
-          type: 1,
-          graduationYear: 1,
-          studentName: 1,
-          email: 1,
-          experienceText: 1
-        }
-      }
-    ]);
+    // Get user's experiences (only non-superseded ones)
+    const experiences = await Experience.find({ 
+      'postedBy.googleId': googleId,
+      $or: [
+        { isSuperseded: { $exists: false } },
+        { isSuperseded: false }
+      ]
+    })
+    .sort({ createdAt: -1 })
+    .limit(3); // Allow fetching up to 3 for display, but limit submission to 2
     
     const submissionCount = experiences.length;
-    const canSubmitMore = submissionCount < 3;
+    const maxSubmissions = 2;
+    const canSubmitMore = submissionCount < maxSubmissions;
     
     res.json({
       experiences,
-      submissionCount,
-      canSubmitMore,
-      maxSubmissions: 3
+      submissionStats: {
+        count: submissionCount,
+        canSubmitMore,
+        maxSubmissions
+      }
     });
     
   } catch (error) {
@@ -66,10 +61,28 @@ router.get('/user/:googleId', async (req, res) => {
 });
 
 // Update/Edit experience (creates new version)
-router.put('/:id', async (req, res) => {
+router.put('/:id', upload.single('document'), async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    
+    console.log('PUT request received for experience:', id);
+    console.log('Request body keys:', Object.keys(req.body));
+    
+    // Parse FormData fields
+    const updateData = {
+      studentName: req.body.studentName,
+      email: req.body.email,
+      company: req.body.company,
+      graduationYear: parseInt(req.body.graduationYear),
+      type: req.body.type,
+      experienceText: req.body.experienceText,
+      linkedinUrl: req.body.linkedinUrl || '',
+      otherDiscussions: req.body.otherDiscussions || '',
+      rounds: req.body.rounds ? JSON.parse(req.body.rounds) : [],
+      postedBy: req.body.postedBy ? JSON.parse(req.body.postedBy) : {}
+    };
+    
+    console.log('Parsed updateData:', updateData);
     
     // Verify ownership
     const existingExp = await Experience.findById(id);
@@ -80,33 +93,45 @@ router.put('/:id', async (req, res) => {
     if (existingExp.postedBy.googleId !== updateData.postedBy.googleId) {
       return res.status(403).json({ error: 'Not authorized to edit this experience' });
     }
+
+    // Find or create user to get userId
+    let user = await User.findOne({ googleId: updateData.postedBy.googleId });
+    if (!user) {
+      user = new User({
+        googleId: updateData.postedBy.googleId,
+        name: updateData.postedBy.name,
+        email: updateData.postedBy.email,
+        picture: updateData.postedBy.picture
+      });
+      await user.save();
+    }
+
+    // Ensure postedBy has userId
+    updateData.postedBy.userId = user._id;
     
-    // Create new version
-    const newVersion = new Experience({
-      ...updateData,
-      isResubmission: true,
-      originalExperienceId: existingExp.originalExperienceId || existingExp._id,
-      version: (existingExp.version || 1) + 1,
-      submissionCount: (existingExp.submissionCount || 1) + 1,
-      approvalStatus: 'pending' // Reset to pending for review
-    });
+    // Update the existing experience instead of creating a new one
+    const updatedExperience = await Experience.findByIdAndUpdate(
+      id,
+      {
+        ...updateData,
+        approvalStatus: 'pending', // Reset to pending for review
+        version: (existingExp.version || 1) + 1,
+        submissionCount: (existingExp.submissionCount || 1) + 1,
+        updatedAt: new Date()
+      },
+      { new: true, runValidators: true }
+    );
     
-    await newVersion.save();
-    
-    // Hide old version by marking it as superseded
-    await Experience.findByIdAndUpdate(id, { 
-      supersededBy: newVersion._id,
-      isSuperseded: true 
-    });
-    
-    res.status(201).json({ 
+    res.status(200).json({ 
       message: 'Experience updated successfully',
-      experience: newVersion 
+      experience: updatedExperience 
     });
     
   } catch (error) {
     console.error('Error updating experience:', error);
-    res.status(500).json({ error: 'Failed to update experience' });
+    console.error('Request body:', req.body);
+    console.error('Request params:', req.params);
+    res.status(500).json({ error: 'Failed to update experience', details: error.message });
   }
 });
 

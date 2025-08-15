@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Edit3, Eye, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { GoogleUser, Experience } from '../../types';
+import API_BASE_URL from '../../config/api';
+import ExperienceModal from './ExperienceModal';
 
 interface UserSubmissionsProps {
   user: GoogleUser;
@@ -22,20 +24,21 @@ const UserSubmissions: React.FC<UserSubmissionsProps> = ({
   const [submissions, setSubmissions] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [submissionStats, setSubmissionStats] = useState<SubmissionStats | null>(null);
+  const [viewingExperience, setViewingExperience] = useState<Experience | null>(null);
 
   const fetchUserSubmissions = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/user-experiences/user/${user.googleId}`);
+      const response = await fetch(`${API_BASE_URL}/api/user-experiences/user/${user.googleId}`);
       
       if (!response.ok) throw new Error('Failed to fetch submissions');
       
       const data = await response.json();
       setSubmissions(data.experiences || []);
       setSubmissionStats({
-        count: data.submissionCount,
-        canSubmitMore: data.canSubmitMore,
-        maxSubmissions: data.maxSubmissions
+        count: data.submissionStats?.count || 0,
+        canSubmitMore: data.submissionStats?.canSubmitMore || false,
+        maxSubmissions: data.submissionStats?.maxSubmissions || 2
       });
     } catch (error) {
       console.error('Error fetching submissions:', error);
@@ -186,7 +189,10 @@ const UserSubmissions: React.FC<UserSubmissionsProps> = ({
 
                   <div className="flex space-x-2 ml-4">
                     {submission.approvalStatus === 'approved' && (
-                      <button className="flex items-center space-x-1 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:hover:bg-blue-900/20">
+                      <button 
+                        onClick={() => setViewingExperience(submission)}
+                        className="flex items-center space-x-1 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:hover:bg-blue-900/20"
+                      >
                         <Eye className="w-4 h-4" />
                         <span>View</span>
                       </button>
@@ -220,6 +226,14 @@ const UserSubmissions: React.FC<UserSubmissionsProps> = ({
           </div>
         )}
       </div>
+
+      {/* Experience Modal */}
+      {viewingExperience && (
+        <ExperienceModal
+          experience={viewingExperience}
+          onClose={() => setViewingExperience(null)}
+        />
+      )}
     </div>
   );
 };

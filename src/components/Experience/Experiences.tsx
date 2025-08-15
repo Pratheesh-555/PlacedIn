@@ -133,8 +133,14 @@ const Experiences: React.FC = () => {
       // Fallback for older file-based entries
       const documentUrl = `${API_ENDPOINTS.EXPERIENCES}/${experience._id}/document`;
       try {
-        window.open(documentUrl, '_blank', 'width=800,height=600,scrollbars=yes,toolbar=no,menubar=no');
-      } catch {
+        // Use simple window.open without features to avoid COOP issues
+        const newWindow = window.open(documentUrl, '_blank');
+        if (!newWindow) {
+          // Popup blocked - fallback to same window
+          window.location.href = documentUrl;
+        }
+      } catch (error) {
+        console.error('Error opening document:', error);
         // Fallback: navigate to document URL
         window.location.href = documentUrl;
       }

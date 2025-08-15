@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import Experience from '../models/Experience.js';
 import User from '../models/User.js';
-import { experienceReadLimit, experiencePostLimit } from '../middleware/rateLimiter.js';
+import { experienceReadLimit } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -161,7 +161,7 @@ router.get('/', experienceReadLimit, async (req, res) => {
 });
 
 // Create new experience with optimized processing
-router.post('/', experiencePostLimit, upload.single('document'), async (req, res) => {
+router.post('/', upload.single('document'), async (req, res) => {
   try {
     const { 
       studentName, 
@@ -227,6 +227,21 @@ router.post('/', experiencePostLimit, upload.single('document'), async (req, res
         }
         
         userId = user._id;
+        
+        // Check submission limit (max 2 submissions per user)
+        const existingSubmissions = await Experience.countDocuments({
+          'postedBy.googleId': parsedPostedBy.googleId,
+          $or: [
+            { isSuperseded: { $exists: false } },
+            { isSuperseded: false }
+          ]
+        });
+        
+        if (existingSubmissions >= 2) {
+          return res.status(400).json({ 
+            error: 'Submission limit reached. You can have maximum 2 experiences. Please edit your existing submissions instead of creating new ones.' 
+          });
+        }
         
         // Update parsedPostedBy to include userId
         parsedPostedBy.userId = userId;
@@ -316,7 +331,7 @@ router.post('/', experiencePostLimit, upload.single('document'), async (req, res
 });
 
 // Update/resubmit experience (creates new version)
-router.put('/:id', experiencePostLimit, upload.single('document'), async (req, res) => {
+router.put('/:id', upload.single('document'), async (req, res) => {
   try {
     const { id } = req.params;
     const {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Send, AlertCircle, CheckCircle, Shield, Users, ArrowRight, Bold, Italic, Underline, ChevronDown, ChevronRight, Target, Clock } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
+import API_BASE_URL from '../../config/api';
 import CompanySelector from './CompanySelector';
 import { GoogleUser, Experience } from '../../types';
 
@@ -151,7 +152,7 @@ const PostExperience: React.FC<PostExperienceProps> = ({
       // Determine if this is an edit or new submission
       const isEditing = !!editingExperience;
       const url = isEditing 
-        ? `/api/user-experiences/${editingExperience._id}`
+        ? `${API_BASE_URL}/api/user-experiences/${editingExperience._id}`
         : API_ENDPOINTS.EXPERIENCES;
       const method = isEditing ? 'PUT' : 'POST';
 
@@ -240,12 +241,6 @@ const PostExperience: React.FC<PostExperienceProps> = ({
     if (errors.rounds && content.trim()) {
       setErrors(prev => ({ ...prev, rounds: '' }));
     }
-  };
-
-  const handleRoundNameChange = (roundId: string, name: string) => {
-    setRounds(prev => prev.map(round => 
-      round.id === roundId ? { ...round, name } : round
-    ));
   };
 
   const toggleRoundExpansion = (roundId: string) => {
@@ -568,12 +563,6 @@ const PostExperience: React.FC<PostExperienceProps> = ({
             </div>
 
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              {error && (
-                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center space-x-2">
-                  <AlertCircle size={20} className="text-red-500 dark:text-red-400 flex-shrink-0" />
-                  <span className="text-red-700 dark:text-red-300">{error}</span>
-                </div>
-              )}
 
               {/* Personal Information */}
               <div className="grid md:grid-cols-2 gap-6">
@@ -772,25 +761,10 @@ const PostExperience: React.FC<PostExperienceProps> = ({
                             <ChevronRight size={16} className="text-gray-500 dark:text-gray-400" />
                           )}
                           
-                          {/* Round Default Name */}
+                          {/* Round Display - Non-editable */}
                           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Round {index + 1}
+                            Round {index + 1}: {round.name}
                           </span>
-                          
-                          {/* Custom Name Input */}
-                          <input
-                            type="text"
-                            value={round.name.replace(`Round ${index + 1}`, '').trim()}
-                            onChange={(e) => {
-                              const baseName = `Round ${index + 1}`;
-                              const customName = e.target.value.trim();
-                              const fullName = customName ? `${baseName} - ${customName}` : baseName;
-                              handleRoundNameChange(round.id, fullName);
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-sm bg-transparent border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-gray-600 dark:text-gray-400 w-32"
-                            placeholder="Custom name"
-                          />
                         </div>
                         
                         <div className="flex items-center space-x-2">
@@ -880,6 +854,31 @@ const PostExperience: React.FC<PostExperienceProps> = ({
                   </p>
                 )}
               </div>
+
+              {/* Error Messages - Positioned above submit button for better visibility */}
+              {(error || Object.keys(errors).length > 0) && (
+                <div className="space-y-3">
+                  {error && (
+                    <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center space-x-2">
+                      <AlertCircle size={20} className="text-red-500 dark:text-red-400 flex-shrink-0" />
+                      <span className="text-red-700 dark:text-red-300">{error}</span>
+                    </div>
+                  )}
+                  {Object.keys(errors).length > 0 && (
+                    <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-3">
+                        <AlertCircle size={20} className="text-red-500 dark:text-red-400 flex-shrink-0" />
+                        <span className="text-red-700 dark:text-red-300 font-semibold">Please fix the following errors:</span>
+                      </div>
+                      <ul className="space-y-1 text-sm text-red-600 dark:text-red-400 ml-6">
+                        {Object.entries(errors).map(([field, message]) => (
+                          <li key={field} className="list-disc">{message}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Submit Button */}
               <div className="pt-6">

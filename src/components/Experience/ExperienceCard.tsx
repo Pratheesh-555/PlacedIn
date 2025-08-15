@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PostExperience from './PostExperience_NEW';
 import UserSubmissions from './UserSubmissions';
-import { GoogleUser } from '../../types';
+import { GoogleUser, Experience } from '../../types';
 
 interface ExperienceCardProps {
   user: GoogleUser;
@@ -10,14 +10,14 @@ interface ExperienceCardProps {
 
 const ExperienceCard: React.FC<ExperienceCardProps> = ({ user, onSuccess }) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const [editingExperience, setEditingExperience] = useState<unknown>(null);
+  const [editingExperience, setEditingExperience] = useState<Experience | undefined>(undefined);
 
   const handleSubmissionSuccess = () => {
     setIsFlipped(true); // Flip to show submissions after successful submission
     if (onSuccess) onSuccess();
   };
 
-  const handleEditExperience = (experience: unknown) => {
+  const handleEditExperience = (experience: Experience) => {
     setEditingExperience(experience);
     setIsFlipped(false); // Flip back to form for editing
   };
@@ -27,7 +27,7 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({ user, onSuccess }) => {
   };
 
   const handleBackToForm = () => {
-    setEditingExperience(null);
+    setEditingExperience(undefined);
     setIsFlipped(false);
   };
 

@@ -54,7 +54,7 @@ const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
     setActiveTab('submissions');
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string | undefined) => {
     switch (status) {
       case 'approved':
         return <CheckCircle size={20} className="text-green-500" />;
@@ -65,7 +65,7 @@ const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined) => {
     switch (status) {
       case 'approved':
         return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
@@ -76,7 +76,7 @@ const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status: string | undefined) => {
     switch (status) {
       case 'approved':
         return 'Approved & Published';
@@ -87,7 +87,8 @@ const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'Date not available';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
