@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { X, Calendar, User } from 'lucide-react';
 import { Experience } from '../../types';
+import { FormattedText } from '../../utils/linkify';
 
 interface ExperienceModalProps {
   experience: Experience;
@@ -58,9 +59,9 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, onClose }
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
           <div className="prose max-w-none">
-            <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
+            <FormattedText className="text-gray-700 dark:text-gray-300 leading-relaxed">
               {experience.experienceText}
-            </div>
+            </FormattedText>
           </div>
 
           {/* Footer */}
