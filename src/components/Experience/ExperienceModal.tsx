@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, Calendar, User } from 'lucide-react';
+import { X, Calendar, User, Mail, Linkedin } from 'lucide-react';
 import { Experience } from '../../types';
 import { FormattedText } from '../../utils/linkify';
 
@@ -74,14 +74,30 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, onClose }
                   day: 'numeric'
                 })}
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-4">
                 <span>Contact:</span>
-                <a 
-                  href={`mailto:${experience.email}`}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
-                >
-                  {experience.email}
-                </a>
+                <div className="flex items-center space-x-3">
+                  <a 
+                    href={`mailto:${experience.email}`}
+                    className="flex items-center space-x-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors"
+                    title="Send Email"
+                  >
+                    <Mail size={16} />
+                    <span>Email</span>
+                  </a>
+                  {experience.linkedinUrl && (
+                    <a 
+                      href={experience.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors"
+                      title="View LinkedIn Profile"
+                    >
+                      <Linkedin size={16} />
+                      <span>LinkedIn</span>
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>

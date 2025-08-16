@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Check, Eye, Calendar, User, Building2, AlertCircle, Trash2, Users, Search, Filter, X, CheckSquare, Square } from 'lucide-react';
 import { Experience, GoogleUser } from '../../types';
 import { API_ENDPOINTS } from '../../config/api';
+import { formatMarkdown } from '../../utils/textFormatting';
+import ExperienceModal from '../Experience/ExperienceModal';
 
 interface AdminDashboardProps {
   user: GoogleUser | null;
@@ -14,6 +16,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('pending');
   const [processingId, setProcessingId] = useState<string | null>(null);
+  
+  // Experience modal state
+  const [viewingExperience, setViewingExperience] = useState<Experience | null>(null);
+  
+  // Rejection modal state
+  const [rejectingExperience, setRejectingExperience] = useState<Experience | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
   
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -236,36 +245,35 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
     }
   };
 
+  const handleReject = async (experience: Experience, reason: string) => {
+    setProcessingId(experience._id!);
+    try {
+      const response = await fetch(`${API_ENDPOINTS.ADMIN}/experiences/${experience._id}/reject`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rejectionReason: reason.trim()
+        }),
+      });
+      
+      if (response.ok) {
+        // Remove from pending list as it's now rejected
+        setPendingExperiences(prev => prev.filter(exp => exp._id !== experience._id));
+        setRejectingExperience(null);
+        setRejectionReason('');
+        onUpdate();
+      }
+    } catch {
+      // Handle rejection error
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   const viewExperienceText = (experience: Experience) => {
-    // Create a modal to display the experience text
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50';
-    const isDark = document.documentElement.classList.contains('dark');
-    modal.innerHTML = `
-      <div class="${isDark ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        <div class="flex items-center justify-between p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}">
-          <h2 class="text-xl font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'}">Experience by ${experience.studentName}</h2>
-          <button onclick="this.closest('.fixed').remove()" class="${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'}">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-        <div class="p-6 overflow-y-auto max-h-[70vh]">
-          <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div><strong>Company:</strong> ${experience.company}</div>
-            <div><strong>Graduation Year:</strong> ${experience.graduationYear}</div>
-            <div><strong>Type:</strong> ${experience.type}</div>
-            <div><strong>Email:</strong> ${experience.email}</div>
-          </div>
-          <div class="border-t ${isDark ? 'border-gray-700' : ''} pt-4">
-            <h3 class="font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} mb-3">Experience Content:</h3>
-            <div class="prose max-w-none ${isDark ? 'text-gray-200' : 'text-gray-700'} whitespace-pre-wrap">${experience.experienceText || 'No experience text available'}</div>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
+    setViewingExperience(experience);
   };
 
   if (loading) {
@@ -530,6 +538,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
                           experience={experience}
                           isPending={true}
                           onApprove={handleApprove}
+                          onReject={(exp) => setRejectingExperience(exp)}
                           onDelete={handleDelete}
                           onViewExperience={viewExperienceText}
                           isProcessing={processingId === experience._id}
@@ -584,6 +593,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
                           experience={experience}
                           isPending={false}
                           onApprove={handleApprove}
+                          onReject={() => {}} // No reject for approved experiences
                           onDelete={handleDelete}
                           onViewExperience={viewExperienceText}
                           isProcessing={processingId === experience._id}
@@ -618,7 +628,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
                         experience={experience}
                         isPending={false}
                         onApprove={() => {}}
-                        onReject={() => {}}
+                        onReject={() => {}} // No reject for approved experiences
                         onDelete={handleDelete}
                         onViewExperience={viewExperienceText}
                         isProcessing={processingId === experience._id}
@@ -633,6 +643,85 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
           </div>
         </div>
       </div>
+
+      {/* Experience Modal */}
+      {viewingExperience && (
+        <ExperienceModal
+          experience={viewingExperience}
+          onClose={() => setViewingExperience(null)}
+        />
+      )}
+
+      {/* Rejection Modal */}
+      {rejectingExperience && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Reject Experience
+                </h3>
+                <button
+                  onClick={() => {
+                    setRejectingExperience(null);
+                    setRejectionReason('');
+                  }}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                  You are rejecting the experience by <strong>{rejectingExperience.studentName}</strong> at <strong>{rejectingExperience.company}</strong>.
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Please provide a reason for rejection. The student will be able to see this feedback and resubmit their experience.
+                </p>
+              </div>
+              
+              <div className="mb-6">
+                <label htmlFor="rejectionReason" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Rejection Reason *
+                </label>
+                <textarea
+                  id="rejectionReason"
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Please explain why this experience is being rejected and what needs to be improved..."
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                  rows={4}
+                  required
+                />
+              </div>
+              
+              <div className="flex items-center justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setRejectingExperience(null);
+                    setRejectionReason('');
+                  }}
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (rejectionReason.trim()) {
+                      handleReject(rejectingExperience, rejectionReason);
+                    }
+                  }}
+                  disabled={!rejectionReason.trim() || processingId === rejectingExperience._id}
+                  className="px-4 py-2 bg-orange-600 dark:bg-orange-700 text-white rounded-lg hover:bg-orange-700 dark:hover:bg-orange-600 disabled:opacity-50 transition-colors"
+                >
+                  {processingId === rejectingExperience._id ? 'Rejecting...' : 'Reject Experience'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -641,6 +730,7 @@ interface ExperienceCardProps {
   experience: Experience;
   isPending: boolean;
   onApprove: (experience: Experience) => void;
+  onReject: (experience: Experience) => void;
   onDelete: (experience: Experience) => void;
   onViewExperience: (experience: Experience) => void;
   isProcessing: boolean;
@@ -652,6 +742,7 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
   experience,
   isPending,
   onApprove,
+  onReject,
   onDelete,
   onViewExperience,
   isProcessing,
@@ -711,11 +802,16 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
             {experience.experienceText && (
               <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
                 <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Experience Preview:</h4>
-                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
-                  {experience.experienceText.length > 150 
-                    ? `${experience.experienceText.substring(0, 150)}...` 
-                    : experience.experienceText}
-                </p>
+                <div 
+                  className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3"
+                  dangerouslySetInnerHTML={{
+                    __html: formatMarkdown(
+                      experience.experienceText.length > 150 
+                        ? `${experience.experienceText.substring(0, 150)}...` 
+                        : experience.experienceText
+                    )
+                  }}
+                />
               </div>
             )}
           </div>
@@ -735,14 +831,25 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
 
         <div className="flex items-center space-x-2">
           {isPending && (
-            <button
-              onClick={() => onApprove(experience)}
-              disabled={isProcessing}
-              className="flex items-center space-x-1 px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50 transition-colors"
-            >
-              <Check size={16} />
-              <span>Approve</span>
-            </button>
+            <>
+              <button
+                onClick={() => onApprove(experience)}
+                disabled={isProcessing}
+                className="flex items-center space-x-1 px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50 transition-colors"
+              >
+                <Check size={16} />
+                <span>Approve</span>
+              </button>
+              
+              <button
+                onClick={() => onReject(experience)}
+                disabled={isProcessing}
+                className="flex items-center space-x-1 px-4 py-2 bg-orange-600 dark:bg-orange-700 text-white rounded-lg hover:bg-orange-700 dark:hover:bg-orange-600 disabled:opacity-50 transition-colors"
+              >
+                <X size={16} />
+                <span>Reject</span>
+              </button>
+            </>
           )}
           
           <button

@@ -65,9 +65,6 @@ router.put('/:id', upload.single('document'), async (req, res) => {
   try {
     const { id } = req.params;
     
-    console.log('PUT request received for experience:', id);
-    console.log('Request body keys:', Object.keys(req.body));
-    
     // Parse FormData fields
     const updateData = {
       studentName: req.body.studentName,
@@ -81,8 +78,6 @@ router.put('/:id', upload.single('document'), async (req, res) => {
       rounds: req.body.rounds ? JSON.parse(req.body.rounds) : [],
       postedBy: req.body.postedBy ? JSON.parse(req.body.postedBy) : {}
     };
-    
-    console.log('Parsed updateData:', updateData);
     
     // Verify ownership
     const existingExp = await Experience.findById(id);
@@ -110,15 +105,28 @@ router.put('/:id', upload.single('document'), async (req, res) => {
     updateData.postedBy.userId = user._id;
     
     // Update the existing experience instead of creating a new one
+    const updateFields = {
+      ...updateData,
+      submissionCount: (existingExp.submissionCount || 1) + 1,
+      updatedAt: new Date()
+    };
+
+    // Handle version increment and approval status based on current status
+    if (existingExp.approvalStatus === 'rejected' || existingExp.approvalStatus === 'pending') {
+      // For pending/rejected experiences, don't increment version (still in review process)
+      updateFields.version = existingExp.version || 1;
+      updateFields.approvalStatus = 'pending';
+    } else if (existingExp.approvalStatus === 'approved') {
+      // For approved experiences, increment version (new published version)
+      updateFields.version = (existingExp.version || 1) + 1;
+      updateFields.approvalStatus = 'approved';
+      updateFields.approvedAt = existingExp.approvedAt; // Keep original approval date
+      updateFields.approvedBy = existingExp.approvedBy; // Keep original approver
+    }
+
     const updatedExperience = await Experience.findByIdAndUpdate(
       id,
-      {
-        ...updateData,
-        approvalStatus: 'pending', // Reset to pending for review
-        version: (existingExp.version || 1) + 1,
-        submissionCount: (existingExp.submissionCount || 1) + 1,
-        updatedAt: new Date()
-      },
+      updateFields,
       { new: true, runValidators: true }
     );
     

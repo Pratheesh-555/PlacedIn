@@ -3,12 +3,14 @@ import { Edit3, Eye, Clock, CheckCircle, XCircle, AlertCircle, Plus, FileText, L
 import { API_ENDPOINTS } from '../../config/api';
 import { GoogleUser, Experience } from '../../types';
 import PostExperience from '../Experience/PostExperience_NEW';
+import { useNavigate } from 'react-router-dom';
 
 interface MyExperiencesProps {
   user: GoogleUser | null;
 }
 
 const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'form' | 'submissions'>('submissions');
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,9 +49,17 @@ const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
     setActiveTab('form');
   };
 
-  const handleFormSuccess = () => {
-    // Refresh experiences and switch back to submissions tab
-    fetchUserExperiences();
+  const handleFormSuccess = (updatedExperience?: Experience) => {
+    // If an experience was updated, move it to the top of the list
+    if (updatedExperience && updatedExperience._id) {
+      setExperiences(prev => {
+        const filtered = prev.filter(exp => exp._id !== updatedExperience._id);
+        return [updatedExperience, ...filtered];
+      });
+    } else {
+      // For new experiences, just refresh the list
+      fetchUserExperiences();
+    }
     setEditingExperience(null);
     setActiveTab('submissions');
   };
@@ -98,8 +108,8 @@ const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
     });
   };
 
-  const canEdit = (experience: Experience) => {
-    return experience.approvalStatus === 'rejected' || experience.approvalStatus === 'pending';
+  const canEdit = () => {
+    return true; // Allow editing for all experiences regardless of approval status
   };
 
   const canAddNew = () => {
@@ -264,7 +274,7 @@ const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
                           </div>
                           
                           <div className="flex items-center space-x-2">
-                            {canEdit(experience) && (
+                            {canEdit() && (
                               <button
                                 onClick={() => handleEditExperience(experience)}
                                 className="flex items-center space-x-1 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
@@ -274,13 +284,13 @@ const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
                               </button>
                             )}
                             {experience.approvalStatus === 'approved' && (
-                              <a
-                                href="/experiences"
+                              <button
+                                onClick={() => navigate('/experiences')}
                                 className="flex items-center space-x-1 px-3 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
                               >
                                 <Eye size={16} />
                                 <span>View Live</span>
-                              </a>
+                              </button>
                             )}
                           </div>
                         </div>
@@ -294,12 +304,16 @@ const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
                           
                           {experience.rounds && experience.rounds.length > 0 ? (
                             <div className="text-sm text-gray-700 dark:text-gray-300">
-                              <strong>Rounds covered:</strong> {experience.rounds.map(r => r.name).join(', ')}
+                              <strong>Rounds covered:</strong> {experience.rounds.map((r, index) => `Round ${index + 1}: ${r.name || 'Unnamed Round'}`).join(', ')}
                             </div>
-                          ) : (
+                          ) : experience.experienceText ? (
                             <div className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
                               {experience.experienceText.substring(0, 150)}
                               {experience.experienceText.length > 150 && '...'}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+                              No content preview available
                             </div>
                           )}
                         </div>
@@ -321,24 +335,27 @@ const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
                           </div>
                         )}
 
-                        {/* Tips for pending/rejected */}
-                        {(experience.approvalStatus === 'pending' || experience.approvalStatus === 'rejected') && (
-                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                            <div className="text-sm text-blue-700 dark:text-blue-300">
-                              {experience.approvalStatus === 'pending' ? (
-                                <>
-                                  <strong>Under Review:</strong> Your experience is being reviewed by our admin team. 
-                                  This usually takes 1-2 business days.
-                                </>
-                              ) : (
-                                <>
-                                  <strong>Action Required:</strong> Please review the feedback above and click "Edit" 
-                                  to resubmit your experience with the requested changes.
-                                </>
-                              )}
-                            </div>
+                        {/* Tips for all statuses */}
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                          <div className="text-sm text-blue-700 dark:text-blue-300">
+                            {experience.approvalStatus === 'pending' ? (
+                              <>
+                                <strong>Under Review:</strong> Your experience is being reviewed by our admin team. 
+                                This usually takes 1-2 business days. You can edit anytime if needed.
+                              </>
+                            ) : experience.approvalStatus === 'rejected' ? (
+                              <>
+                                <strong>Action Required:</strong> Please review the feedback above and click "Edit" 
+                                to resubmit your experience with the requested changes.
+                              </>
+                            ) : (
+                              <>
+                                <strong>Published:</strong> Your experience is live and helping other students! 
+                                You can still edit it anytime to add more insights or updates.
+                              </>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </div>
                     ))}
 
@@ -352,8 +369,7 @@ const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
                               Submission Limit Reached
                             </p>
                             <p className="text-sm text-yellow-700 dark:text-yellow-200">
-                              You've reached the maximum of 3 experience submissions. You can still edit existing submissions 
-                              if they need changes.
+                              You've reached the maximum of 3 experience submissions. You can edit existing submissions anytime.
                             </p>
                           </div>
                         </div>
@@ -373,7 +389,7 @@ const MyExperiences: React.FC<MyExperiencesProps> = ({ user }) => {
                       Submission Limit Reached
                     </h3>
                     <p className="text-gray-600 dark:text-gray-400 mb-6">
-                      You've reached the maximum of 3 experience submissions. You can edit existing submissions that need changes.
+                      You've reached the maximum of 3 experience submissions. You can edit existing submissions anytime.
                     </p>
                     <button
                       onClick={() => setActiveTab('submissions')}

@@ -6,7 +6,7 @@ import CompanySelector from './CompanySelector';
 import { GoogleUser, Experience } from '../../types';
 
 interface PostExperienceProps {
-  onSuccess: () => void;
+  onSuccess: (updatedExperience?: Experience) => void;
   user: GoogleUser | null;
   editingExperience?: Experience;
   onViewSubmissions?: () => void;
@@ -145,8 +145,8 @@ const PostExperience: React.FC<PostExperienceProps> = ({
 
     try {
       // Combine all rounds content for backward compatibility
-      const experienceText = rounds.map(round => 
-        `**${round.name}**\n${round.content}`
+      const experienceText = rounds.map((round, index) => 
+        `**Round ${index + 1}: ${round.name}**\n${round.content}`
       ).join('\n\n');
 
       // Determine if this is an edit or new submission
@@ -190,6 +190,9 @@ const PostExperience: React.FC<PostExperienceProps> = ({
         throw new Error(errorData.error || 'Failed to submit experience');
       }
 
+      const result = await response.json();
+      const updatedExperience = result.experience;
+
       setSubmitted(true);
       setTimeout(() => {
         setFormData({
@@ -208,7 +211,7 @@ const PostExperience: React.FC<PostExperienceProps> = ({
           { id: '3', name: 'HR Interview', content: '' }
         ]);
         setSubmitted(false);
-        onSuccess();
+        onSuccess(isEditing ? updatedExperience : undefined);
       }, 2000);
 
     } catch (err) {
@@ -762,7 +765,7 @@ const PostExperience: React.FC<PostExperienceProps> = ({
                           )}
                           
                           {/* Round Display - Non-editable */}
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                             Round {index + 1}: {round.name}
                           </span>
                         </div>
