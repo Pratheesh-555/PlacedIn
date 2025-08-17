@@ -29,9 +29,6 @@ A platform for SASTRA University students to share placement and internship expe
    
    # Backend (server/.env)
    MONGODB_URI=mongodb://localhost:27017/placedin
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
    ```
 
 3. **Run Development**
@@ -44,7 +41,7 @@ A platform for SASTRA University students to share placement and internship expe
 - **Frontend**: React, TypeScript, TailwindCSS
 - **Backend**: Node.js, Express, MongoDB
 - **Auth**: Google OAuth (SASTRA domain only)
-- **Media**: Cloudinary for file uploads
+- **Media**: MongoDB GridFS for file storage
 
 ## Project Structure
 
@@ -94,7 +91,6 @@ Node.js 22+         // Latest LTS with native fetch
 Express 4.19        // Fast, minimalist web framework
 MongoDB 6.0         // NoSQL database with GridFS
 Mongoose 8.16       // Elegant MongoDB object modeling
-Cloudinary 2.7      // Media management and optimization
 Multer 2.0          // File upload handling
 ```
 
@@ -149,9 +145,6 @@ Git 2.40+          # Version control
    # Backend (server/.env)
    MONGODB_URI=mongodb://localhost:27017/placedin
    PORT=5000
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
    ```
 
 4. **Launch Development Environment**
@@ -219,7 +212,6 @@ const ADMIN_EMAILS = [
 │   │   │   └── NotificationManager.tsx # System notifications
 │   │   ├── 🔐 GoogleAuth.tsx       # OAuth integration
 │   │   ├── 🛡️ ProtectedRoute.tsx   # Route protection
-│   │   └── ☁️ CloudinaryUpload.tsx # File upload handler
 │   ├── 🎣 hooks/                   # Custom React hooks
 │   │   ├── useNotifications.ts     # Notification management
 │   │   └── useTheme.ts             # Theme context hook
@@ -260,8 +252,8 @@ const ADMIN_EMAILS = [
 #### **Public API**
 ```javascript
 GET    /api/experiences             // Fetch all approved experiences
-POST   /api/experiences             // Submit new experience
-GET    /api/experiences/:id         // Get specific experience details
+POST   /api/experiences             // Submit new experience  
+GET    /api/experiences/user/:googleId // Get user's experiences
 GET    /api/experiences/:id/document // Download/view PDF documents
 ```
 
@@ -286,7 +278,7 @@ DELETE /api/notifications/:id          // Delete notification
 ### ⚡ Performance Optimizations
 - **React 18 Concurrent Features**: Automatic batching, transitions, and suspense
 - **Code Splitting**: Dynamic imports for reduced bundle size
-- **Image Optimization**: Cloudinary automatic format conversion and compression
+- **File Storage**: MongoDB GridFS for secure document storage
 - **Caching Strategy**: Browser caching with proper cache headers
 - **Database Indexing**: Optimized MongoDB queries with compound indexes
 
@@ -381,9 +373,6 @@ cd server && npm start
 
 # Environment variables
 MONGODB_URI=your_atlas_connection_string
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
 PORT=5000
 ```
 

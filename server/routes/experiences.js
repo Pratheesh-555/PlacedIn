@@ -6,7 +6,7 @@ import { experienceReadLimit } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
-// Configure multer for memory storage (Cloudinary upload)
+// Configure multer for memory storage (local file handling)
 const storage = multer.memoryStorage();
 
 const upload = multer({
@@ -267,8 +267,8 @@ router.post('/', upload.single('document'), async (req, res) => {
     // Handle file upload if present (store in MongoDB only)
     if (req.file) {
       try {
-        documentUrl = null; // No Cloudinary, so no URL
-        documentPublicId = null; // No Cloudinary, so no public ID
+        documentUrl = null; // Files stored in MongoDB
+        documentPublicId = null; // Not using external storage
       } catch (error) {
         return res.status(500).json({ error: 'File processing failed' });
       }
@@ -316,7 +316,7 @@ router.post('/', upload.single('document'), async (req, res) => {
     }
     
     // Provide more specific error messages
-    if (error.message.includes('Cloudinary')) {
+    if (error.message.includes('upload')) {
       return res.status(500).json({ 
         error: 'File upload service is currently unavailable. Please try again later.',
         details: error.message 
@@ -327,112 +327,6 @@ router.post('/', upload.single('document'), async (req, res) => {
       error: 'Failed to submit experience',
       details: error.message
     });
-  }
-});
-
-// Update/resubmit experience (creates new version)
-router.put('/:id', upload.single('document'), async (req, res) => {
-  try {
-    const { id } = req.params;
-    const {
-      studentName,
-      email,
-      company,
-      graduationYear,
-      type,
-      experienceText,
-      linkedinUrl,
-      otherDiscussions,
-      rounds,
-      postedBy
-    } = req.body;
-
-    // Find original experience
-    const originalExperience = await Experience.findById(id);
-    if (!originalExperience) {
-      return res.status(404).json({ error: 'Experience not found' });
-    }
-
-    // Verify ownership
-    if (originalExperience.postedBy?.googleId !== postedBy?.googleId) {
-      return res.status(403).json({ error: 'Unauthorized to edit this experience' });
-    }
-
-    // Parse rounds if it's a string
-    let parsedRounds = rounds;
-    if (typeof rounds === 'string') {
-      try {
-        parsedRounds = JSON.parse(rounds);
-      } catch (parseError) {
-        parsedRounds = [];
-      }
-    }
-
-    // Parse postedBy if it's a string
-    let parsedPostedBy = postedBy;
-    if (typeof postedBy === 'string') {
-      try {
-        parsedPostedBy = JSON.parse(postedBy);
-      } catch (parseError) {
-        return res.status(400).json({ error: 'Invalid user data' });
-      }
-    }
-
-    // Create new version (resubmission)
-    const resubmissionData = {
-      studentName: studentName?.trim() || originalExperience.studentName,
-      email: email?.trim().toLowerCase() || originalExperience.email,
-      company: company?.trim() || originalExperience.company,
-      graduationYear: parseInt(graduationYear) || originalExperience.graduationYear,
-      experienceText: experienceText?.trim() || '',
-      linkedinUrl: linkedinUrl?.trim() || '',
-      otherDiscussions: otherDiscussions?.trim() || '',
-      rounds: parsedRounds || [],
-      type: type || originalExperience.type,
-      postedBy: parsedPostedBy,
-      isApproved: false,
-      approvalStatus: 'pending',
-      isResubmission: true,
-      originalExperienceId: originalExperience.originalExperienceId || originalExperience._id,
-      version: (originalExperience.version || 1) + 1,
-      submissionCount: (originalExperience.submissionCount || 1) + 1
-    };
-
-    // Handle file upload if present
-    if (req.file) {
-      resubmissionData.documentName = req.file.originalname.trim();
-      resubmissionData.document = {
-        data: req.file.buffer,
-        contentType: req.file.mimetype
-      };
-    }
-
-    // Create new experience entry (resubmission)
-    const newExperience = new Experience(resubmissionData);
-    await newExperience.save();
-
-    res.json({
-      message: 'Experience updated successfully. It will be reviewed again.',
-      experienceId: newExperience._id,
-      version: newExperience.version
-    });
-  } catch (error) {
-    console.error('Error updating experience:', error);
-    res.status(500).json({ error: 'Failed to update experience' });
-  }
-});
-
-// Get experience by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const experience = await Experience.findById(req.params.id);
-    if (!experience) {
-      return res.status(404).json({ error: 'Experience not found' });
-    }
-    res.json(experience);
-  } catch (error) {
-    console.error('Error fetching experience:', error);
-    res.status(500).json({ error: 'Failed to fetch experience' });
   }
 });
 
@@ -449,9 +343,9 @@ router.get('/:id/document', async (req, res) => {
       return res.status(403).json({ error: 'Document access denied. Experience not yet approved.' });
     }
 
-    // Check if we have a Cloudinary URL (new system) or old document data
+    // Check if we have external document URL or stored document data
     if (experience.documentUrl) {
-      // Instead of redirect, fetch and serve with proper headers for inline viewing
+      // Fetch and serve external document with proper headers for inline viewing
       try {
         const response = await axios.get(experience.documentUrl, {
           responseType: 'arraybuffer'
@@ -469,7 +363,7 @@ router.get('/:id/document', async (req, res) => {
         
         res.send(buffer);
       } catch (fetchError) {
-        console.error('Error fetching Cloudinary document:', fetchError);
+        console.error('Error fetching external document:', fetchError);
         return res.status(404).json({ error: 'Document could not be loaded' });
       }
     } else if (experience.document && experience.document.data) {

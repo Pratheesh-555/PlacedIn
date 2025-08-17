@@ -277,9 +277,9 @@ router.get('/document/:id', async (req, res) => {
       return res.status(404).json({ error: 'Experience not found' });
     }
 
-    // Check if we have a Cloudinary URL (new system) or old document data
+    // Check if we have external document URL or stored document data
     if (experience.documentUrl) {
-      // Instead of redirect, fetch and serve with proper headers for inline viewing
+      // Fetch and serve external document with proper headers for inline viewing
       try {
         const response = await axios.get(experience.documentUrl, {
           responseType: 'arraybuffer'
@@ -297,7 +297,7 @@ router.get('/document/:id', async (req, res) => {
         
         res.send(buffer);
       } catch (fetchError) {
-        console.error('Error fetching Cloudinary document for admin:', fetchError);
+        console.error('Error fetching external document for admin:', fetchError);
         return res.status(404).json({ error: 'Document could not be loaded' });
       }
     } else if (experience.document && experience.document.data) {
