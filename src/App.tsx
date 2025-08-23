@@ -106,7 +106,9 @@ function App() {
                   path="/post" 
                   element={
                     <ProtectedRoute user={user} onLogin={handleLogin} onLogout={handleLogout}>
-                      <ExperienceCard onSuccess={fetchExperiences} user={user} />
+                      {user && (
+                        <ExperienceCard onSuccess={fetchExperiences} user={user} />
+                      )}
                     </ProtectedRoute>
                   } 
                 />
