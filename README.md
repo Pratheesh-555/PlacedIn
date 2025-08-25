@@ -198,8 +198,7 @@ const ADMIN_EMAILS = [
 │   │   ├── 🏠 Home/                # Landing page components
 │   │   │   ├── Navigation.tsx       # Header navigation
 │   │   │   ├── Home.tsx            # Hero section & stats
-│   │   │   ├── Footer.tsx          # Footer with team modal
-│   │   │   └── NotificationBell.tsx # Real-time notifications
+│   │   │   └── Footer.tsx          # Footer with team modal
 │   │   ├── 📝 Experience/          # Experience management
 │   │   │   ├── PostExperience_NEW.tsx  # Enhanced form with email validation
 │   │   │   ├── ExperienceTextEditor.tsx # Rich text editor with toolbar

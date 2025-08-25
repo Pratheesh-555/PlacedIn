@@ -37,6 +37,7 @@ const companies: Company[] = [
   { id: 'adobe', name: 'Adobe' },
   { id: 'dell', name: 'Dell' },
   { id: 'hp', name: 'HP' },
+  { id: 'wells', name: 'Wells Fargo' },
   { id: 'other', name: 'Other' }
 ];
 

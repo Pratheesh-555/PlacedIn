@@ -1,0 +1,174 @@
+/* SASTRA University Theme */
+:root {
+  /* SASTRA Primary Colors */
+  --sastra-primary: #003092;        /* Smalt - Main brand */
+  --sastra-primary-light: #0f3c98;  /* Smalt variant */
+  --sastra-primary-dark: #002d89;   /* One Minute to Midnight */
+  --sastra-secondary: #133d97;      /* Liquid Denim */
+  
+  /* SASTRA Accent Colors */
+  --sastra-accent: #557cbd;         /* Fisher King */
+  --sastra-accent-light: #a2b7da;   /* Mont Blanc */
+  --sastra-accent-muted: #828fb2;   /* Galactic Gossamer */
+  
+  /* SASTRA Neutral Colors */
+  --sastra-gray: #a2aaab;           /* Elephant in the Room */
+  --sastra-gray-light: #768991;     /* Sea Lion */
+  --sastra-gray-medium: #56666e;    /* Silent Night */
+  --sastra-gray-dark: #7d8a8e;      /* Monument */
+  --sastra-gray-darker: #838a8d;    /* Monument variant */
+  
+  /* SASTRA Background Colors */
+  --sastra-bg: #fefdfc;             /* Brilliance */
+  --sastra-bg-soft: #f5f5f5;        /* White Smoke */
+  --sastra-bg-muted: #cfd8d5;       /* Olympus White */
+  
+  /* SASTRA Gradients */
+  --sastra-gradient-primary: linear-gradient(135deg, #003092 0%, #133d97 100%);
+  --sastra-gradient-hero: linear-gradient(135deg, #003092 0%, #557cbd 100%);
+  --sastra-gradient-accent: linear-gradient(135deg, #557cbd 0%, #a2b7da 100%);
+  --sastra-gradient-subtle: linear-gradient(135deg, #fefdfc 0%, #cfd8d5 100%);
+}
+
+.dark {
+  /* Dark mode adaptations */
+  --sastra-bg: #1a202c;
+  --sastra-bg-soft: #2d3748;
+  --sastra-bg-muted: #4a5568;
+  --sastra-text: #f7fafc;
+  --sastra-text-light: #e2e8f0;
+}
+
+/* SASTRA Component Styles */
+.sastra-header {
+  background: var(--sastra-gradient-primary);
+  box-shadow: 0 4px 20px rgba(0, 48, 146, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.sastra-button {
+  background: var(--sastra-primary);
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.sastra-button:hover {
+  background: var(--sastra-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 48, 146, 0.25);
+}
+
+.sastra-button-accent {
+  background: var(--sastra-accent);
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sastra-button-accent:hover {
+  background: var(--sastra-accent-light);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(85, 124, 189, 0.25);
+}
+
+.sastra-card {
+  background: var(--sastra-bg);
+  border: 1px solid var(--sastra-accent-light);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 48, 146, 0.08);
+}
+
+.sastra-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 48, 146, 0.15);
+  border-color: var(--sastra-accent);
+}
+
+.sastra-hero {
+  background: var(--sastra-gradient-hero);
+  color: white;
+}
+
+.sastra-footer {
+  background: var(--sastra-primary-dark);
+  color: white;
+}
+
+.sastra-text-primary {
+  color: var(--sastra-primary);
+}
+
+.sastra-text-accent {
+  color: var(--sastra-accent);
+}
+
+.sastra-text-muted {
+  color: var(--sastra-gray-light);
+}
+
+.sastra-border {
+  border-color: var(--sastra-accent-light);
+}
+
+.sastra-bg-gradient {
+  background: var(--sastra-gradient-subtle);
+}
+
+/* Success/Error states with SASTRA colors */
+.sastra-success {
+  background-color: #10b981;
+  border-color: #059669;
+}
+
+.sastra-error {
+  background-color: #ef4444;
+  border-color: #dc2626;
+}
+
+.sastra-warning {
+  background-color: #f59e0b;
+  border-color: #d97706;
+}
+
+/* SASTRA-specific animations */
+.sastra-pulse {
+  animation: sastra-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes sastra-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.sastra-fade-in {
+  animation: sastra-fade-in 0.6s ease-out forwards;
+}
+
+@keyframes sastra-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design helpers */
+@media (max-width: 768px) {
+  .sastra-card {
+    border-radius: 12px;
+  }
+  
+  .sastra-button {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+}
