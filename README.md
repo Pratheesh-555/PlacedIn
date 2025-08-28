@@ -1,4 +1,4 @@
-# PlacedIn - SASTRA Student Portal
+## PlacedIn - SASTRA Student Portal
 
 A platform for SASTRA University students to share placement and internship experiences.
 
