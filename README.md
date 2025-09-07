@@ -183,8 +183,7 @@ sudo systemctl start mongod
 # Add admin emails to server configuration
 # In server/routes/admin.js or similar
 const ADMIN_EMAILS = [
-  'admin@sastra.edu',
-  'placement@sastra.edu'
+  'admin@sastra.edu'
 ];
 ```
 
