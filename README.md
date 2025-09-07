@@ -4,7 +4,6 @@
 
 ## Features
 
-- **SASTRA Email Authentication** - Only @sastra.ac.in accounts allowed
 - **Rich Text Editor** - Format experiences with bold, italic, lists, quotes
 - **Company Search** - Find experiences by company, role, or CTC
 - **Admin Dashboard** - Moderation and analytics panel
