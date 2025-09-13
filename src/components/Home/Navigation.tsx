@@ -37,11 +37,10 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
+              <span className="text-white font-bold text-lg">P</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-blue-900 dark:text-blue-100">SASTRA</h1>
-              <p className="text-xs text-gray-600 dark:text-gray-300">PlacedIn</p>
+              <h1 className="text-xl font-bold text-blue-900 dark:text-blue-100">PlacedIn</h1>
             </div>
           </div>
 
@@ -192,9 +191,11 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
                     </button>
                   </div>
                 ) : (
+                  
                   <div className="text-center text-gray-500 dark:text-gray-400 text-sm">
                     Please sign in using the button above to access more features
                   </div>
+                  
                 )}
               </div>
             </div>
