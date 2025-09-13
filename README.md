@@ -1,10 +1,9 @@
 ## PlacedIn - SASTRA Student Portal
 
-A platform for SASTRA University students to share placement and internship experiences.
+#A platform for SASTRA University students to share placement and internship experiences.
 
 ## Features
 
-- **SASTRA Email Authentication** - Only @sastra.ac.in accounts allowed
 - **Rich Text Editor** - Format experiences with bold, italic, lists, quotes
 - **Company Search** - Find experiences by company, role, or CTC
 - **Admin Dashboard** - Moderation and analytics panel
@@ -184,8 +183,7 @@ sudo systemctl start mongod
 # Add admin emails to server configuration
 # In server/routes/admin.js or similar
 const ADMIN_EMAILS = [
-  'admin@sastra.edu',
-  'placement@sastra.edu'
+  'admin@sastra.edu'
 ];
 ```
 
