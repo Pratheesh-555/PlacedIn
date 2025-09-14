@@ -5,25 +5,25 @@ import User from '../models/User.js';
 
 const router = express.Router();
 
-// Configure multer for memory storage
-// const storage = multer.memoryStorage();
-// const upload = multer({
-//   storage: storage,
-//   limits: {
-//     fileSize: 5 * 1024 * 1024 // 5MB limit
-//   },
-//   fileFilter: (req, file, cb) => {
-//     const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx/;
-//     const extname = allowedTypes.test(file.originalname.toLowerCase());
-//     const mimetype = allowedTypes.test(file.mimetype);
+Configure multer for memory storage
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx/;
+    const extname = allowedTypes.test(file.originalname.toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
 
-//     if (mimetype && extname) {
-//       return cb(null, true);
-//     } else {
-//       cb(new Error('Invalid file type'));
-//     }
-//   }
-// });
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'));
+    }
+  }
+});
 
 // Get user's submissions (max 2 submissions allowed)
 router.get('/user/:googleId', async (req, res) => {
