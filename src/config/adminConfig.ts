@@ -3,7 +3,8 @@ export const ADMIN_CONFIG = {
   // List of email addresses that have admin access
   ADMIN_EMAILS: [
     'poreddysaivaishnavi@gmail.com',
-    'pratheeshkrishnan595@gmail.com'
+    'pratheeshkrishnan595@gmail.com',
+    'kingpk810@gmail.com'
   ],
   
   // Function to check if an email is an admin
