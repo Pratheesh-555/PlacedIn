@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusCircle, BookOpen, TrendingUp, Users, Building2 } from 'lucide-react';
 import Footer from './Footer';
+import RecentUpdates from './RecentUpdates';
 
 // Constants moved outside component to avoid recreation on each render
 const STATS = [
@@ -177,6 +178,11 @@ const Home: React.FC = () => {
       </section>
 
       <Footer />
+      
+      {/* Recent Updates - Fixed Position Bottom Right */}
+      <div className="fixed bottom-6 right-6 w-96 max-w-[calc(100vw-3rem)] z-40 hidden lg:block">
+        <RecentUpdates />
+      </div>
     </div>
   );
 };

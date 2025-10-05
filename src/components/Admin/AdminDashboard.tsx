@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Eye, Calendar, User, Building2, AlertCircle, Trash2, Users, Search, Filter, X, CheckSquare, Square } from 'lucide-react';
+import { Check, Eye, Calendar, User, Building2, AlertCircle, Trash2, Users, Search, Filter, X, CheckSquare, Square, Shield, Megaphone } from 'lucide-react';
 import { Experience, GoogleUser } from '../../types';
 import { API_ENDPOINTS } from '../../config/api';
 import { formatMarkdown } from '../../utils/textFormatting';
 import ExperienceModal from '../Experience/ExperienceModal';
+import AdminManagement from './AdminManagement';
+import UpdateManagement from './UpdateManagement';
+import ADMIN_CONFIG from '../../config/adminConfig';
 
 interface AdminDashboardProps {
   user: GoogleUser | null;
@@ -14,8 +17,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
   const [pendingExperiences, setPendingExperiences] = useState<Experience[]>([]);
   const [approvedExperiences, setApprovedExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'manage-admins' | 'updates'>('pending');
   const [processingId, setProcessingId] = useState<string | null>(null);
+  
+  // Check if user is super admin
+  const isSuperAdmin = ADMIN_CONFIG.isSuperAdmin(user?.email || '');
+  
+  // Check if user is any admin
+  const isAdmin = ADMIN_CONFIG.isAdminEmail(user?.email || '');
   
   // Experience modal state
   const [viewingExperience, setViewingExperience] = useState<Experience | null>(null);
@@ -448,6 +457,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
               >
                 Approved Experiences ({approvedExperiences.length})
               </button>
+              <button
+                onClick={() => setActiveTab('updates')}
+                className={`flex-1 py-4 px-6 text-center font-medium transition-colors flex items-center justify-center space-x-2 ${
+                  activeTab === 'updates'
+                    ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border-b-2 border-orange-600 dark:border-orange-400'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <Megaphone size={18} />
+                <span>Updates</span>
+              </button>
+              {isSuperAdmin && (
+                <button
+                  onClick={() => setActiveTab('manage-admins')}
+                  className={`flex-1 py-4 px-6 text-center font-medium transition-colors flex items-center justify-center space-x-2 ${
+                    activeTab === 'manage-admins'
+                      ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <Shield size={18} />
+                  <span>Manage Admins</span>
+                </button>
+              )}
             </nav>
           </div>
 
@@ -605,41 +638,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUpdate }) => {
                   </div>
                 );
               })()
-            ) : (
-              (() => {
-                const filteredApproved = filterExperiences(approvedExperiences);
-                return filteredApproved.length === 0 ? (
-                  <div className="text-center py-12">
-                    <AlertCircle size={48} className="mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                      {approvedExperiences.length === 0 ? 'No Approved Experiences' : 'No Matching Results'}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      {approvedExperiences.length === 0 
-                        ? 'No experiences have been approved yet.' 
-                        : 'Try adjusting your search or filter criteria.'}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-6">
-                    {filteredApproved.map((experience) => (
-                      <ExperienceCard
-                        key={experience._id}
-                        experience={experience}
-                        isPending={false}
-                        onApprove={() => {}}
-                        onReject={() => {}} // No reject for approved experiences
-                        onDelete={handleDelete}
-                        onViewExperience={viewExperienceText}
-                        isProcessing={processingId === experience._id}
-                        isSelected={selectedIds.has(experience._id!)}
-                        onSelect={handleSelectOne}
-                      />
-                    ))}
-                  </div>
-                );
-              })()
-            )}
+            ) : activeTab === 'manage-admins' ? (
+              // Admin Management Tab (Super Admin Only)
+              user ? <AdminManagement currentUser={user} /> : null
+            ) : activeTab === 'updates' ? (
+              // Updates Management Tab (All Admins)
+              user && isAdmin ? <UpdateManagement currentUser={user} /> : null
+            ) : null}
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import express from 'express';
 import Experience from '../models/Experience.js';
+import Admin from '../models/Admin.js';
 import axios from 'axios';
 import { ADMIN_CONFIG } from '../config/adminConfig.js';
 
@@ -314,6 +315,168 @@ router.get('/document/:id', async (req, res) => {
   } catch (error) {
     console.error('Error serving admin document:', error);
     res.status(500).json({ error: 'Failed to fetch document' });
+  }
+});
+
+// ===== ADMIN MANAGEMENT ROUTES (Super Admin Only) =====
+
+// Get all admins
+router.get('/manage-admins', async (req, res) => {
+  try {
+    const requestingUser = req.body.user || req.query.user;
+    
+    // Check if requesting user is super admin
+    if (!requestingUser || !ADMIN_CONFIG.isSuperAdmin(requestingUser.email)) {
+      return res.status(403).json({ error: 'Access denied. Super admin only.' });
+    }
+    
+    const admins = await Admin.find({ isActive: true })
+      .select('email isSuperAdmin addedBy createdAt permissions')
+      .sort({ createdAt: -1 })
+      .lean();
+    
+    // Always include super admin in the list
+    const superAdminInDb = admins.find(a => a.email === ADMIN_CONFIG.SUPER_ADMIN_EMAIL);
+    
+    if (!superAdminInDb) {
+      admins.unshift({
+        email: ADMIN_CONFIG.SUPER_ADMIN_EMAIL,
+        isSuperAdmin: true,
+        addedBy: { email: 'system', name: 'System' },
+        createdAt: new Date(),
+        permissions: {
+          canApprove: true,
+          canDelete: true,
+          canManageAdmins: true
+        }
+      });
+    }
+    
+    res.json(admins);
+  } catch (error) {
+    console.error('Error fetching admins:', error);
+    res.status(500).json({ error: 'Failed to fetch admins' });
+  }
+});
+
+// Add new admin
+router.post('/manage-admins', async (req, res) => {
+  try {
+    const { email, addedBy } = req.body;
+    
+    // Check if requesting user is super admin
+    if (!addedBy || !ADMIN_CONFIG.isSuperAdmin(addedBy.email)) {
+      return res.status(403).json({ error: 'Access denied. Super admin only.' });
+    }
+    
+    // Validate email
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({ error: 'Valid email is required' });
+    }
+    
+    const normalizedEmail = email.toLowerCase().trim();
+    
+    // Check if email is already an admin
+    const existingAdmin = await Admin.findOne({ email: normalizedEmail });
+    if (existingAdmin) {
+      if (existingAdmin.isActive) {
+        return res.status(400).json({ error: 'This email is already an admin' });
+      } else {
+        // Reactivate deactivated admin
+        existingAdmin.isActive = true;
+        existingAdmin.addedBy = addedBy;
+        await existingAdmin.save();
+        return res.json({ 
+          message: 'Admin reactivated successfully', 
+          admin: existingAdmin 
+        });
+      }
+    }
+    
+    // Check if it's SASTRA email
+    if (!normalizedEmail.endsWith('@sastra.ac.in')) {
+      return res.status(400).json({ error: 'Only SASTRA email addresses can be added as admin' });
+    }
+    
+    // Create new admin
+    const newAdmin = new Admin({
+      email: normalizedEmail,
+      isSuperAdmin: false,
+      addedBy: {
+        email: addedBy.email,
+        name: addedBy.name || addedBy.email
+      },
+      isActive: true,
+      permissions: {
+        canApprove: true,
+        canDelete: true,
+        canManageAdmins: false
+      }
+    });
+    
+    await newAdmin.save();
+    
+    res.status(201).json({ 
+      message: 'Admin added successfully', 
+      admin: newAdmin 
+    });
+  } catch (error) {
+    console.error('Error adding admin:', error);
+    res.status(500).json({ error: 'Failed to add admin' });
+  }
+});
+
+// Remove admin
+router.delete('/manage-admins/:email', async (req, res) => {
+  try {
+    const requestingUser = req.body.user || req.query.user;
+    
+    // Check if requesting user is super admin
+    if (!requestingUser || !ADMIN_CONFIG.isSuperAdmin(requestingUser.email)) {
+      return res.status(403).json({ error: 'Access denied. Super admin only.' });
+    }
+    
+    const emailToRemove = req.params.email.toLowerCase().trim();
+    
+    // Prevent removing super admin
+    if (emailToRemove === ADMIN_CONFIG.SUPER_ADMIN_EMAIL.toLowerCase()) {
+      return res.status(400).json({ error: 'Cannot remove super admin' });
+    }
+    
+    // Deactivate admin instead of deleting (soft delete)
+    const admin = await Admin.findOneAndUpdate(
+      { email: emailToRemove },
+      { isActive: false },
+      { new: true }
+    );
+    
+    if (!admin) {
+      return res.status(404).json({ error: 'Admin not found' });
+    }
+    
+    res.json({ message: 'Admin removed successfully' });
+  } catch (error) {
+    console.error('Error removing admin:', error);
+    res.status(500).json({ error: 'Failed to remove admin' });
+  }
+});
+
+// Check if user is admin (for frontend)
+router.post('/check-admin', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.json({ isAdmin: false, isSuperAdmin: false });
+    }
+    
+    const isSuperAdmin = ADMIN_CONFIG.isSuperAdmin(email);
+    const isAdmin = isSuperAdmin || await ADMIN_CONFIG.isAdminEmail(email);
+    
+    res.json({ isAdmin, isSuperAdmin });
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    res.status(500).json({ error: 'Failed to check admin status' });
   }
 });
 

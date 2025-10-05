@@ -6,6 +6,7 @@ import AdminProtectedRoute from './components/AdminProtectedRoute';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Experience, GoogleUser } from './types';
 import { PropagateLoader } from 'react-spinners';
+import ADMIN_CONFIG from './config/adminConfig';
 
 // Lazy load components for better performance
 const Home = lazy(() => import('./components/Home/Home'));
@@ -38,6 +39,11 @@ function App() {
         localStorage.removeItem('googleUser');
       }
     }
+    
+    // Fetch admin list from backend on app load
+    ADMIN_CONFIG.fetchAdminList().catch(err => {
+      console.error('Failed to fetch admin list:', err);
+    });
     
     // Show nice loading screen for 1.5 seconds for better UX
     const timer = setTimeout(() => {
