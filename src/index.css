@@ -2,8 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Dark mode scrollbar styles */
+/* Prevent horizontal scroll on body */
 @layer base {
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+  
   /* Light mode scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
@@ -33,6 +38,24 @@
   
   .dark ::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
+  }
+  
+  /* Thin scrollbar for specific components */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #4b5563;
   }
   
   /* Smooth transitions for all elements */

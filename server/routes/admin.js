@@ -323,7 +323,20 @@ router.get('/document/:id', async (req, res) => {
 // Get all admins
 router.get('/manage-admins', async (req, res) => {
   try {
-    const requestingUser = req.body.user || req.query.user;
+    // Parse user from query parameter if it's a string
+    let requestingUser = req.query.user;
+    if (typeof requestingUser === 'string') {
+      try {
+        requestingUser = JSON.parse(requestingUser);
+      } catch (e) {
+        requestingUser = null;
+      }
+    }
+    
+    // Also check body as fallback
+    if (!requestingUser) {
+      requestingUser = req.body.user;
+    }
     
     // Check if requesting user is super admin
     if (!requestingUser || !ADMIN_CONFIG.isSuperAdmin(requestingUser.email)) {
@@ -393,12 +406,7 @@ router.post('/manage-admins', async (req, res) => {
       }
     }
     
-    // Check if it's SASTRA email
-    if (!normalizedEmail.endsWith('@sastra.ac.in')) {
-      return res.status(400).json({ error: 'Only SASTRA email addresses can be added as admin' });
-    }
-    
-    // Create new admin
+    // Create new admin - Allow any email address
     const newAdmin = new Admin({
       email: normalizedEmail,
       isSuperAdmin: false,

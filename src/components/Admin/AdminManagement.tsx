@@ -77,8 +77,10 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ currentUser }) => {
       return;
     }
 
-    if (!newAdminEmail.toLowerCase().endsWith('@sastra.ac.in')) {
-      setError('Only SASTRA email addresses (@sastra.ac.in) can be added as admin');
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newAdminEmail)) {
+      setError('Please enter a valid email address');
       return;
     }
 
@@ -205,7 +207,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ currentUser }) => {
               type="email"
               value={newAdminEmail}
               onChange={(e) => setNewAdminEmail(e.target.value)}
-              placeholder="admin.email@sastra.ac.in"
+              placeholder="Enter any email address"
               className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               disabled={addingAdmin}
             />
@@ -219,7 +221,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ currentUser }) => {
             </button>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            Only SASTRA email addresses (@sastra.ac.in) can be added as administrators
+            You can add any email address as an administrator
           </p>
         </form>
       </div>
