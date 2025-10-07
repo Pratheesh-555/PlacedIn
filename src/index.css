@@ -54,8 +54,43 @@
     border-radius: 3px;
   }
   
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  
   .dark .scrollbar-thin::-webkit-scrollbar-thumb {
     background: #4b5563;
+  }
+  
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+  
+  /* Scrollbar with visible track */
+  .scrollbar-track-gray-100::-webkit-scrollbar-track {
+    background: #f3f4f6 !important;
+  }
+  
+  .dark .scrollbar-track-gray-800::-webkit-scrollbar-track {
+    background: #1f2937 !important;
+  }
+  
+  .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+    background: #d1d5db !important;
+  }
+  
+  .scrollbar-thumb-gray-300:hover::-webkit-scrollbar-thumb,
+  .hover\:scrollbar-thumb-gray-400::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af !important;
+  }
+  
+  .dark .scrollbar-thumb-gray-600::-webkit-scrollbar-thumb {
+    background: #4b5563 !important;
+  }
+  
+  .dark .scrollbar-thumb-gray-600:hover::-webkit-scrollbar-thumb,
+  .dark .hover\:scrollbar-thumb-gray-500::-webkit-scrollbar-thumb:hover {
+    background: #6b7280 !important;
   }
   
   /* Smooth transitions for all elements */

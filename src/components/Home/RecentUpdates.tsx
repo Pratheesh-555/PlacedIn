@@ -18,9 +18,15 @@ const RecentUpdates: React.FC = () => {
   const [selectedUpdate, setSelectedUpdate] = useState<Update | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const [hasViewedUpdates, setHasViewedUpdates] = useState(false);
 
   useEffect(() => {
     fetchUpdates();
+    // Check if user has viewed updates before
+    const viewed = localStorage.getItem('updatesViewed');
+    if (viewed) {
+      setHasViewedUpdates(true);
+    }
   }, []);
 
   // Auto-hide on idle, show on scroll
@@ -74,7 +80,7 @@ const RecentUpdates: React.FC = () => {
 
   const fetchUpdates = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/updates?limit=5`);
+      const response = await fetch(`${API_BASE_URL}/api/updates?limit=10`);
       if (response.ok) {
         const data = await response.json();
         setUpdates(data);
@@ -91,6 +97,11 @@ const RecentUpdates: React.FC = () => {
   };
 
   const handleButtonClick = () => {
+    if (!hasViewedUpdates) {
+      // Mark as viewed on first click
+      localStorage.setItem('updatesViewed', 'true');
+      setHasViewedUpdates(true);
+    }
     setIsOpen(!isOpen);
     setIsVisible(true); // Keep visible when interacting
   };
@@ -111,8 +122,8 @@ const RecentUpdates: React.FC = () => {
       >
         <div className="relative">
           <Bell size={20} className="sm:w-6 sm:h-6 group-hover:rotate-12 transition-transform duration-200" />
-          {updates.length > 0 && (
-            <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md ring-2 ring-white dark:ring-gray-800">
+          {!hasViewedUpdates && updates.length > 0 && (
+            <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md ring-2 ring-white dark:ring-gray-800 animate-in zoom-in duration-300">
               {updates.length > 9 ? '9+' : updates.length}
             </span>
           )}
@@ -136,7 +147,10 @@ const RecentUpdates: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Bell className="text-white" size={20} />
-                    <h3 className="text-base sm:text-lg font-bold text-white">Recent Updates</h3>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-bold text-white">Recent Updates</h3>
+                      <p className="text-xs text-white/80">{updates.length} {updates.length === 1 ? 'update' : 'updates'} available</p>
+                    </div>
                   </div>
                   <button
                     onClick={(e) => {
@@ -151,8 +165,8 @@ const RecentUpdates: React.FC = () => {
                 </div>
               </div>
 
-              {/* Updates List - Scrollable */}
-              <div className="max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+              {/* Updates List - Scrollable with smooth scrollbar */}
+              <div className="max-h-[65vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 dark:hover:scrollbar-thumb-gray-500 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
                 {updates.map((update, index) => (
                   <button
                     key={update._id}
@@ -160,7 +174,7 @@ const RecentUpdates: React.FC = () => {
                       handleUpdateClick(update);
                       setIsOpen(false);
                     }}
-                    className={`w-full p-4 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors text-left group ${
+                    className={`w-full p-4 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-all duration-200 text-left group ${
                       index !== updates.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''
                     }`}
                   >
@@ -194,11 +208,21 @@ const RecentUpdates: React.FC = () => {
                 ))}
               </div>
 
-              {/* Footer */}
-              <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 text-center border-t border-gray-200 dark:border-gray-700">
-                <span className="text-xs text-gray-600 dark:text-gray-400">
-                  Click to read full details
-                </span>
+              {/* Footer with scroll hint */}
+              <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Click to read full details
+                  </span>
+                  {updates.length > 3 && (
+                    <span className="text-gray-500 dark:text-gray-500 flex items-center space-x-1">
+                      <span>Scroll for more</span>
+                      <svg className="w-3 h-3 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
