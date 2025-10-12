@@ -15,9 +15,9 @@ interface Update {
 const RecentUpdates: React.FC = () => {
   const [updates, setUpdates] = useState<Update[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [selectedUpdate, setSelectedUpdate] = useState<Update | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
   const [hasViewedUpdates, setHasViewedUpdates] = useState(false);
 
   useEffect(() => {
@@ -29,64 +29,23 @@ const RecentUpdates: React.FC = () => {
     }
   }, []);
 
-  // Auto-hide on idle, show on scroll
-  useEffect(() => {
-    let hideTimeout: number;
-
-    const handleScroll = () => {
-      // Show button when scrolling
-      setIsVisible(true);
-
-      // Clear previous timeout
-      clearTimeout(hideTimeout);
-
-      // Hide after 3 seconds of no scrolling
-      hideTimeout = window.setTimeout(() => {
-        if (!isOpen) {
-          setIsVisible(false);
-        }
-      }, 3000);
-    };
-
-    const handleMouseMove = () => {
-      // Show button on mouse movement
-      setIsVisible(true);
-      clearTimeout(hideTimeout);
-
-      // Hide after 3 seconds of no activity
-      hideTimeout = window.setTimeout(() => {
-        if (!isOpen) {
-          setIsVisible(false);
-        }
-      }, 3000);
-    };
-
-    // Initial hide after 3 seconds
-    hideTimeout = window.setTimeout(() => {
-      if (!isOpen) {
-        setIsVisible(false);
-      }
-    }, 3000);
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('mousemove', handleMouseMove);
-      clearTimeout(hideTimeout);
-    };
-  }, [isOpen]);
-
   const fetchUpdates = async () => {
     try {
+      console.log('Fetching updates from:', `${API_BASE_URL}/api/updates?limit=10`);
       const response = await fetch(`${API_BASE_URL}/api/updates?limit=10`);
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Updates fetched successfully:', data.length, 'updates');
+        console.log('Update details:', data);
         setUpdates(data);
+        setError(false);
+      } else {
+        console.error('❌ Failed to fetch updates:', response.status, response.statusText);
+        setError(true);
       }
     } catch (error) {
-      console.error('Error fetching updates:', error);
+      console.error('❌ Error fetching updates:', error);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -103,21 +62,16 @@ const RecentUpdates: React.FC = () => {
       setHasViewedUpdates(true);
     }
     setIsOpen(!isOpen);
-    setIsVisible(true); // Keep visible when interacting
   };
 
-  if (loading || updates.length === 0) {
-    return null;
-  }
+  console.log('RecentUpdates state - loading:', loading, 'updates:', updates.length, 'error:', error);
 
   return (
     <>
-      {/* Floating Button - Elegant & Professional with Auto-hide */}
+      {/* Floating Button - Always Visible */}
       <button
         onClick={handleButtonClick}
-        className={`fixed bottom-6 right-6 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 dark:from-blue-600 dark:via-indigo-600 dark:to-purple-600 dark:hover:from-blue-700 dark:hover:via-indigo-700 dark:hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center z-50 group border-2 border-white/10 transition-all duration-500 ease-in-out ${
-          isVisible ? 'translate-x-0 opacity-100' : 'translate-x-24 opacity-0 pointer-events-none'
-        }`}
+        className="fixed bottom-6 right-6 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 dark:from-blue-600 dark:via-indigo-600 dark:to-purple-600 dark:hover:from-blue-700 dark:hover:via-indigo-700 dark:hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center z-50 group border-2 border-white/10 transition-all duration-300 ease-in-out"
         aria-label="View Recent Updates"
       >
         <div className="relative">
@@ -167,45 +121,68 @@ const RecentUpdates: React.FC = () => {
 
               {/* Updates List - Scrollable with smooth scrollbar */}
               <div className="max-h-[65vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 dark:hover:scrollbar-thumb-gray-500 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
-                {updates.map((update, index) => (
-                  <button
-                    key={update._id}
-                    onClick={() => {
-                      handleUpdateClick(update);
-                      setIsOpen(false);
-                    }}
-                    className={`w-full p-4 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-all duration-200 text-left group ${
-                      index !== updates.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''
-                    }`}
-                  >
-                    <div className="flex items-start justify-between space-x-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2 mb-1.5">
-                          <span className="inline-block px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-medium rounded">
-                            {update.companyName}
-                          </span>
+                {error ? (
+                  <div className="p-6 text-center">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      Failed to load updates. Please try again later.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setLoading(true);
+                        fetchUpdates();
+                      }}
+                      className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : updates.length === 0 ? (
+                  <div className="p-6 text-center">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      No updates available at the moment.
+                    </p>
+                  </div>
+                ) : (
+                  updates.map((update, index) => (
+                    <button
+                      key={update._id}
+                      onClick={() => {
+                        handleUpdateClick(update);
+                        setIsOpen(false);
+                      }}
+                      className={`w-full p-4 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-all duration-200 text-left group ${
+                        index !== updates.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''
+                      }`}
+                    >
+                      <div className="flex items-start justify-between space-x-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-1.5">
+                            <span className="inline-block px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-medium rounded">
+                              {update.companyName}
+                            </span>
+                          </div>
+                          <h4 className="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            {update.title}
+                          </h4>
+                          <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            <Clock size={12} />
+                            <span>
+                              {new Date(update.createdAt).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </span>
+                          </div>
                         </div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                          {update.title}
-                        </h4>
-                        <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                          <Clock size={12} />
-                          <span>
-                            {new Date(update.createdAt).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric'
-                            })}
-                          </span>
-                        </div>
+                        <ChevronRight
+                          size={18}
+                          className="text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-1 transition-all flex-shrink-0 mt-1"
+                        />
                       </div>
-                      <ChevronRight
-                        size={18}
-                        className="text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-1 transition-all flex-shrink-0 mt-1"
-                      />
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))
+                )}
               </div>
 
               {/* Footer with scroll hint */}

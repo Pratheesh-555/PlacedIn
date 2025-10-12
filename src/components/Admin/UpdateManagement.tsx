@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Eye, AlertCircle, CheckCircle } from 'lucide-react';
+import { Plus, Trash2, Eye, AlertCircle, CheckCircle, ToggleLeft, ToggleRight, X } from 'lucide-react';
 import API_BASE_URL from '../../config/api';
 import { GoogleUser } from '../../types';
 
@@ -111,28 +111,150 @@ const UpdateManagement: React.FC<UpdateManagementProps> = ({ currentUser }) => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this update?')) {
+    if (!confirm('Are you sure you want to mark this update as inactive? It will be hidden from users.')) {
       return;
     }
 
+    setError(null);
+    setSuccess(null);
+
     try {
+      console.log('Marking update as inactive:', id);
+      console.log('Current user:', currentUser);
+
       const response = await fetch(`${API_BASE_URL}/api/updates/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ postedBy: currentUser }),
+        body: JSON.stringify({ 
+          postedBy: {
+            googleId: currentUser.googleId,
+            email: currentUser.email,
+            name: currentUser.name
+          }
+        }),
         credentials: 'include'
       });
 
+      console.log('Delete response status:', response.status);
+      const data = await response.json();
+      console.log('Delete response data:', data);
+
       if (!response.ok) {
-        throw new Error('Failed to delete update');
+        throw new Error(data.error || 'Failed to deactivate update');
       }
 
-      setSuccess('Update deleted successfully');
-      fetchUpdates();
+      // Immediately update the UI
+      setUpdates(prevUpdates => 
+        prevUpdates.map(update => 
+          update._id === id ? { ...update, isActive: false } : update
+        )
+      );
+      
+      setSuccess('Update marked as inactive successfully!');
+      
+      // Fetch fresh data to ensure consistency
+      setTimeout(() => {
+        fetchUpdates();
+      }, 500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete update');
+      setError(err instanceof Error ? err.message : 'Failed to deactivate update');
+      console.error('Delete error:', err);
+    }
+  };
+
+  const handleToggleActive = async (id: string, currentStatus: boolean) => {
+    const action = currentStatus ? 'deactivate' : 'activate';
+    if (!confirm(`Are you sure you want to ${action} this update?`)) {
+      return;
+    }
+
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/updates/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          isActive: !currentStatus,
+          postedBy: {
+            googleId: currentUser.googleId,
+            email: currentUser.email,
+            name: currentUser.name
+          }
+        }),
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `Failed to ${action} update`);
+      }
+
+      // Immediately update the UI
+      setUpdates(prevUpdates => 
+        prevUpdates.map(update => 
+          update._id === id ? { ...update, isActive: !currentStatus } : update
+        )
+      );
+      
+      setSuccess(`Update ${currentStatus ? 'deactivated' : 'activated'} successfully!`);
+      
+      setTimeout(() => {
+        fetchUpdates();
+      }, 500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Failed to ${action} update`);
+      console.error('Toggle active error:', err);
+    }
+  };
+
+  const handlePermanentDelete = async (id: string) => {
+    if (!confirm('⚠️ PERMANENT DELETE: This will remove the update completely from the database. This action cannot be undone. Are you sure?')) {
+      return;
+    }
+
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/updates/${id}/permanent`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          postedBy: {
+            googleId: currentUser.googleId,
+            email: currentUser.email,
+            name: currentUser.name
+          }
+        }),
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to permanently delete update');
+      }
+
+      // Remove from UI immediately
+      setUpdates(prevUpdates => prevUpdates.filter(update => update._id !== id));
+      
+      setSuccess('Update permanently deleted!');
+      
+      setTimeout(() => {
+        fetchUpdates();
+      }, 500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to permanently delete update');
+      console.error('Permanent delete error:', err);
     }
   };
 
@@ -267,7 +389,9 @@ const UpdateManagement: React.FC<UpdateManagementProps> = ({ currentUser }) => {
             {updates.map((update) => (
               <div
                 key={update._id}
-                className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                className={`p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
+                  !update.isActive ? 'opacity-60' : ''
+                }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -302,13 +426,44 @@ const UpdateManagement: React.FC<UpdateManagementProps> = ({ currentUser }) => {
                       <span>By: {update.postedBy.name}</span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDelete(update._id)}
-                    className="ml-4 p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    title="Delete update"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  
+                  {/* Action Buttons */}
+                  <div className="ml-4 flex items-center space-x-2">
+                    {/* Toggle Active/Inactive */}
+                    <button
+                      onClick={() => handleToggleActive(update._id, update.isActive)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        update.isActive
+                          ? 'text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20'
+                          : 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+                      }`}
+                      title={update.isActive ? 'Deactivate (hide from users)' : 'Activate (show to users)'}
+                    >
+                      {update.isActive ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                    </button>
+
+                    {/* Soft Delete (for active updates) */}
+                    {update.isActive && (
+                      <button
+                        onClick={() => handleDelete(update._id)}
+                        className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        title="Hide update (mark as inactive)"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
+
+                    {/* Permanent Delete (for inactive updates) */}
+                    {!update.isActive && (
+                      <button
+                        onClick={() => handlePermanentDelete(update._id)}
+                        className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                        title="⚠️ Permanently delete from database"
+                      >
+                        <X size={18} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
