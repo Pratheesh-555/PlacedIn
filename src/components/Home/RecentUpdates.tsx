@@ -31,20 +31,17 @@ const RecentUpdates: React.FC = () => {
 
   const fetchUpdates = async () => {
     try {
-      console.log('Fetching updates from:', `${API_BASE_URL}/api/updates?limit=10`);
       const response = await fetch(`${API_BASE_URL}/api/updates?limit=10`);
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Updates fetched successfully:', data.length, 'updates');
-        console.log('Update details:', data);
         setUpdates(data);
         setError(false);
       } else {
-        console.error('❌ Failed to fetch updates:', response.status, response.statusText);
+        console.error('Failed to fetch updates:', response.status);
         setError(true);
       }
     } catch (error) {
-      console.error('❌ Error fetching updates:', error);
+      console.error('Error fetching updates:', error);
       setError(true);
     } finally {
       setLoading(false);
@@ -63,8 +60,6 @@ const RecentUpdates: React.FC = () => {
     }
     setIsOpen(!isOpen);
   };
-
-  console.log('RecentUpdates state - loading:', loading, 'updates:', updates.length, 'error:', error);
 
   return (
     <>

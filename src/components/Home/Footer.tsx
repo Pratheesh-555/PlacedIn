@@ -43,13 +43,13 @@ const Footer: React.FC = () => {
       name: "Pratheesh Krishnan",
       role: "Developer",
       linkedin: "https://www.linkedin.com/in/pratheesh-krishnan-30b08a282?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
-      avatar: "https://media.licdn.com/dms/image/v2/D5603AQGiNkdeVQY26A/profile-displayphoto-scale_400_400/B56ZhvOVd.HkAg-/0/1754212689852?e=1756944000&v=beta&t=Vdd_6EwpWdQaOS49iIag9yIALtvuP9moBJhsumrKPNM"
+      avatar: "https://media.licdn.com/dms/image/v2/D5603AQH86LDvcgXzLw/profile-displayphoto-scale_400_400/B56ZljvLR4G0Ag-/0/1758314938536?e=1762387200&v=beta&t=VFfZ7HVi9h2PbKc8BHqGz5Xv3tho_afj5Hfjn0zJbU4"
     },
     {
       name: "Sai Vaishnavi Poreddy",
       role: "Developer",
       linkedin: "https://www.linkedin.com/in/sai-vaishnavi-poreddy-498680284?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
-      avatar: "https://media.licdn.com/dms/image/v2/D5603AQEq_iL7XtM8nw/profile-displayphoto-shrink_400_400/B56ZZwR4OTHsAg-/0/1745640458660?e=1756944000&v=beta&t=WYpk772UsxHoHf2EBvBkwGthXwbV2k1OpNnXYxP1p4Q" // Better placeholder with initials
+      avatar: "https://media.licdn.com/dms/image/v2/D5603AQEq_iL7XtM8nw/profile-displayphoto-shrink_400_400/B56ZZwR4OTHsAg-/0/1745640458660?e=1756944000&v=beta&t=WYpk772UsxHoHf2EBvBkwGthXwbV2k1OpNnXYxP1p4Q"
     }
   ];
 

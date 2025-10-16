@@ -119,9 +119,6 @@ const UpdateManagement: React.FC<UpdateManagementProps> = ({ currentUser }) => {
     setSuccess(null);
 
     try {
-      console.log('Marking update as inactive:', id);
-      console.log('Current user:', currentUser);
-
       const response = await fetch(`${API_BASE_URL}/api/updates/${id}`, {
         method: 'DELETE',
         headers: {
@@ -137,9 +134,7 @@ const UpdateManagement: React.FC<UpdateManagementProps> = ({ currentUser }) => {
         credentials: 'include'
       });
 
-      console.log('Delete response status:', response.status);
       const data = await response.json();
-      console.log('Delete response data:', data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to deactivate update');

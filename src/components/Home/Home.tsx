@@ -179,10 +179,8 @@ const Home: React.FC = () => {
 
       <Footer />
       
-      {/* Recent Updates - Floating Button (Desktop only) */}
-      <div className="hidden lg:block">
-        <RecentUpdates />
-      </div>
+      {/* Recent Updates - Floating Button (All Devices) */}
+      <RecentUpdates />
     </div>
   );
 };
