@@ -1,8 +1,14 @@
 {
-  "name": "sastra-student-portal",
+  "name": "placedin",
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "description": "AI-powered platform for sharing campus placement experiences and interview insights",
+  "author": "Pratheesh Krishnan <pratheeshkrishnan595@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Pratheesh-555/PlacedIn.git"
+  },
   "scripts": {
     "dev": "concurrently \"npm run server\" \"vite\"",
     "server": "cd server && node index.js",
@@ -28,8 +34,7 @@
     "react-dom": "^18.3.1",
     "react-quill": "^2.0.0",
     "react-router-dom": "^6.20.1",
-    "react-spinners": "^0.17.0",
-    "styled-components": "^6.1.19"
+    "react-spinners": "^0.17.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

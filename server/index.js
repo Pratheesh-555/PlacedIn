@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { generalApiLimit } from './middleware/rateLimiter.js';
+import { startAutoApprovalJob } from './jobs/autoApprovalJob.js';
 
 // Load environment variables
 dotenv.config({ silent: true });
@@ -87,6 +88,9 @@ async function startServer() {
   mongoose.connect(process.env.MONGODB_URI, mongooseOptions)
   .then(() => {
     console.log('✅ MongoDB connected successfully');
+    
+    // Start auto-approval cron job
+    startAutoApprovalJob();
   })
   .catch(err => {
     console.error('❌ MongoDB connection error:', err);

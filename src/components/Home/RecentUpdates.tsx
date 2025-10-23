@@ -14,7 +14,6 @@ interface Update {
 
 const RecentUpdates: React.FC = () => {
   const [updates, setUpdates] = useState<Update[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selectedUpdate, setSelectedUpdate] = useState<Update | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -40,11 +39,9 @@ const RecentUpdates: React.FC = () => {
         console.error('Failed to fetch updates:', response.status);
         setError(true);
       }
-    } catch (error) {
-      console.error('Error fetching updates:', error);
+    } catch (err) {
+      console.error('Error fetching updates:', err);
       setError(true);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -123,7 +120,6 @@ const RecentUpdates: React.FC = () => {
                     </p>
                     <button
                       onClick={() => {
-                        setLoading(true);
                         fetchUpdates();
                       }}
                       className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"

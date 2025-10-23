@@ -59,3 +59,31 @@ export interface FilterOptions {
   type: string;
   search: string;
 }
+
+export interface Update {
+  _id: string;
+  companyName: string;
+  title: string;
+  content: string;
+  priority: number;
+  isActive: boolean;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
+  postedBy: {
+    googleId: string;
+    name: string;
+    email: string;
+  };
+  aiModeration?: {
+    checked: boolean;
+    approved: boolean;
+    confidence: number;
+    issues: string[];
+    category: 'SAFE' | 'COLLEGE_CRITICISM' | 'PROFANITY' | 'UNPROFESSIONAL' | 'SPAM' | 'ERROR' | 'NOT_CHECKED';
+    checkedAt: string;
+  };
+  autoApproved?: boolean;
+  autoApprovalScheduledFor?: string;
+  manuallyReviewed?: boolean;
+}

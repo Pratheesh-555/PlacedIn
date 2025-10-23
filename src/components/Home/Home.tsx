@@ -93,7 +93,7 @@ const Home: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
             <Link
               to="/post"
-              className="bg-blue-600 dark:bg-blue-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 dark:hover:bg-blue-600 transform hover:scale-105 transition-all duration-200 shadow-lg flex items-center space-x-2"
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-xl font-semibold text-lg transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
             >
               <PlusCircle size={24} />
               <span>Share Experience</span>
@@ -110,8 +110,8 @@ const Home: React.FC = () => {
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
             {STATS.map(({ icon: Icon, label, suffix }, i) => (
-              <div key={label} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-200">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <div key={label} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-800/20 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Icon size={24} className="text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-1">

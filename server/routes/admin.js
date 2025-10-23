@@ -329,6 +329,7 @@ router.get('/manage-admins', async (req, res) => {
       try {
         requestingUser = JSON.parse(requestingUser);
       } catch (e) {
+        console.error('Failed to parse user from query:', e);
         requestingUser = null;
       }
     }
@@ -339,8 +340,10 @@ router.get('/manage-admins', async (req, res) => {
     }
     
     // Check if requesting user is super admin
-    if (!requestingUser || !ADMIN_CONFIG.isSuperAdmin(requestingUser.email)) {
-      return res.status(403).json({ error: 'Access denied. Super admin only.' });
+    if (!requestingUser || !requestingUser.email || !ADMIN_CONFIG.isSuperAdmin(requestingUser.email)) {
+      return res.status(403).json({ 
+        error: 'Access denied. Super admin only.'
+      });
     }
     
     const admins = await Admin.find({ isActive: true })
