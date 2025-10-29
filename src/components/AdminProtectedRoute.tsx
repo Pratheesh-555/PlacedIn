@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { GoogleUser } from '../types';
 import GoogleAuth from './GoogleAuth';
 import { AlertCircle, Shield } from 'lucide-react';
@@ -17,6 +17,43 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
   onLogin, 
   onLogout 
 }) => {
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (user?.email) {
+        // First check local cache
+        const cachedIsAdmin = ADMIN_CONFIG.isAdminEmail(user.email);
+        
+        if (cachedIsAdmin) {
+          setIsAdmin(true);
+          setIsCheckingAdmin(false);
+        } else {
+          // Check with backend if not in cache
+          const result = await ADMIN_CONFIG.checkAdminStatus(user.email);
+          setIsAdmin(result.isAdmin);
+          setIsCheckingAdmin(false);
+        }
+      } else {
+        setIsCheckingAdmin(false);
+      }
+    };
+
+    checkAdmin();
+  }, [user]);
+
+  // Show loading while checking admin status
+  if (isCheckingAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Verifying access...</p>
+        </div>
+      </div>
+    );
+  }
   // Check if user is logged in
   if (!user) {
     return (
@@ -52,9 +89,7 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
     );
   }
 
-  // Check if the logged-in user is an admin
-  const isAdmin = ADMIN_CONFIG.isAdminEmail(user.email || '');
-  
+  // Check admin access
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4 transition-colors duration-300">

@@ -51,6 +51,12 @@ export const ADMIN_CONFIG = {
   // Function to check if an email is an admin (uses cache)
   isAdminEmail: (email: string): boolean => {
     if (!email) return false;
+    
+    // Super admin is always an admin
+    if (ADMIN_CONFIG.isSuperAdmin(email)) {
+      return true;
+    }
+    
     return ADMIN_CONFIG._adminCache.has(email.toLowerCase());
   },
   
@@ -67,7 +73,14 @@ export const ADMIN_CONFIG = {
       });
       
       if (response.ok) {
-        return await response.json();
+        const result = await response.json();
+        
+        // Update cache if user is admin
+        if (result.isAdmin) {
+          ADMIN_CONFIG._adminCache.add(email.toLowerCase());
+        }
+        
+        return result;
       }
     } catch (error) {
       console.error('Error checking admin status:', error);
