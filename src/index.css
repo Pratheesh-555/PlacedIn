@@ -99,6 +99,41 @@
     transition-duration: 300ms;
     transition-timing-function: ease-in-out;
   }
+  
+  /* Better touch targets for mobile */
+  @media (max-width: 640px) {
+    button, a {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+  
+  /* Safe area for iOS devices */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Prevent text selection on buttons and interactive elements */
+  button, .cursor-pointer {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Prevent overscroll bounce on iOS */
+  body {
+    overscroll-behavior-y: none;
+  }
+  
+  /* Make sure modals and overlays handle touch properly */
+  .overscroll-contain {
+    overscroll-behavior: contain;
+  }
 }
 
 /* Custom animations for rating popup */

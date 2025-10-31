@@ -18,6 +18,8 @@ const RecentUpdates: React.FC = () => {
   const [selectedUpdate, setSelectedUpdate] = useState<Update | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [hasViewedUpdates, setHasViewedUpdates] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
     fetchUpdates();
@@ -27,6 +29,41 @@ const RecentUpdates: React.FC = () => {
       setHasViewedUpdates(true);
     }
   }, []);
+
+  // Handle scroll to hide/show button
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show button when scrolling up or at top
+      if (currentScrollY < lastScrollY || currentScrollY < 10) {
+        setIsVisible(true);
+      } 
+      // Hide button when scrolling down and past threshold
+      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    // Throttle scroll events for better performance
+    let timeoutId: NodeJS.Timeout;
+    const throttledHandleScroll = () => {
+      if (timeoutId) return;
+      timeoutId = setTimeout(() => {
+        handleScroll();
+        timeoutId = null as unknown as NodeJS.Timeout;
+      }, 100);
+    };
+
+    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', throttledHandleScroll);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [lastScrollY]);
 
   const fetchUpdates = async () => {
     try {
@@ -60,10 +97,12 @@ const RecentUpdates: React.FC = () => {
 
   return (
     <>
-      {/* Floating Button - Always Visible */}
+      {/* Floating Button - Hides on scroll down, shows on scroll up */}
       <button
         onClick={handleButtonClick}
-        className="fixed bottom-6 right-6 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 dark:from-blue-600 dark:via-indigo-600 dark:to-purple-600 dark:hover:from-blue-700 dark:hover:via-indigo-700 dark:hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center z-50 group border-2 border-white/10 transition-all duration-300 ease-in-out"
+        className={`fixed bottom-6 right-6 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 dark:from-blue-600 dark:via-indigo-600 dark:to-purple-600 dark:hover:from-blue-700 dark:hover:via-indigo-700 dark:hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center z-50 group border-2 border-white/10 transition-all duration-300 ease-in-out ${
+          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'
+        }`}
         aria-label="View Recent Updates"
       >
         <div className="relative">
@@ -76,7 +115,7 @@ const RecentUpdates: React.FC = () => {
         </div>
       </button>
 
-      {/* Expandable Panel */}
+      {/* Expandable Panel - Better mobile positioning */}
       {isOpen && (
         <>
           {/* Backdrop */}
@@ -85,11 +124,11 @@ const RecentUpdates: React.FC = () => {
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Panel */}
-          <div className="fixed bottom-24 right-6 w-[90vw] sm:w-96 max-w-md z-50 animate-in slide-in-from-right-4 fade-in duration-300">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border-2 border-gray-100 dark:border-gray-700 transform transition-all duration-300">
+          {/* Panel - Responsive positioning */}
+          <div className="fixed bottom-0 right-0 left-0 sm:bottom-24 sm:right-6 sm:left-auto w-full sm:w-96 sm:max-w-md z-50 animate-in slide-in-from-bottom sm:slide-in-from-right-4 fade-in duration-300">
+            <div className="bg-white dark:bg-gray-800 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden border-t-2 sm:border-2 border-gray-100 dark:border-gray-700 transform transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] flex flex-col">
               {/* Header */}
-              <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700 p-4">
+              <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700 p-4 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Bell className="text-white" size={20} />
@@ -103,16 +142,16 @@ const RecentUpdates: React.FC = () => {
                       e.stopPropagation();
                       setIsOpen(false);
                     }}
-                    className="text-white hover:bg-white/20 rounded-full p-1.5 transition-colors"
+                    className="text-white hover:bg-white/20 rounded-full p-2 transition-colors active:scale-95"
                     aria-label="Close"
                   >
-                    <X size={18} />
+                    <X size={20} />
                   </button>
                 </div>
               </div>
 
               {/* Updates List - Scrollable with smooth scrollbar */}
-              <div className="max-h-[65vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 dark:hover:scrollbar-thumb-gray-500 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
+              <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 dark:hover:scrollbar-thumb-gray-500 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
                 {error ? (
                   <div className="p-6 text-center">
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
@@ -141,22 +180,22 @@ const RecentUpdates: React.FC = () => {
                         handleUpdateClick(update);
                         setIsOpen(false);
                       }}
-                      className={`w-full p-4 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-all duration-200 text-left group ${
+                      className={`w-full p-4 active:bg-blue-100 dark:active:bg-gray-600 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-all duration-200 text-left group ${
                         index !== updates.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''
                       }`}
                     >
                       <div className="flex items-start justify-between space-x-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-1.5">
-                            <span className="inline-block px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-medium rounded">
+                            <span className="inline-block px-2.5 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-full">
                               {update.companyName}
                             </span>
                           </div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          <h4 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                             {update.title}
                           </h4>
                           <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            <Clock size={12} />
+                            <Clock size={14} />
                             <span>
                               {new Date(update.createdAt).toLocaleDateString('en-US', {
                                 month: 'short',
@@ -167,7 +206,7 @@ const RecentUpdates: React.FC = () => {
                           </div>
                         </div>
                         <ChevronRight
-                          size={18}
+                          size={20}
                           className="text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-1 transition-all flex-shrink-0 mt-1"
                         />
                       </div>
@@ -177,14 +216,15 @@ const RecentUpdates: React.FC = () => {
               </div>
 
               {/* Footer with scroll hint */}
-              <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
+              <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 safe-area-bottom">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-600 dark:text-gray-400">
-                    Click to read full details
+                    Tap to read full details
                   </span>
                   {updates.length > 3 && (
                     <span className="text-gray-500 dark:text-gray-500 flex items-center space-x-1">
-                      <span>Scroll for more</span>
+                      <span className="hidden sm:inline">Scroll for more</span>
+                      <span className="sm:hidden">Swipe up</span>
                       <svg className="w-3 h-3 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
