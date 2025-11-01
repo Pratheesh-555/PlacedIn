@@ -11,8 +11,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          ui: ['lucide-react'],
-          styles: ['styled-components']
+          ui: ['lucide-react']
         }
       }
     },
@@ -31,7 +30,7 @@ export default defineConfig({
   },
   
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react', 'styled-components'],
+    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
   },
   
   server: {
