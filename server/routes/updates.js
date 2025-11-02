@@ -154,8 +154,6 @@ router.post('/', async (req, res) => {
       shouldAutoActivate = moderationResult.isApproved && 
                           moderationResult.confidence >= 85 &&
                           moderationResult.category === 'SAFE';
-    } else if (!process.env.GEMINI_API_KEY) {
-      console.warn('⚠️ Gemini API key not configured - AI moderation skipped');
     }
     
     const newUpdate = new Update({

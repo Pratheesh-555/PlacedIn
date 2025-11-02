@@ -59,8 +59,7 @@ ${text}`;
         const result = await model.generateContent(prompt);
         responseText = result.response.text();
       } catch (sdkError) {
-        // Fallback to direct API
-        console.log('SDK failed, using direct API...');
+        // Fallback to direct API if SDK fails
         responseText = await callGeminiAPI(prompt);
       }
       
