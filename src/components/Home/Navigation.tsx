@@ -15,8 +15,29 @@ interface NavigationProps {
 const Navigation: React.FC<NavigationProps> = ({ user, onLogin, onLogout }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const isAdmin = ADMIN_CONFIG.isAdminEmail(user?.email || '');
+  // Check admin status whenever user changes
+  React.useEffect(() => {
+    const checkAdmin = async () => {
+      if (user?.email) {
+        // First check cache
+        const cachedIsAdmin = ADMIN_CONFIG.isAdminEmail(user.email);
+        
+        if (cachedIsAdmin) {
+          setIsAdmin(true);
+        } else {
+          // If not in cache, check with backend (for newly added admins)
+          const result = await ADMIN_CONFIG.checkAdminStatus(user.email);
+          setIsAdmin(result.isAdmin);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+    
+    checkAdmin();
+  }, [user]);
 
   const navItems = [
     { path: '/', label: 'Home', icon: Home },

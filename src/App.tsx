@@ -58,8 +58,10 @@ function App() {
     // Individual components now fetch their own data
   };
 
-  const handleLogin = (user: GoogleUser) => {
+  const handleLogin = async (user: GoogleUser) => {
     setUser(user);
+    // Fetch fresh admin list when user logs in to update navigation immediately
+    await ADMIN_CONFIG.fetchAdminList();
   };
 
   const handleLogout = () => {

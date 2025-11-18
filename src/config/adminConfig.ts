@@ -18,11 +18,11 @@ export const ADMIN_CONFIG = {
   },
   
   // Function to fetch admin list from backend
-  fetchAdminList: async (): Promise<void> => {
+  fetchAdminList: async (forceRefresh: boolean = false): Promise<void> => {
     const now = Date.now();
     
-    // Use cache if recent
-    if (now - ADMIN_CONFIG._lastFetch < ADMIN_CONFIG._cacheDuration) {
+    // Use cache if recent (unless force refresh)
+    if (!forceRefresh && now - ADMIN_CONFIG._lastFetch < ADMIN_CONFIG._cacheDuration) {
       return;
     }
     
