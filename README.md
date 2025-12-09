@@ -1,6 +1,18 @@
 # PlacedIn
 
-A full-stack web application for students to share campus placement experiences, interview questions, and preparation insights. Features AI-powered content moderation and admin tools.
+**AI-Powered Campus Placement Experience Sharing Platform**
+
+A full-stack MERN application where students share authentic placement experiences, interview questions, and preparation strategies. Features intelligent content moderation using Google Gemini AI, role-based admin controls, and real-time campus updates.
+
+## 5 Key Technical Highlights
+
+1. **AI Content Moderation** - Google Gemini 2.5 Flash automatically validates submissions for safety, extracts structured data from raw text, and assigns confidence scores
+2. **OAuth 2.0 Authentication** - Secure Google OAuth integration with role-based access control (User/Admin/Super Admin)
+3. **Rich Text Editor** - Quill-based editor with markdown support, allowing students to format interview experiences with code snippets and formatting
+4. **Auto-Approval System** - Node-cron scheduled jobs automatically approve high-quality content (5+ upvotes, 0 downvotes) reducing admin workload
+5. **Real-time Updates** - Floating notification bell system with view tracking, soft deletes, and admin management for campus announcements
+
+---
 
 ## Features
 

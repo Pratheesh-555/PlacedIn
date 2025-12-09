@@ -8,21 +8,15 @@ const router = express.Router();
 
 // Google OAuth admin authentication middleware
 const authenticateAdmin = (req, res, next) => {
-  // Check if user is authenticated via Google OAuth
-  // Look for user in different places: body, query, or headers
   const user = req.body.postedBy || req.query.user || req.body.user || req.headers['x-user'];
   
-  // Use centralized admin configuration
   const isAdmin = user && ADMIN_CONFIG.isAdminEmail(user.email);
   
-  // For now, allow all requests to pass through since frontend auth is handled separately
-  // In production, you'd want proper JWT token validation here
   
   // Skip authentication for now - frontend handles admin checking
   next();
 };
 
-// Get all pending experiences with optimization
 router.get('/pending-experiences', async (req, res) => {
   try {
     const experiences = await Experience.find({ 
@@ -43,15 +37,12 @@ router.get('/pending-experiences', async (req, res) => {
   }
 });
 
-// Get all experiences (approved and pending) with optimized pagination
 router.get('/experiences', async (req, res) => {
   try {
-    // Get pagination parameters - optimized limits for admin
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit) || 50, 100); // Reduced for better performance
     const skip = (page - 1) * limit;
     
-    // Execute parallel queries with timeout for better performance
     const queryPromise = Promise.race([
       Promise.all([
         Experience.find({})
@@ -70,7 +61,6 @@ router.get('/experiences', async (req, res) => {
 
     const [experiences, totalCount] = await queryPromise;
     
-    // Return with pagination metadata
     res.json({
       experiences,
       pagination: {
@@ -156,7 +146,6 @@ router.put('/experiences/:id/reject', async (req, res) => {
   }
 });
 
-// Delete experience (permanent removal)
 router.delete('/experiences/:id', async (req, res) => {
   try {
     const experience = await Experience.findByIdAndDelete(req.params.id);
@@ -172,7 +161,6 @@ router.delete('/experiences/:id', async (req, res) => {
   }
 });
 
-// Get experience by ID for detailed review
 router.get('/experiences/:id', async (req, res) => {
   try {
     const experience = await Experience.findById(req.params.id);
@@ -188,7 +176,6 @@ router.get('/experiences/:id', async (req, res) => {
   }
 });
 
-// Get dashboard statistics
 router.get('/stats', async (req, res) => {
   try {
     const totalExperiences = await Experience.countDocuments();
@@ -212,10 +199,8 @@ router.get('/stats', async (req, res) => {
       $or: [{ isApproved: true }, { approvalStatus: 'approved' }] 
     });
     
-    // Get resubmission stats
     const resubmissionCount = await Experience.countDocuments({ isResubmission: true });
     
-    // Get company distribution
     const companies = await Experience.aggregate([
       { $match: { $or: [{ isApproved: true }, { approvalStatus: 'approved' }] } },
       { $group: { _id: '$company', count: { $sum: 1 } } },
@@ -223,14 +208,12 @@ router.get('/stats', async (req, res) => {
       { $limit: 10 }
     ]);
     
-    // Get yearly distribution (using graduationYear)
     const yearlyStats = await Experience.aggregate([
       { $match: { $or: [{ isApproved: true }, { approvalStatus: 'approved' }] } },
       { $group: { _id: '$graduationYear', count: { $sum: 1 } } },
       { $sort: { _id: -1 } }
     ]);
     
-    // Get recent submissions (last 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
@@ -256,7 +239,6 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-// Get experiences by user (for admin to see user's submissions)
 router.get('/user-experiences/:googleId', async (req, res) => {
   try {
     const experiences = await Experience.find({
@@ -278,9 +260,7 @@ router.get('/document/:id', async (req, res) => {
       return res.status(404).json({ error: 'Experience not found' });
     }
 
-    // Check if we have external document URL or stored document data
     if (experience.documentUrl) {
-      // Fetch and serve external document with proper headers for inline viewing
       try {
         const response = await axios.get(experience.documentUrl, {
           responseType: 'arraybuffer'
@@ -289,7 +269,6 @@ router.get('/document/:id', async (req, res) => {
         const contentType = response.headers['content-type'] || 'application/pdf';
         const buffer = Buffer.from(response.data);
         
-        // Set headers for inline viewing instead of download
         res.set({
           'Content-Type': contentType,
           'Content-Disposition': 'inline; filename="' + (experience.documentName || 'document.pdf') + '"',
@@ -302,7 +281,6 @@ router.get('/document/:id', async (req, res) => {
         return res.status(404).json({ error: 'Document could not be loaded' });
       }
     } else if (experience.document && experience.document.data) {
-      // Set headers for inline viewing instead of download
       res.set({
         'Content-Type': experience.document.contentType || 'application/pdf',
         'Content-Disposition': 'inline; filename="' + (experience.documentName || 'document.pdf') + '"',
@@ -320,10 +298,8 @@ router.get('/document/:id', async (req, res) => {
 
 // ===== ADMIN MANAGEMENT ROUTES (Super Admin Only) =====
 
-// Get all admins
 router.get('/manage-admins', async (req, res) => {
   try {
-    // Parse user from query parameter if it's a string
     let requestingUser = req.query.user;
     if (typeof requestingUser === 'string') {
       try {
@@ -339,7 +315,6 @@ router.get('/manage-admins', async (req, res) => {
       requestingUser = req.body.user;
     }
     
-    // Check if requesting user is super admin
     if (!requestingUser || !requestingUser.email || !ADMIN_CONFIG.isSuperAdmin(requestingUser.email)) {
       return res.status(403).json({ 
         error: 'Access denied. Super admin only.'
@@ -375,24 +350,20 @@ router.get('/manage-admins', async (req, res) => {
   }
 });
 
-// Add new admin
 router.post('/manage-admins', async (req, res) => {
   try {
     const { email, addedBy } = req.body;
     
-    // Check if requesting user is super admin
     if (!addedBy || !ADMIN_CONFIG.isSuperAdmin(addedBy.email)) {
       return res.status(403).json({ error: 'Access denied. Super admin only.' });
     }
     
-    // Validate email
     if (!email || !email.includes('@')) {
       return res.status(400).json({ error: 'Valid email is required' });
     }
     
     const normalizedEmail = email.toLowerCase().trim();
     
-    // Check if email is already an admin
     const existingAdmin = await Admin.findOne({ email: normalizedEmail });
     if (existingAdmin) {
       if (existingAdmin.isActive) {
@@ -409,7 +380,6 @@ router.post('/manage-admins', async (req, res) => {
       }
     }
     
-    // Create new admin - Allow any email address
     const newAdmin = new Admin({
       email: normalizedEmail,
       isSuperAdmin: false,
@@ -437,12 +407,10 @@ router.post('/manage-admins', async (req, res) => {
   }
 });
 
-// Remove admin
 router.delete('/manage-admins/:email', async (req, res) => {
   try {
     const requestingUser = req.body.user || req.query.user;
     
-    // Check if requesting user is super admin
     if (!requestingUser || !ADMIN_CONFIG.isSuperAdmin(requestingUser.email)) {
       return res.status(403).json({ error: 'Access denied. Super admin only.' });
     }
@@ -472,7 +440,6 @@ router.delete('/manage-admins/:email', async (req, res) => {
   }
 });
 
-// Check if user is admin (for frontend)
 router.post('/check-admin', async (req, res) => {
   try {
     const { email } = req.body;

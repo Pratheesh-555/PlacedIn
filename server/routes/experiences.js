@@ -24,7 +24,6 @@ const upload = multer({
   }
 });
 
-// Get user's own submissions (dashboard)
 router.get('/user/:googleId', async (req, res) => {
   try {
     const { googleId } = req.params;
@@ -33,7 +32,6 @@ router.get('/user/:googleId', async (req, res) => {
       return res.status(400).json({ error: 'Google ID is required' });
     }
 
-    // Get user's experiences with latest version only (no old resubmissions)
     const experiences = await Experience.aggregate([
       {
         $match: {
@@ -75,7 +73,6 @@ router.get('/user/:googleId', async (req, res) => {
   }
 });
 
-// Get all approved experiences with optimized pagination and filtering
 router.get('/', experienceReadLimit, async (req, res) => {
   try {
     // Sanitize and validate input parameters
@@ -83,10 +80,8 @@ router.get('/', experienceReadLimit, async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 20, 50); // Reduced default for better performance
     const skip = (page - 1) * limit;
     
-    // Build query for approved experiences
     const baseQuery = { isApproved: true };
     
-    // Add optional filters
     const query = { ...baseQuery };
     if (req.query.company && req.query.company !== '') {
       query.company = new RegExp(req.query.company, 'i');
@@ -106,7 +101,6 @@ router.get('/', experienceReadLimit, async (req, res) => {
       ];
     }
 
-    // Execute optimized parallel queries with timeout
     const queryPromise = Promise.race([
       Promise.all([
         Experience.find(query)
@@ -160,7 +154,6 @@ router.get('/', experienceReadLimit, async (req, res) => {
   }
 });
 
-// Create new experience with optimized processing
 router.post('/', upload.single('document'), async (req, res) => {
   try {
     const { 
@@ -190,7 +183,6 @@ router.post('/', upload.single('document'), async (req, res) => {
       return res.status(400).json({ error: 'Type must be either placement or internship' });
     }
 
-    // Parse postedBy if it's a string
     let parsedPostedBy = postedBy;
     if (typeof postedBy === 'string') {
       try {
@@ -200,16 +192,12 @@ router.post('/', upload.single('document'), async (req, res) => {
       }
     }
 
-    // Create or find user if postedBy is provided
     let userId = null;
     if (parsedPostedBy && parsedPostedBy.googleId) {
       try {
-        // Find existing user or create new one
         let user = await User.findOne({ googleId: parsedPostedBy.googleId });
         
         if (!user) {
-          // Create new user
-          // Create new user
           user = new User({
             googleId: parsedPostedBy.googleId,
             email: parsedPostedBy.email || email.trim().toLowerCase(),
@@ -221,14 +209,12 @@ router.post('/', upload.single('document'), async (req, res) => {
           });
           await user.save();
         } else {
-          // Update user's last active time
           user.lastActiveAt = new Date();
           await user.save();
         }
         
         userId = user._id;
         
-        // Check submission limit (max 2 submissions per user)
         const existingSubmissions = await Experience.countDocuments({
           'postedBy.googleId': parsedPostedBy.googleId,
           $or: [
@@ -243,28 +229,23 @@ router.post('/', upload.single('document'), async (req, res) => {
           });
         }
         
-        // Update parsedPostedBy to include userId
         parsedPostedBy.userId = userId;
       } catch (userError) {
         console.error('Error handling user:', userError);
-        // Return error if user creation fails since userId is required
         return res.status(500).json({ 
           error: 'Failed to process user information. Please try logging in again.' 
         });
       }
     } else {
       // No valid postedBy data - user might not be logged in properly
-      // If no postedBy data, return error since userId is required
       return res.status(400).json({ 
         error: 'User authentication required. Please log in to submit an experience.' 
       });
     }
 
-    // Handle file upload if present
     let documentUrl = null;
     let documentPublicId = null;
     
-    // Handle file upload if present (store in MongoDB only)
     if (req.file) {
       try {
         documentUrl = null; // Files stored in MongoDB
@@ -274,7 +255,6 @@ router.post('/', upload.single('document'), async (req, res) => {
       }
     }
 
-    // Create new experience with flexible storage
     const experienceData = {
       studentName: studentName.trim(),
       email: email.trim().toLowerCase(),
@@ -290,11 +270,9 @@ router.post('/', upload.single('document'), async (req, res) => {
       approvalStatus: 'pending'
     };
     
-    // Add file-related fields only if file was uploaded
     if (req.file) {
       experienceData.documentName = req.file.originalname.trim();
       
-      // Store file in MongoDB
       experienceData.document = {
         data: req.file.buffer,
         contentType: req.file.mimetype
@@ -338,14 +316,11 @@ router.get('/:id/document', async (req, res) => {
       return res.status(404).json({ error: 'Experience not found' });
     }
 
-    // Only allow access to approved experiences or admin users
     if (!experience.isApproved) {
       return res.status(403).json({ error: 'Document access denied. Experience not yet approved.' });
     }
 
-    // Check if we have external document URL or stored document data
     if (experience.documentUrl) {
-      // Fetch and serve external document with proper headers for inline viewing
       try {
         const response = await axios.get(experience.documentUrl, {
           responseType: 'arraybuffer'
@@ -354,7 +329,6 @@ router.get('/:id/document', async (req, res) => {
         const contentType = response.headers['content-type'] || 'application/pdf';
         const buffer = Buffer.from(response.data);
         
-        // Set headers for inline viewing instead of download
         res.set({
           'Content-Type': contentType,
           'Content-Disposition': 'inline; filename="' + (experience.documentName || 'document.pdf') + '"',
@@ -367,7 +341,6 @@ router.get('/:id/document', async (req, res) => {
         return res.status(404).json({ error: 'Document could not be loaded' });
       }
     } else if (experience.document && experience.document.data) {
-      // Set headers for inline viewing instead of download
       res.set({
         'Content-Type': experience.document.contentType || 'application/pdf',
         'Content-Disposition': 'inline; filename="' + (experience.documentName || 'document.pdf') + '"',

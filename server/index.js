@@ -5,54 +5,44 @@ import dotenv from 'dotenv';
 import { generalApiLimit } from './middleware/rateLimiter.js';
 import { startAutoApprovalJob } from './jobs/autoApprovalJob.js';
 
-// Load environment variables
 dotenv.config({ silent: true });
 
 async function startServer() {
   const app = express();
   const PORT = process.env.PORT || 5000;
 
-  // Request timeout handling to prevent hanging
   app.use((req, res, next) => {
-    req.setTimeout(30000); // 30 second timeout
+    req.setTimeout(30000);
     res.setTimeout(30000);
     next();
   });
 
-  // Middleware
   app.use(cors({
     origin: [
-      "https://krishh.me",            // Your custom domain (primary)
-      "https://www.krishh.me",        // Your custom domain with www
-      "https://placedin.netlify.app", // Backup production URL
-      "http://localhost:5173",        // Local development
-      "http://localhost:5174",        // Alternate local port
-      "http://localhost:5175",        // Another alternate local port
-      // Allow any IP address on local network for mobile testing
-      /^http:\/\/192\.168\.\d+\.\d+:(5173|5174|5175)$/, // Local network IPs
-      /^http:\/\/10\.\d+\.\d+\.\d+:(5173|5174|5175)$/,  // Local network IPs
-      /^http:\/\/172\.\d+\.\d+\.\d+:(5173|5174|5175)$/, // Local network IPs
-    ],
+      "https://krishh.me",
+      "https://www.krishh.me",
+      "https://placedin.netlify.app",
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175",
+      /^http:\/\/192\.168\.\d+\.\d+:(5173|5174|5175)$/,
+      /^http:\/\/10\.\d+\.\d+\.\d+:(5173|5174|5175)$/,        /^http:\/\/172\.\d+\.\d+\.\d+:(5173|5174|5175)$/,     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
   }));
   
-  // Handle preflight requests
   app.options('*', cors());
   
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-  // Apply rate limiting to all API routes for high concurrent access
   app.use('/api', generalApiLimit);
 
-  // Simple request logging (only for errors and important requests)
   app.use((req, res, next) => {
     next();
   });
 
-  // Use simplified routes
   const experiencesRouter = await import('./routes/experiences.js');
   const adminRouter = await import('./routes/admin.js');
   const userExperiencesRouter = await import('./routes/userExperiences.js');
@@ -63,7 +53,6 @@ async function startServer() {
   app.use('/api/user-experiences', userExperiencesRouter.default);
   app.use('/api/updates', updatesRouter.default);
 
-  // Health check endpoint for monitoring and load balancers
   app.get('/api/health', (req, res) => {
     res.status(200).json({ 
       status: 'healthy', 
@@ -72,8 +61,7 @@ async function startServer() {
     });
   });
 
-  // MongoDB connection optimized for high concurrent users (10K+ views, 3K+ posts)
-  const mongooseOptions = {
+    const mongooseOptions = {
     maxPoolSize: 20, // Reduced from 50 - too high can cause bottlenecks
     minPoolSize: 5,  // Reduced from 10 - more efficient
     maxIdleTimeMS: 30000,

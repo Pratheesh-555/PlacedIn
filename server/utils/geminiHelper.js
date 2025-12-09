@@ -63,7 +63,6 @@ ${text}`;
         responseText = await callGeminiAPI(prompt);
       }
       
-      // Clean response
       let cleanedResponse = responseText.trim();
       cleanedResponse = cleanedResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
       
@@ -132,7 +131,6 @@ ${text}`;
         responseText = await callGeminiAPI(prompt);
       }
       
-      // Clean response
       let cleanedResponse = responseText.trim();
       cleanedResponse = cleanedResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
       
@@ -148,7 +146,6 @@ ${text}`;
       };
     } catch (error) {
       console.error('Error moderating content:', error);
-      // Fail-safe: Don't auto-approve if moderation fails
       return {
         success: false,
         isApproved: false,

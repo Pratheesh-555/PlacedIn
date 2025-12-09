@@ -17,7 +17,6 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const getSystemTheme = () =>
     window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 
-  // Track if user has manually toggled theme in current session
   const [userToggled, setUserToggled] = useState<boolean>(false);
 
   // Always start with system theme

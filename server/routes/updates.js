@@ -5,7 +5,6 @@ import { geminiHelper } from '../utils/geminiHelper.js';
 
 const router = express.Router();
 
-// Get all active updates (public route)
 router.get('/', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
@@ -23,7 +22,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get single update by ID (public route)
 router.get('/:id', async (req, res) => {
   try {
     const update = await Update.findById(req.params.id);
@@ -32,7 +30,6 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Update not found' });
     }
     
-    // Increment view count
     update.viewCount += 1;
     await update.save();
     
@@ -43,12 +40,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Admin: Get all updates (including inactive)
 router.get('/admin/all', async (req, res) => {
   try {
     const requestingUser = req.query.user ? JSON.parse(req.query.user) : null;
     
-    // Check if user is admin
     const isAdmin = requestingUser && (
       ADMIN_CONFIG.isSuperAdmin(requestingUser.email) ||
       await ADMIN_CONFIG.isAdminEmail(requestingUser.email)
@@ -69,12 +64,10 @@ router.get('/admin/all', async (req, res) => {
   }
 });
 
-// Admin: AI-powered extraction from pasted text
 router.post('/extract', async (req, res) => {
   try {
     const { text, postedBy } = req.body;
     
-    // Check if user is admin
     const isAdmin = postedBy && (
       ADMIN_CONFIG.isSuperAdmin(postedBy.email) ||
       await ADMIN_CONFIG.isAdminEmail(postedBy.email)
@@ -88,7 +81,6 @@ router.post('/extract', async (req, res) => {
       return res.status(400).json({ error: 'Text is required' });
     }
     
-    // Check if Gemini API key is configured
     if (!process.env.GEMINI_API_KEY) {
       return res.status(200).json({
         success: false,
@@ -101,7 +93,6 @@ router.post('/extract', async (req, res) => {
       });
     }
     
-    // Use Gemini AI to extract information
     const extraction = await geminiHelper.extractUpdateInfo(text);
     
     if (!extraction.success) {
@@ -123,12 +114,10 @@ router.post('/extract', async (req, res) => {
   }
 });
 
-// Admin: Create new update with AI moderation
 router.post('/', async (req, res) => {
   try {
     const { title, content, companyName, postedBy, skipModeration } = req.body;
     
-    // Check if user is admin
     const isAdmin = postedBy && (
       ADMIN_CONFIG.isSuperAdmin(postedBy.email) ||
       await ADMIN_CONFIG.isAdminEmail(postedBy.email)
@@ -138,7 +127,6 @@ router.post('/', async (req, res) => {
       return res.status(403).json({ error: 'Admin access required' });
     }
     
-    // Validate required fields
     if (!title || !content || !companyName) {
       return res.status(400).json({ error: 'Title, content, and company name are required' });
     }
@@ -146,7 +134,6 @@ router.post('/', async (req, res) => {
     let moderationResult = null;
     let shouldAutoActivate = false;
     
-    // Run AI moderation unless explicitly skipped OR if API key not configured
     if (!skipModeration && process.env.GEMINI_API_KEY) {
       moderationResult = await geminiHelper.moderateContent(content);
       
@@ -199,12 +186,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Admin: Create new update (old version for backward compatibility)
 router.post('/legacy', async (req, res) => {
   try {
     const { title, content, companyName, postedBy } = req.body;
     
-    // Check if user is admin
     const isAdmin = postedBy && (
       ADMIN_CONFIG.isSuperAdmin(postedBy.email) ||
       await ADMIN_CONFIG.isAdminEmail(postedBy.email)
@@ -214,7 +199,6 @@ router.post('/legacy', async (req, res) => {
       return res.status(403).json({ error: 'Admin access required' });
     }
     
-    // Validate required fields
     if (!title || !content || !companyName) {
       return res.status(400).json({ error: 'Title, content, and company name are required' });
     }
@@ -244,12 +228,10 @@ router.post('/legacy', async (req, res) => {
   }
 });
 
-// Admin: Update existing update
 router.put('/:id', async (req, res) => {
   try {
     const { title, content, companyName, postedBy, isActive, priority } = req.body;
     
-    // Check if user is admin
     const isAdmin = postedBy && (
       ADMIN_CONFIG.isSuperAdmin(postedBy.email) ||
       await ADMIN_CONFIG.isAdminEmail(postedBy.email)
@@ -286,12 +268,10 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Admin: Delete update (soft delete - set isActive to false)
 router.delete('/:id', async (req, res) => {
   try {
     const requestingUser = req.body.postedBy || req.query.user;
     
-    // Check if user is admin
     const isAdmin = requestingUser && (
       ADMIN_CONFIG.isSuperAdmin(requestingUser.email) ||
       await ADMIN_CONFIG.isAdminEmail(requestingUser.email)
@@ -318,12 +298,10 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Admin: Permanently delete update
 router.delete('/:id/permanent', async (req, res) => {
   try {
     const requestingUser = req.body.postedBy || req.query.user;
     
-    // Check if user is admin
     const isAdmin = requestingUser && (
       ADMIN_CONFIG.isSuperAdmin(requestingUser.email) ||
       await ADMIN_CONFIG.isAdminEmail(requestingUser.email)

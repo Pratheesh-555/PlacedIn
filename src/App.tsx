@@ -8,7 +8,6 @@ import { Experience, GoogleUser } from './types';
 import { PropagateLoader } from 'react-spinners';
 import ADMIN_CONFIG from './config/adminConfig';
 
-// Lazy load components for better performance
 const Home = lazy(() => import('./components/Home/Home'));
 const ExperienceCard = lazy(() => import('./components/Experience/ExperienceCard'));
 const Experiences = lazy(() => import('./components/Experience/Experiences'));
@@ -22,30 +21,24 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Restore user from localStorage to persist login across refreshes
     const savedUser = localStorage.getItem('googleUser');
     if (savedUser) {
       try {
         const parsedUser = JSON.parse(savedUser);
-        // Validate that the user object has required fields
         if (parsedUser && parsedUser.googleId && parsedUser.email && parsedUser.name) {
           setUser(parsedUser);
         } else {
-          // Invalid or incomplete user data, clear it
           localStorage.removeItem('googleUser');
         }
       } catch {
-        // Invalid saved user data, clear it
         localStorage.removeItem('googleUser');
       }
     }
     
-    // Fetch admin list from backend on app load
     ADMIN_CONFIG.fetchAdminList().catch(err => {
       console.error('Failed to fetch admin list:', err);
     });
     
-    // Show nice loading screen for 1.5 seconds for better UX
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1500);
@@ -53,20 +46,15 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  const fetchExperiences = async () => {
-    // This function is kept for ExperienceCard component compatibility
-    // Individual components now fetch their own data
-  };
+  const fetchExperiences = async () => {};
 
   const handleLogin = async (user: GoogleUser) => {
     setUser(user);
-    // Fetch fresh admin list when user logs in to update navigation immediately
     await ADMIN_CONFIG.fetchAdminList();
   };
 
   const handleLogout = () => {
     setUser(null);
-    // The GoogleAuth component will handle the page reload
   };
 
   const closeModal = () => {

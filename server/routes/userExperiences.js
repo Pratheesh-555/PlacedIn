@@ -25,12 +25,10 @@ const upload = multer({
   }
 });
 
-// Get user's submissions (max 2 submissions allowed)
 router.get('/user/:googleId', async (req, res) => {
   try {
     const { googleId } = req.params;
     
-    // Get user's experiences (only non-superseded ones)
     const experiences = await Experience.find({ 
       'postedBy.googleId': googleId,
       $or: [
@@ -60,12 +58,10 @@ router.get('/user/:googleId', async (req, res) => {
   }
 });
 
-// Update/Edit experience (creates new version)
 router.put('/:id', upload.single('document'), async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Parse FormData fields
     const updateData = {
       studentName: req.body.studentName,
       email: req.body.email,
@@ -79,7 +75,6 @@ router.put('/:id', upload.single('document'), async (req, res) => {
       postedBy: req.body.postedBy ? JSON.parse(req.body.postedBy) : {}
     };
     
-    // Verify ownership
     const existingExp = await Experience.findById(id);
     if (!existingExp) {
       return res.status(404).json({ error: 'Experience not found' });
@@ -89,7 +84,6 @@ router.put('/:id', upload.single('document'), async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to edit this experience' });
     }
 
-    // Find or create user to get userId
     let user = await User.findOne({ googleId: updateData.postedBy.googleId });
     if (!user) {
       user = new User({
@@ -101,23 +95,18 @@ router.put('/:id', upload.single('document'), async (req, res) => {
       await user.save();
     }
 
-    // Ensure postedBy has userId
     updateData.postedBy.userId = user._id;
     
-    // Update the existing experience instead of creating a new one
     const updateFields = {
       ...updateData,
       submissionCount: (existingExp.submissionCount || 1) + 1,
       updatedAt: new Date()
     };
 
-    // Handle version increment and approval status based on current status
     if (existingExp.approvalStatus === 'rejected' || existingExp.approvalStatus === 'pending') {
-      // For pending/rejected experiences, don't increment version (still in review process)
       updateFields.version = existingExp.version || 1;
       updateFields.approvalStatus = 'pending';
     } else if (existingExp.approvalStatus === 'approved') {
-      // For approved experiences, increment version (new published version)
       updateFields.version = (existingExp.version || 1) + 1;
       updateFields.approvalStatus = 'approved';
       updateFields.approvedAt = existingExp.approvedAt; // Keep original approval date

@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Search, Filter, Calendar, User, Eye, RefreshCw } from 'lucide-react';
 import { Experience, FilterOptions } from '../../types';
 import { API_ENDPOINTS } from '../../config/api';
+import { perfMonitor } from '../../utils/performanceMonitor';
 
 import ExperienceModal from './ExperienceModal';
 
@@ -21,20 +22,22 @@ const Experiences: React.FC = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchInput, setSearchInput] = useState('');
-  const ITEMS_PER_PAGE = 20; // Optimized for better performance and faster loading
+  const ITEMS_PER_PAGE = 20;
 
   // Debounced search to improve performance
+  // 300ms delay prevents excessive API calls while typing - Pratheesh
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setFilters(prev => ({ ...prev, search: searchInput }));
-    }, 300);
+    }, 300); // Tuned: 300ms feels responsive without lag
 
     return () => clearTimeout(timeoutId);
   }, [searchInput]);
 
-  // Optimized fetch with better error handling and performance
   const fetchExperiences = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
     try {
+      perfMonitor.start(`fetch-experiences-page-${pageNum}`);
+      
       if (refresh) {
         setIsRefreshing(true);
         setExperiences([]);
@@ -84,6 +87,9 @@ const Experiences: React.FC = () => {
         }
         throw error;
       }
+      
+      // End performance tracking
+      perfMonitor.end(`fetch-experiences-page-${pageNum}`);
       
       // Handle both new and old response formats
       let experiencesArray;
