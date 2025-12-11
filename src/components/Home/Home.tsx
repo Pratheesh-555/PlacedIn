@@ -8,7 +8,7 @@ import RecentUpdates from './RecentUpdates';
 const STATS = [
   { icon: Users, label: 'Students', value: 2500, suffix: '+' },
   { icon: Building2, label: 'Companies', value: 150, suffix: '+' },
-  { icon: BookOpen, label: 'Experiences', value: 800, suffix: '+' },
+  { icon: BookOpen, label: 'Experiences', value: 10, suffix: '+' },
   { icon: TrendingUp, label: 'Success Rate', value: 95, suffix: '%' },
 ];
 

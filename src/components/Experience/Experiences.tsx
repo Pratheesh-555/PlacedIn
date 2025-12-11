@@ -6,6 +6,436 @@ import { perfMonitor } from '../../utils/performanceMonitor';
 
 import ExperienceModal from './ExperienceModal';
 
+// Temporary dummy data for demonstration
+const DUMMY_EXPERIENCES: Experience[] = [
+  {
+    _id: 'dummy-1',
+    studentName: 'Baari',
+    email: '126001234@sastra.ac.in',
+    company: 'Goldman Sachs',
+    graduationYear: 2026,
+    experienceText: `Goldman Sachs Interview Experience - Quant Developer Role
+
+**Round 1: Online Assessment (2 hours)**
+The assessment included coding challenges and quantitative aptitude:
+- Probability and statistics problems related to financial modeling
+- Coding Q1: Implement order book data structure with efficient insertion and matching
+- Coding Q2: Optimize portfolio rebalancing algorithm with constraints
+- Mental math and quick calculation exercises
+
+**Round 2: Technical Round - Mathematics & Algorithms (75 minutes)**
+Heavy focus on mathematical reasoning and algorithmic thinking:
+1. Implement Black-Scholes option pricing model
+2. Statistical arbitrage strategy - when to trade and when to hold
+3. Matrix operations optimization for large datasets
+4. Brain teaser: Probability of winning in a card game scenario
+5. Discussion on time-series analysis and forecasting methods
+
+**Round 3: Technical Round - System Architecture (60 minutes)**
+1. Design a high-frequency trading system with microsecond latency requirements
+2. Discussed message queues, in-memory databases, and network optimization
+3. How to handle market data feed processing at scale
+4. Risk management system design - real-time position tracking
+5. Questions on C++ performance optimization and memory management
+
+**Round 4: Behavioral & Culture Fit (45 minutes)**
+- Why quantitative finance over pure software roles?
+- Describe a complex problem where mathematical modeling helped
+- How do you handle high-pressure situations with tight deadlines?
+- Experience working with cross-functional teams (traders, risk managers)
+- Long-term career aspirations in finance technology
+
+Goldman Sachs has a rigorous process. Focus on mathematical foundations, C++ programming, and understanding financial instruments. The culture values both technical excellence and collaborative problem-solving.`,
+    type: 'placement',
+    isApproved: true,
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-11-15').toISOString(),
+    postedBy: {
+      googleId: 'dummy-google-1',
+      name: 'Baari',
+      email: '126001234@sastra.ac.in',
+      picture: ''
+    }
+  },
+  {
+    _id: 'dummy-2',
+    studentName: 'Shriram',
+    email: '126002456@sastra.ac.in',
+    company: 'PayPal',
+    graduationYear: 2026,
+    experienceText: `PayPal Backend Engineer Interview - My Journey
+
+**Round 1: Coding Challenge (Codility - 105 minutes)**
+Received the test link via email. Had to solve in one sitting:
+- Problem 1: Implement a distributed transaction coordinator
+- Problem 2: Design an idempotent API handler with retry logic
+- Problem 3: Optimize database queries for payment reconciliation
+All test cases had to pass for progression to next round.
+
+**Round 2: Technical Deep Dive (70 minutes)**
+Video call with senior engineer from Bangalore office:
+1. Explain the CAP theorem and its implications in payment systems
+2. Code: Implement a two-phase commit protocol
+3. How would you design a refund processing pipeline?
+4. Discussion on my college project - asked to explain architecture decisions
+5. Questions on Kafka, message brokers, and event-driven architecture
+
+**Round 3: System Design Round (60 minutes)**
+Design Venmo-like peer-to-peer payment system:
+- User authentication and authorization (OAuth 2.0)
+- Payment initiation, validation, and execution flow
+- Handling split payments and group expenses
+- Notification system for transaction updates
+- Database sharding strategy for millions of users
+- Compliance with financial regulations
+
+**Round 4: Coding + Debugging Round (60 minutes)**
+1. Given buggy code for payment processing, identify and fix issues
+2. Implement circuit breaker pattern for external payment gateway calls
+3. Write unit tests for critical payment validation logic
+4. Discussion on Test-Driven Development practices
+
+**Round 5: Manager Round (40 minutes)**
+More relaxed conversation:
+- What motivates you in software engineering?
+- How do you prioritize features vs technical debt?
+- Tell me about a time you disagreed with your team lead
+- Questions about PayPal's mission and products
+
+**Offer Details:**
+Received offer within 1 week of final round. The package was competitive with other product companies. HR was transparent about growth opportunities and learning culture.
+
+**Preparation Tips:**
+- Focus on distributed systems concepts
+- Understand payment processing fundamentals
+- Practice system design for financial applications
+- Study PayPal's tech blog for insights`,
+    type: 'placement',
+    isApproved: true,
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-11-20').toISOString(),
+    postedBy: {
+      googleId: 'dummy-google-2',
+      name: 'Shriram',
+      email: '126002456@sastra.ac.in',
+      picture: ''
+    }
+  },
+  {
+    _id: 'dummy-3',
+    studentName: 'Keshav',
+    email: '126003789@sastra.ac.in',
+    company: 'Wells Fargo',
+    graduationYear: 2026,
+    experienceText: `Wells Fargo Full Stack Developer Interview Experience
+
+**Round 1: Online Test (HireVue Platform - 120 minutes)**
+Unique format with video responses and coding:
+- 3 behavioral video questions (1 minute preparation, 2 minutes answer)
+- 2 SQL query problems on complex joins and aggregations
+- 2 Java/Spring Boot coding problems
+- 15 MCQs on banking domain, security, and compliance
+
+**Round 2: Technical Interview - Frontend & Backend (75 minutes)**
+1. Build a mini banking dashboard UI (React) - live coding
+   - Implement transaction history with filtering and sorting
+   - Handle form validation for fund transfer
+   - Discuss state management (Redux vs Context API)
+2. Design RESTful APIs for account management
+3. Implement JWT-based authentication mechanism
+4. SQL query: Find customers with suspicious transaction patterns
+
+**Round 3: Technical Interview - Java & Spring (60 minutes)**
+Deep dive into backend technologies:
+1. Explain Spring Bean lifecycle and dependency injection
+2. Implement custom exception handling in Spring Boot
+3. Design a loan approval workflow system
+4. Discussion on Spring Security configuration
+5. Transaction management and @Transactional annotation
+6. Hibernate lazy loading vs eager loading - when to use what
+
+**Round 4: System Design - Banking Application (70 minutes)**
+Design an online banking platform:
+- Multi-tier architecture (web, app, database layers)
+- Security measures: encryption, secure sessions, audit logging
+- Account services: checking, savings, credit cards
+- Real-time balance updates and transaction notifications
+- Integration with third-party services (credit bureaus, KYC)
+- Disaster recovery and backup strategies
+- Compliance with banking regulations (PCI-DSS, SOC2)
+
+**Round 5: HR & Managerial Round (45 minutes)**
+- Why banking sector? What excites you about fintech?
+- Salary expectations and negotiation
+- Relocation preferences
+- Notice period and joining timeline
+- Team structure and reporting hierarchy
+- Discussion on Wells Fargo's values and diversity initiatives
+
+**Key Takeaways:**
+Wells Fargo values candidates who understand both technology and business context. They look for long-term employees who are interested in the financial domain. The work-life balance is good compared to startups, and there are structured learning programs.`,
+    type: 'placement',
+    isApproved: true,
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-11-25').toISOString(),
+    postedBy: {
+      googleId: 'dummy-google-3',
+      name: 'Keshav',
+      email: '126003789@sastra.ac.in',
+      picture: ''
+    }
+  },
+  {
+    _id: 'dummy-4',
+    studentName: 'Satya',
+    email: '125001122@sastra.ac.in',
+    company: 'Amazon',
+    graduationYear: 2025,
+    experienceText: `Amazon SDE-1 Interview - A Complete Breakdown
+
+**Round 1: Online Assessment (3 hours total)**
+**Part A - Coding (90 minutes):**
+- Problem 1: Implement autocomplete feature for search (Trie + ranking algorithm)
+- Problem 2: Optimize warehouse space allocation (2D DP problem)
+- Debugging: Fix given code that has logical errors
+
+**Part B - Work Style Assessment (90 minutes):**
+- Simulation exercises based on Amazon scenarios
+- 14 Leadership Principles assessment
+- Situational judgment questions
+
+**Round 2: Technical Interview - DSA Focused (55 minutes)**
+1. Find median in a stream of integers - follow-up with memory constraints
+2. Implement a thread-safe inventory management system
+3. Design LRU cache and explain eviction policy
+4. Analyzed time/space complexity for various approaches
+5. Questions on my resume projects - explained trade-offs
+
+**Round 3: Technical Interview - Problem Solving (60 minutes)**
+Started with a real Amazon problem:
+1. Design a system to detect duplicate product listings
+   - Discussed fuzzy matching, Levenshtein distance
+   - When to use ML vs rule-based approach
+2. Code: Implement string matching with wildcards
+3. Optimize the solution for large datasets
+4. How to handle internationalization (different languages)
+
+**Round 4: System Design Round (65 minutes)**
+Design Amazon Prime Video streaming service:
+- Content delivery network architecture
+- Video encoding and adaptive bitrate streaming
+- User profile and watch history management
+- Recommendation engine integration
+- Payment and subscription management
+- Analytics and monitoring
+- CDN edge caching strategies
+
+**Round 5: Bar Raiser Round (50 minutes)**
+This was intense! Bar raiser asked probing questions:
+1. Coding: Design parking lot system with different vehicle types
+2. Leadership Principle: Ownership
+   - Describe a project you owned end-to-end
+   - How did you handle production issues?
+3. Leadership Principle: Invent and Simplify
+   - Tell me about a time you found a simpler solution
+4. Why Amazon over other FAANG companies?
+
+**Post-Interview:**
+- Results came in 5 business days
+- Offer included base salary, joining bonus, and RSUs (vesting over 4 years)
+- Team matching process took another week
+
+**What Worked For Me:**
+- Solved 300+ LeetCode problems (mostly medium)
+- Practiced system design from Gaurav Sen's YouTube and System Design books
+- Prepared stories for all 14 Leadership Principles using STAR format
+- Mock interviews with peers
+- Stayed calm and communicated thought process clearly
+
+Amazon's bar is high, but the process is fair. They really test both technical depth and cultural fit through the leadership principles.`,
+    type: 'placement',
+    isApproved: true,
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-10-10').toISOString(),
+    postedBy: {
+      googleId: 'dummy-google-4',
+      name: 'Satya',
+      email: '125001122@sastra.ac.in',
+      picture: ''
+    }
+  },
+  {
+    _id: 'dummy-5',
+    studentName: 'Yaswanth Reddy',
+    email: '125002334@sastra.ac.in',
+    company: 'PayPal',
+    graduationYear: 2025,
+    experienceText: `PayPal SDE Internship to Full-Time Conversion Experience
+
+**Background:**
+I did a 3-month internship at PayPal (May-Aug 2024) and received a pre-placement offer. Here's my full-time conversion interview experience:
+
+**Round 1: Internship Project Presentation (45 minutes)**
+Since I was an intern, they asked me to present my internship work:
+- Built a merchant dashboard analytics feature
+- Reduced query response time by 60% using Redis caching
+- Implemented real-time transaction monitoring
+- Answered questions about technical decisions and trade-offs
+
+**Round 2: Advanced Coding Round (75 minutes)**
+More challenging than intern interview:
+1. Design a streaming payment processor
+   - Handle millions of transactions per second
+   - Ensure exactly-once processing
+2. Implement consistent hashing for load distribution
+3. Given a set of APIs, design rate limiting per user
+4. Optimize a slow database query (given execution plan)
+
+**Round 3: Architecture & Scalability (60 minutes)**
+Design a global payment reconciliation system:
+- Match transactions across multiple payment processors
+- Handle time zones and currency conversions
+- Deal with eventual consistency
+- Alerting for mismatches and fraud detection
+- Data retention and archival strategy
+- Compliance with GDPR and data privacy laws
+
+**Round 4: Cross-Functional Collaboration (40 minutes)**
+Behavioral focus:
+- How did you work with product managers during internship?
+- Describe a conflict with a team member and resolution
+- How do you handle ambiguous requirements?
+- What did you learn during your internship?
+- Career goals and why you want to continue at PayPal
+
+**Offer Received:**
+Full-time offer with better compensation than initial PPO:
+- Competitive base salary
+- Annual performance bonus (15-20%)
+- RSU grant vesting over 4 years
+- Relocation assistance
+- Learning & development budget
+
+**Internship Tips:**
+The internship was invaluable. I got to:
+- Work on production code from day one
+- Participate in design reviews and sprint planning
+- Learn PayPal's tech stack (Java, Spring, Kafka, PostgreSQL)
+- Network with engineers across teams
+- Understand fintech domain deeply
+
+**Conversion Interview Strategy:**
+- Leveraged internship experience in every answer
+- Showed growth and learnings from feedback
+- Demonstrated deeper system understanding
+- Connected well with interviewers who knew my work
+
+The conversion rate for interns is good if you perform well. Make the most of your internship - take ownership, ask questions, and build relationships.`,
+    type: 'placement',
+    isApproved: true,
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-09-15').toISOString(),
+    postedBy: {
+      googleId: 'dummy-google-5',
+      name: 'Yaswanth Reddy',
+      email: '125002334@sastra.ac.in',
+      picture: ''
+    }
+  },
+  {
+    _id: 'dummy-6',
+    studentName: 'Sai Vaishnavi Poreddy',
+    email: '127003188@sastra.ac.in',
+    company: 'KLA',
+    graduationYear: 2027,
+    experienceText: `KLA Corporation - Summer Internship Interview Experience
+
+**About KLA:**
+KLA is a global leader in semiconductor manufacturing equipment and process control. They provide inspection and metrology systems for the semiconductor industry.
+
+**Round 1: Online Assessment (2 hours)**
+**Technical Section:**
+- 25 MCQs covering Physics, Electronics, and Mathematics
+- Focus on semiconductor physics, crystallography, optics
+- Questions on statistical process control and Six Sigma
+- Basic programming questions (Python/C++)
+
+**Aptitude Section:**
+- Quantitative aptitude (15 questions)
+- Logical reasoning (10 questions)
+- Data interpretation with charts
+
+**Round 2: Technical Interview 1 (60 minutes)**
+1. Explain semiconductor fabrication process flow
+2. What is yield management in semiconductor manufacturing?
+3. Discuss different types of defects in wafer processing
+4. Coding problem: Image processing algorithm for defect detection
+5. Questions on my academic projects
+6. Knowledge of clean room protocols and contamination control
+
+**Round 3: Technical Interview 2 (70 minutes)**
+More focused on metrology and inspection:
+1. Explain optical inspection vs e-beam inspection
+2. How does overlay metrology work in lithography?
+3. Design an experiment to characterize a new inspection tool
+4. Statistical analysis problem: Given defect data, identify patterns
+5. Discussion on machine learning applications in semiconductor inspection
+6. Questions on Python libraries: NumPy, Pandas, OpenCV
+
+**Round 4: Problem-Solving & Domain Knowledge (55 minutes)**
+Case study approach:
+- Given a scenario where fab yield dropped suddenly
+- How would you investigate root cause?
+- What data would you collect?
+- How to prioritize which tools to inspect first?
+- Discussed failure analysis techniques (SEM, TEM, XRF)
+- Importance of documentation and traceability
+
+**Round 5: HR Round (35 minutes)**
+- Why KLA and why semiconductor industry?
+- Are you interested in hardware or software role?
+- What are your learning goals for this internship?
+- Questions about KLA's products and customers
+- Internship duration and location (Bangalore/Chennai)
+- Possibility of PPO based on performance
+
+**Internship Details:**
+- Duration: 2 months (May-June 2025)
+- Stipend: Competitive for industry standards
+- Work: Hands-on with inspection tools and data analysis
+- Mentorship from senior engineers
+- Exposure to real fab environment and processes
+
+**Preparation Resources:**
+- "Fundamentals of Semiconductor Manufacturing and Process Control" - May/Spanos
+- KLA's website - studied their product portfolio
+- Semiconductor industry trends and challenges
+- Python for data analysis and image processing
+
+**Why I Applied to KLA:**
+The semiconductor industry is booming with huge investments in India (fab setups). KLA is the market leader in process control, so internship exposure would be invaluable. The role offers a mix of hardware, software, and data analytics - perfect for exploring career interests.
+
+**Interview Tips:**
+- Strong fundamentals in semiconductor physics
+- Understanding of statistical methods
+- Programming skills (Python preferred)
+- Show genuine interest in manufacturing and process engineering
+- Research KLA's products and competitors (Applied Materials, Lam Research)
+
+Overall great experience! The interviewers were knowledgeable and patient in explaining KLA's work. Really excited about this internship opportunity!`,
+    type: 'internship',
+    isApproved: true,
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-12-05').toISOString(),
+    postedBy: {
+      googleId: 'dummy-google-6',
+      name: 'Sai Vaishnavi Poreddy',
+      email: '127003188@sastra.ac.in',
+      picture: ''
+    }
+  }
+];
+
 const Experiences: React.FC = () => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -109,8 +539,9 @@ const Experiences: React.FC = () => {
       }
       
       // All experiences from API are already approved, no need to filter again
+      // Add dummy experiences to the beginning of the list
       if (refresh || pageNum === 1) {
-        setExperiences(experiencesArray);
+        setExperiences([...DUMMY_EXPERIENCES, ...experiencesArray]);
       } else {
         setExperiences(prev => [...prev, ...experiencesArray]);
       }
